@@ -18,7 +18,7 @@ jobs:
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm lint
@@ -32,7 +32,7 @@ jobs:
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm test
@@ -40,10 +40,6 @@ jobs:
   test-rust:
     name: Test (Rust)
     runs-on: ubuntu-latest
-    if: >-
-      github.event_name == 'push' ||
-      contains(github.event.pull_request.labels.*.name, 'rust') ||
-      hashFiles('exercises/rust/**') != ''
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
@@ -52,10 +48,6 @@ jobs:
   test-go:
     name: Test (Go)
     runs-on: ubuntu-latest
-    if: >-
-      github.event_name == 'push' ||
-      contains(github.event.pull_request.labels.*.name, 'go') ||
-      hashFiles('exercises/go/**') != ''
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
@@ -71,7 +63,7 @@ jobs:
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
