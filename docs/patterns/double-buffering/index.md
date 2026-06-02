@@ -8,23 +8,18 @@ Maintain two copies of state and atomically swap between them so readers always 
 
 Double buffering keeps two versions of a data structure: one "current" (being read) and one "work-in-progress" (being written). When the write is complete, the two are swapped atomically. This avoids tearing — readers never see a half-updated state.
 
-```text
-    ┌─────────────┐          ┌─────────────┐
-    │   Current    │◄─ read ──│   Reader     │
-    │   (stable)   │          └─────────────┘
-    └──────┬───▲──┘
-           │   │  swap
-    ┌──────▼───┴──┐
-    │  Work-in-   │◄─ write ─│   Writer     │
-    │  Progress   │          └─────────────┘
-    └─────────────┘
+```mermaid
+stateDiagram-v2
+    state "Buffer A" as A
+    state "Buffer B" as B
 
-After swap:
-  - old "current" becomes new "work-in-progress" (reused, not GC'd)
-  - old "work-in-progress" becomes new "current" (now stable for readers)
+    [*] --> A : current (read)
+    [*] --> B : work-in-progress (write)
+    A --> B : swap
+    B --> A : swap
 ```
 
-Key insight: by reusing the old buffer instead of allocating a new one, you get **zero allocation** on the hot path — the same two objects are recycled forever.
+After swap: old "current" becomes new "work-in-progress" (reused, not GC'd). The same two objects are recycled forever — **zero allocation** on the hot path.
 
 ## Production Proof
 

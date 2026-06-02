@@ -3,7 +3,7 @@ layout: home
 
 hero:
   name: Battle-Tested Patterns
-  text: 经过生产验证的编程模式
+  text: 生产验证的编程模式
   tagline: 从 React、Linux、Go、Chromium 等顶级项目源码中提炼。精确源码链接、多语言实现、交互式练习。
   actions:
     - theme: brand
