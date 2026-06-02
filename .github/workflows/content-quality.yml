@@ -1,0 +1,62 @@
+name: Content Quality Check
+
+on:
+  pull_request:
+    paths:
+      - "docs/patterns/**"
+      - "exercises/**"
+
+jobs:
+  check-template:
+    name: Verify pattern template completeness
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check required sections
+        run: |
+          exit_code=0
+          for file in $(git diff --name-only --diff-filter=AM origin/main -- 'docs/patterns/*.md'); do
+            echo "Checking $file..."
+            missing=""
+            grep -q "## One Liner" "$file"            || missing="$missing One-Liner"
+            grep -q "## Core Idea" "$file"             || missing="$missing Core-Idea"
+            grep -q "## Production Proof" "$file"      || missing="$missing Production-Proof"
+            grep -q "## Implementation" "$file"        || missing="$missing Implementation"
+            grep -q "### TypeScript" "$file"           || missing="$missing TypeScript-impl"
+            grep -q "## Exercises" "$file"             || missing="$missing Exercises"
+            grep -q "## When to Use" "$file"           || missing="$missing When-to-Use"
+            grep -q "## When NOT to Use" "$file"       || missing="$missing When-NOT-to-Use"
+
+            if [ -n "$missing" ]; then
+              echo "::error file=$file::Missing required sections:$missing"
+              exit_code=1
+            else
+              echo "  ✅ All required sections present"
+            fi
+
+            # Check Production Proof has at least 2 links
+            link_count=$(grep -c 'github\.com.*#L' "$file" || true)
+            if [ "$link_count" -lt 2 ]; then
+              echo "::warning file=$file::Only $link_count production proof link(s) with line numbers (minimum 2 required)"
+            fi
+          done
+          exit $exit_code
+
+  check-exercises:
+    name: Verify exercises exist for new patterns
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check exercise files
+        run: |
+          for file in $(git diff --name-only --diff-filter=A origin/main -- 'docs/patterns/*.md'); do
+            pattern=$(basename "$file" .md)
+            echo "Checking exercises for pattern: $pattern"
+            ts_dir="exercises/typescript/$pattern"
+            if [ ! -d "$ts_dir" ] || [ -z "$(ls -A "$ts_dir"/*.test.ts 2>/dev/null)" ]; then
+              echo "::warning::No TypeScript exercises found at $ts_dir for new pattern '$pattern'"
+            else
+              count=$(ls -1 "$ts_dir"/*.test.ts | wc -l)
+              echo "  ✅ Found $count exercise file(s)"
+            fi
+          done

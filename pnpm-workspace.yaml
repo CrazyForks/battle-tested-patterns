@@ -1,0 +1,7 @@
+packages:
+  - "docs"
+  - "exercises"
+  - "playground"
+
+onlyBuiltDependencies:
+  - esbuild

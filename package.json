@@ -1,0 +1,36 @@
+{
+  "name": "battle-tested-patterns",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Battle-tested programming patterns from production codebases. Multi-language examples, precise source links, interactive playground.",
+  "license": "MIT",
+  "author": "Totoro-jam",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Totoro-jam/battle-tested-patterns.git"
+  },
+  "scripts": {
+    "dev": "pnpm --filter docs dev",
+    "build": "pnpm --filter docs build",
+    "preview": "pnpm --filter docs preview",
+    "test": "pnpm --filter exercises test",
+    "test:ts": "pnpm --filter exercises test",
+    "lint": "markdownlint 'docs/**/*.md' --config .markdownlint.json",
+    "typecheck": "pnpm --filter exercises typecheck",
+    "verify-links": "tsx scripts/verify-source-links.ts",
+    "changelog": "changelogen --output CHANGELOG.md"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^19.6.1",
+    "@commitlint/config-conventional": "^19.6.0",
+    "changelogen": "^0.6.1",
+    "markdownlint-cli": "^0.44.0",
+    "tsx": "^4.19.4",
+    "typescript": "^5.7.3"
+  },
+  "packageManager": "pnpm@11.3.0",
+  "engines": {
+    "node": ">=20 <25",
+    "pnpm": ">=9"
+  }
+}

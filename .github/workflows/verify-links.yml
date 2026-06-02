@@ -1,0 +1,44 @@
+name: Verify Source Links
+
+on:
+  schedule:
+    - cron: "23 3 * * 1" # Every Monday at 03:23 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  verify:
+    name: Check production source URLs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Verify all source links
+        id: verify
+        run: |
+          pnpm verify-links --ci 2>&1 | tee verify-output.txt
+          echo "exit_code=${PIPESTATUS[0]}" >> "$GITHUB_OUTPUT"
+        continue-on-error: true
+      - name: Create issue for broken links
+        if: steps.verify.outputs.exit_code != '0'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const output = fs.readFileSync('verify-output.txt', 'utf8');
+            const today = new Date().toISOString().split('T')[0];
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `🔗 Broken source links detected (${today})`,
+              body: `## Automated Link Verification Report\n\nThe weekly link check found broken URLs:\n\n\`\`\`\n${output}\n\`\`\`\n\nPlease follow [SOP 06: Broken Link Fix](.sop/06-broken-link-fix.md) to resolve.`,
+              labels: ['broken-link', 'automated']
+            });

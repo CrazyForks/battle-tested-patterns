@@ -1,0 +1,31 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm test)",
+      "Bash(pnpm build)",
+      "Bash(pnpm lint)",
+      "Bash(pnpm typecheck)",
+      "Bash(pnpm verify-links)",
+      "Bash(pnpm dev)",
+      "Bash(cargo test*)",
+      "Bash(go test*)",
+      "Bash(curl -sI*)",
+      "Bash(git status*)",
+      "Bash(git log*)",
+      "Bash(git diff*)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'CMD=\"$CLAUDE_TOOL_INPUT\"; if echo \"$CMD\" | grep -qE \"git push|git reset --hard|git clean -f|git branch -D\"; then echo \"BLOCKED: Destructive git operation not allowed. Commit only, push manually.\" >&2; exit 2; fi'"
+          }
+        ]
+      }
+    ]
+  }
+}

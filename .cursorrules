@@ -1,0 +1,35 @@
+# Battle Tested Patterns — Cursor Rules
+
+## Project Context
+Cross-language programming patterns extracted from production codebases (React, Linux, Go, Chromium).
+Each pattern includes precise GitHub source links, multi-language implementations, and runnable exercises.
+
+## Quality Rules
+
+- Never fabricate source links — leave TODO rather than invent URLs
+- Never claim a project uses a pattern without a verifiable GitHub link
+- Code must be runnable, not pseudocode
+- Multi-language implementations must be idiomatic to each language
+- Exercise tests must pass (`pnpm test` / `cargo test` / `go test`)
+
+## Source Link Format
+- Must point to `main`/`master` branch or commit SHA
+- Must include line numbers: `#L18-L22`
+- Must be verified with `curl -I` returning HTTP 200
+
+## Pattern Template
+Every pattern must have: One Liner (≤30 words), Core Idea (with diagram), Production Proof (≥2 projects),
+Implementation (TS required + ≥1 other language), Exercises (≥2 tests), When to Use, When NOT to Use.
+
+## Tech Stack
+- Monorepo: pnpm workspace (docs/, exercises/, playground/)
+- Docs: VitePress → GitHub Pages
+- Tests: Vitest (TS), cargo test (Rust), go test (Go)
+- Playground: Monaco Editor + Vitest Browser Mode
+- Commits: Conventional Commits (feat/fix/docs/ci/chore/test)
+
+## Code Style
+- TypeScript: strict mode, no `any`
+- Rust: idiomatic, use `#[cfg(test)]` modules
+- Go: standard library preferred, table-driven tests
+- Markdown: follow `.markdownlint.json` rules
