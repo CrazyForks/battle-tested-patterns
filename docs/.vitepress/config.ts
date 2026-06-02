@@ -52,7 +52,8 @@ export default withMermaid(defineConfig({
               items: [
                 { text: 'React', link: '/by-project/react' },
                 { text: 'Linux Kernel', link: '/by-project/linux' },
-                { text: 'Go Runtime', link: '/by-project/go-runtime' },
+                { text: 'Go', link: '/by-project/go-runtime' },
+                { text: 'Git · Node · Rust · more', link: '/by-project/other-projects' },
               ],
             },
           ],
@@ -102,7 +103,8 @@ export default withMermaid(defineConfig({
               items: [
                 { text: 'React', link: '/zh/by-project/react' },
                 { text: 'Linux 内核', link: '/zh/by-project/linux' },
-                { text: 'Go Runtime', link: '/zh/by-project/go-runtime' },
+                { text: 'Go', link: '/zh/by-project/go-runtime' },
+                { text: 'Git · Node · Rust · 更多', link: '/zh/by-project/other-projects' },
               ],
             },
           ],
