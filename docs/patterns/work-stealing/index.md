@@ -13,7 +13,7 @@ Each worker owns a local deque (double-ended queue). Workers push/pop tasks from
   ┌──────────────┐        ┌──────────────┐       ┌──────────────┐
   │ Task D ← pop │        │   (empty)    │       │ Task G ← pop │
   │ Task C       │        │              │       │ Task F       │
-  │ Task B       │◄───────│    STEAL ────►│      │              │
+  │ Task B       │◄───────│   STEAL ────► │      │              │
   │ Task A       │  steal │              │       │              │
   └──────────────┘  from  └──────────────┘       └──────────────┘
         ↑ bottom                                        ↑ bottom

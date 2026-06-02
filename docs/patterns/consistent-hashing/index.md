@@ -9,22 +9,23 @@ Distribute keys across nodes on a virtual ring so that adding or removing a node
 Traditional modular hashing (`hash(key) % n`) remaps almost every key when `n` changes. Consistent hashing places both nodes and keys on a circular ring. Each key maps to the first node clockwise from its position. Adding or removing a node only affects keys in the arc between it and its predecessor.
 
 ```text
-                    0
-                 ╱     ╲
-              Node A     ●  key "user:42"
-             ╱               ╲
-           ╱                   ╲
-         ●                       Node B
-         key "order:7"           │
-           ╲                   ╱
-             ╲               ╱
-              Node C     ●  key "session:99"
-                 ╲     ╱
-                   2^32
+  Clockwise →
+        ┌─── 0 ───────────────────────────────┐
+        │                                      │
+      Node A ─── ● key:user:42 ─── Node B      │
+        │                            │         │
+        │                            │         │
+        │                            │         │
+      ● key:order:7          ● key:session:99  │
+        │                            │         │
+      Node C ────────────────────────┘         │
+        │                                      │
+        └──────────── 2^32 ────────────────────┘
 
-  key "user:42"    → closest clockwise → Node B
-  key "order:7"    → closest clockwise → Node C
-  key "session:99" → closest clockwise → Node A
+  Lookup: walk clockwise to the next node
+    key:user:42    → Node B
+    key:order:7    → Node C
+    key:session:99 → Node A
 ```
 
 | Property | Value |

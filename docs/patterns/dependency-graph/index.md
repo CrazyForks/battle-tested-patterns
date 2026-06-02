@@ -6,24 +6,19 @@ Model dependencies as a directed acyclic graph and topologically sort to determi
 
 ## Core Idea
 
-A dependency graph represents items as nodes and "must come before" relationships as directed edges. An edge `A → B` means A is a prerequisite of B. Topological sort (Kahn's algorithm or DFS-based) produces an ordering where every prerequisite appears before its dependents. If no valid ordering exists, a cycle is present.
+A dependency graph represents items as nodes and ordering constraints as directed edges. `addEdge(A, B)` means "A must come before B" — A is a prerequisite of B. Topological sort (Kahn's algorithm) repeatedly removes zero-in-degree nodes, producing an ordering where every prerequisite appears before its dependents.
 
 ```text
-  config ◄────── utils ◄────── app
-    (no deps)    (needs config)  (needs utils, config)
+  addEdge(wash, dry)     wash ──► dry ──► fold
+  addEdge(dry, fold)          0        1       2
+  addEdge(wash, fold)         │                ▲
+                              └────────────────┘
 
-  addEdge(app, utils)   — app is prerequisite of utils?
-  No: edge means "from has outgoing edge to to"
-  Kahn's: process zero-in-degree nodes first
-
-  app ──────► utils ──────► config
-              (in-degree 1)  (in-degree 2)
-
-  Topological order: app → utils → config
+  In-degree:  wash=0   dry=1   fold=2
+  Output:     wash  →  dry  →  fold
   (zero in-degree first, then dependents)
 
-  Cycle detection:
-  a → b → c → a  ← ERROR: no valid order exists
+  Cycle:  a → b → c → a  ← ERROR: no valid order
 ```
 
 | Property | Value |

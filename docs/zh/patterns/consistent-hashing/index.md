@@ -9,22 +9,23 @@
 传统模哈希（`hash(key) % n`）在 `n` 变化时几乎重映射所有键。一致性哈希将节点和键都放在循环环上。每个键映射到其位置顺时针方向的第一个节点。添加或移除节点只影响它和前驱之间弧段的键。
 
 ```text
-                    0
-                 ╱     ╲
-              Node A     ●  key "user:42"
-             ╱               ╲
-           ╱                   ╲
-         ●                       Node B
-         key "order:7"           │
-           ╲                   ╱
-             ╲               ╱
-              Node C     ●  key "session:99"
-                 ╲     ╱
-                   2^32
+  Clockwise →
+        ┌─── 0 ───────────────────────────────┐
+        │                                      │
+      Node A ─── ● key:user:42 ─── Node B      │
+        │                            │         │
+        │                            │         │
+        │                            │         │
+      ● key:order:7          ● key:session:99  │
+        │                            │         │
+      Node C ────────────────────────┘         │
+        │                                      │
+        └──────────── 2^32 ────────────────────┘
 
-  key "user:42"    → 最近顺时针 → Node B
-  key "order:7"    → 最近顺时针 → Node C
-  key "session:99" → 最近顺时针 → Node A
+  Lookup: walk clockwise to the next node
+    key:user:42    → Node B
+    key:order:7    → Node C
+    key:session:99 → Node A
 ```
 
 | 属性 | 值 |
