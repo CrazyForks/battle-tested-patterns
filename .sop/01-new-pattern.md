@@ -109,9 +109,22 @@ Create files in `exercises/typescript/<pattern-name>/`:
 ### 8. Self-Review
 
 - [ ] Run `pnpm test` — all tests pass
+- [ ] Run `pnpm verify-code` — all code blocks compile (TS/Python/Rust/Go)
 - [ ] Run `pnpm lint` — no markdown lint errors
 - [ ] Run `pnpm build` — docs site builds
 - [ ] Run `pnpm verify-links` — source links alive
+
+### Common Mistakes Checklist
+
+- [ ] Go code: no `:=` at package level (must be inside `func`)
+- [ ] Go code: all called functions exist (add stubs like `func process(s string) {}`)
+- [ ] Rust code: top-level `let`/`assert!` wrapped in `fn main()`
+- [ ] Mermaid diagrams: use `×` not `*` for multiplication (Mermaid treats `*` as special)
+- [ ] Production Proof: links precise to line numbers (`#L42-L80`), never `#L1`
+- [ ] More Production Uses: use bullet list with verified URLs, not comma-separated text
+- [ ] Chinese translation: section titles in Chinese (`## 更多生产案例` not `## More Production Uses`)
+- [ ] Sidebar: updated in BOTH English and Chinese sections of `config.ts`
+- [ ] README: updated in BOTH `README.md` and `README.zh-CN.md`
 
 ### 9. Submit PR
 
