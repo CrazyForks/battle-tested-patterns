@@ -196,3 +196,7 @@ Run exercises: `pnpm test`
 - **Unbounded growth** — if you can't predict maximum size, use a linked list or `Vec`/`deque`
 - **Random access by key** — ring buffers are sequential; use a hash map
 - **Variable-size elements** — packing different-sized items is complex; use a message queue
+
+## Also Used In
+
+Linux `io_uring`, ZeroMQ, Kafka (log segments), audio DSP buffers, UART serial communication, Chrome trace event buffer.

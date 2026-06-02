@@ -160,3 +160,7 @@ Run exercises: `pnpm test` · `cargo test` · `go test ./...`
 - **Varied lifetimes** — if objects are held for long, unpredictable durations, the pool won't help
 - **Small scale** — for a handful of objects, the pool overhead exceeds the savings
 - **Immutable objects** — pool only makes sense for mutable objects that need resetting
+
+## Also Used In
+
+Java `ThreadPoolExecutor`, .NET `ArrayPool<T>`, Apache Commons Pool, HikariCP (JDBC connection pool), Unity `ObjectPool<T>`.

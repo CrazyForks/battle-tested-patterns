@@ -203,3 +203,7 @@ Run exercises: `pnpm test` (TypeScript) · `cargo test` (Rust) · `go test ./...
 - **Mutually exclusive states** — if only one value can be active at a time, use an `enum` instead
 - **Readability matters more than performance** — named boolean fields are clearer to most developers
 - **Dynamic flag sets** — if the set of possible flags is not known at compile time, use a `Set<string>`
+
+## Also Used In
+
+Chromium (layer compositing flags), SQLite (VFS flags), Nginx (event flags), V8 (object type maps), most ECS game engines, Unix `fcntl` flags.

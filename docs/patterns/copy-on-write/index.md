@@ -163,3 +163,7 @@ Run exercises: `pnpm test`
 - **Small data** — copying a small struct is cheaper than the CoW bookkeeping
 - **Concurrent writes** — CoW doesn't solve concurrent mutation; use locks or atomics
 - **Deep structures** — shallow CoW can lead to shared mutable sub-objects
+
+## Also Used In
+
+Linux `fork()` (page table CoW), Swift value types, PHP strings (before PHP 7), Redis `BGSAVE`, ZFS/Btrfs filesystem snapshots.

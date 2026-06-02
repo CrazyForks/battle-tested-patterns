@@ -169,3 +169,7 @@ Run exercises: `pnpm test`
 - **Too many events** — event storms can be hard to debug; consider batching
 - **Circular dependencies** — A observes B, B observes A → infinite loop
 - **Strong ordering guarantees** — observer notification order may not be deterministic across implementations
+
+## Also Used In
+
+RxJS (reactive streams), Vue 3 reactivity (`effect` / `track` / `trigger`), MobX, DOM `addEventListener`, Java `PropertyChangeListener`, C# events.

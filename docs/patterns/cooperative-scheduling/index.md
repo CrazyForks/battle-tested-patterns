@@ -223,3 +223,7 @@ Run exercises: `pnpm test`
 - **Real-time guarantees** — cooperative scheduling can't guarantee deadlines; use preemptive scheduling
 - **CPU-bound with no interaction** — if nothing else needs the thread, yielding wastes time
 - **When `requestIdleCallback` suffices** — for non-urgent work, the browser's built-in API may be enough
+
+## Also Used In
+
+Lua coroutines, Python `asyncio`, Erlang/BEAM VM (reduction counting), Windows Fibers, Unity coroutines, Zig async.

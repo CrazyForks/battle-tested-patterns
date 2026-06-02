@@ -295,3 +295,7 @@ Run exercises: `pnpm test` · `cargo test` · `go test ./...`
 - **Sorted iteration** — if you need all elements in order, sort once; repeated pop is O(n log n)
 - **Small fixed sets** — for < 10 elements, a linear scan is simpler and often faster
 - **Need stable ordering** — equal-priority items may change order across operations
+
+## Also Used In
+
+Node.js timer queue (`libuv`), Java `PriorityQueue`, Python `heapq`, Dijkstra/Prim graph algorithms, Kubernetes scheduler.

@@ -186,3 +186,7 @@ Run exercises: `pnpm test`
 - **Unordered sets** — diff assumes order matters; for sets, use set intersection/difference
 - **Real-time streaming** — if items arrive one at a time, an incremental approach is better than batch diffing
 - **Large lists without keys** — without stable identifiers, diff degrades to O(n²)
+
+## Also Used In
+
+VS Code (text buffer diff), jsdiff, Mercurial, SVN, React Native (shadow tree reconciliation), Vue 3 (template diff).

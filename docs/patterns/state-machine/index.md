@@ -188,3 +188,7 @@ Run exercises: `pnpm test`
 - **Simple boolean toggles** — a `true`/`false` doesn't need a state machine
 - **Unbounded states** — if the state space is continuous (positions, scores), use plain variables
 - **No invalid transitions** — if any state can transition to any other, you don't need constraints
+
+## Also Used In
+
+Regex engines (NFA/DFA), HTTP/2 stream states (RFC 7540), TLS handshake, Kubernetes pod lifecycle, game AI (behavior trees + FSM), systemd unit states.
