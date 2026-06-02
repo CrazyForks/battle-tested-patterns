@@ -36,3 +36,38 @@ Understanding individual patterns is useful. Understanding how they **compose** 
 When you see a performance problem, you don't think "I need a bitmask." You think "I need to track multiple states cheaply (bitmask), skip work that hasn't changed (subtree flags), process work incrementally (cooperative scheduling), prioritize urgent work (min heap), and avoid allocation on the hot path (double buffering)."
 
 That's what React's team built. That's what you can learn from here.
+
+## Beyond React: Patterns Across Systems
+
+The remaining five patterns show up in completely different domains, yet often compose with the ones above:
+
+```mermaid
+flowchart TD
+    subgraph "Server / Backend"
+        OP["Object Pool"] -->|"reuse connections"| RB["Ring Buffer"]
+        RB -->|"buffer log events"| OB["Observer"]
+        OB -->|"notify subscribers"| SM["State Machine"]
+    end
+    subgraph "Data Layer"
+        COW["Copy-on-Write"] -->|"branch on mutation"| SM
+    end
+```
+
+| Pattern | Composes With | Example |
+|---------|--------------|---------|
+| **Object Pool** | Ring Buffer | A pool of pre-allocated buffers fed into a ring buffer for zero-alloc I/O (LMAX Disruptor does exactly this) |
+| **Ring Buffer** | Observer | Log events written to a ring buffer, observers consume them asynchronously (Linux ftrace) |
+| **State Machine** | Observer | State transitions emit events; observers react to state changes (XState + React) |
+| **Copy-on-Write** | Double Buffering | Both defer the cost of duplication — CoW at the data level, double buffering at the structure level (Git + React Fiber) |
+| **Observer** | State Machine | Subscribers listen for state transitions; the machine emits events on each change (Redux = state machine + observer) |
+
+## The Bigger Picture
+
+These 10 patterns aren't 10 isolated tricks. They're a **toolkit** that production systems mix and match:
+
+- **React** uses 5 of them in a single render cycle
+- **LMAX Disruptor** combines object pool + ring buffer for 6M orders/sec
+- **Git** uses copy-on-write + diff/patch for its entire data model
+- **Linux kernel** uses bitmask + min heap + ring buffer + state machine across subsystems
+
+Understanding how they compose is what makes the difference between knowing a pattern and knowing when to reach for it.
