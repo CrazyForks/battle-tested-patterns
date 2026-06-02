@@ -24,7 +24,7 @@ The power: **impossible transitions don't exist**. You can't go from `success` t
 
 | Project | Source | Usage |
 |---------|--------|-------|
-| XState | [StateMachine.ts#L58-L120](https://github.com/statelyai/xstate/blob/main/packages/core/src/StateMachine.ts#L58-L120) | `StateMachine` class — the industry-standard state machine library for JavaScript/TypeScript. Used by Netflix, Microsoft, and AWS for complex UI flows, workflow orchestration, and protocol handling. |
+| XState | [StateMachine.ts#L58-L120](https://github.com/statelyai/xstate/blob/main/packages/core/src/StateMachine.ts#L58-L120) | `StateMachine` class — `transition()` takes current state + event, evaluates guard conditions, returns next state config. Supports hierarchical states via nested `states` property with parallel regions and history nodes. |
 | Linux Kernel | [tcp_input.c#L4865-L4920](https://github.com/torvalds/linux/blob/master/net/ipv4/tcp_input.c#L4865-L4920) | TCP connection state machine — the `switch (sk->sk_state)` block implements the TCP state transitions (LISTEN → SYN_SENT → ESTABLISHED → FIN_WAIT, etc.) that every internet connection uses. |
 
 ## Implementation
@@ -188,6 +188,7 @@ Run exercises: `pnpm test`
 - **Simple boolean toggles** — a `true`/`false` doesn't need a state machine
 - **Unbounded states** — if the state space is continuous (positions, scores), use plain variables
 - **No invalid transitions** — if any state can transition to any other, you don't need constraints
+- **Combinatorial explosion** — 5 independent toggles = 32 states; model orthogonal concerns as parallel machines or use statecharts
 
 ## More Production Uses
 

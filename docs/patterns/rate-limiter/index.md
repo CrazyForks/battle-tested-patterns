@@ -2,7 +2,7 @@
 
 ## One Liner
 
-Control throughput by maintaining a bucket of tokens that refills at a fixed rate — each operation consumes a token, and requests are rejected when the bucket is empty.
+Protect services from overload by draining tokens from a bucket that refills at a fixed rate — reject requests when empty.
 
 ## Core Idea
 

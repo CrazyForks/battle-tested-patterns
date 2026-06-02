@@ -28,7 +28,7 @@ The wrap-around `index % capacity` is what makes it "ring" — it never runs out
 | Project | Source | Usage |
 |---------|--------|-------|
 | LMAX Disruptor | [RingBuffer.java#L84-L130](https://github.com/LMAX-Exchange/disruptor/blob/master/src/main/java/com/lmax/disruptor/RingBuffer.java#L84-L130) | The Disruptor's `RingBuffer` is the core data structure behind LMAX Exchange — processes 6 million orders per second. Uses power-of-2 sizing for bitwise modulo (`sequence & (bufferSize - 1)`). |
-| Linux Kernel | [ring_buffer.h#L12-L70](https://github.com/torvalds/linux/blob/master/include/linux/ring_buffer.h#L12-L70) | The kernel's tracing subsystem (ftrace) uses ring buffers for lock-free event logging. `ring_buffer_event` records are written in a circular fashion with per-CPU buffers for zero-contention. |
+| Linux Kernel | [ring_buffer.h#L12-L70](https://github.com/torvalds/linux/blob/master/include/linux/ring_buffer.h#L12-L70) | `ring_buffer_event` struct with `type_len` packed into 5 bits + 27-bit timestamp delta. Per-CPU ring buffers — `ring_buffer_read`/`ring_buffer_consume` advance a read pointer without locks. Overflow silently overwrites oldest events. |
 
 ## Implementation
 

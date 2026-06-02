@@ -158,7 +158,8 @@ Run exercises: `pnpm test`
 
 - **Latency-critical** — batching adds delay; if every millisecond matters, process immediately
 - **Small volume** — if you rarely have more than 1 item, batching adds complexity for no gain
-- **Order-dependent** — if processing order must be strict, batching may reorder
+- **Partial failure isolation** — if one item in a batch fails, you need retry/dead-letter logic for the whole batch; individual processing is simpler when failure isolation matters
+- **Unbounded memory** — without size limits, batches can grow during traffic spikes and OOM the process
 
 ## More Production Uses
 
