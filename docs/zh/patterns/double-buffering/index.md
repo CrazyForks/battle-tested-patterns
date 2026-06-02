@@ -129,43 +129,47 @@ func (db *DoubleBuffer[T]) Swap() {
 
 <script setup>
 const dbLangs = {
-  typescript: `function createDoubleBuffer(a, b) {
-  var current = 0;
-  var buffers = [a, b];
+  typescript: `// 🎯 观察前台 buffer 在写入后台时如何保持稳定！
+
+function DoubleBuffer(a, b) {
+  var idx = 0, bufs = [a, b];
   return {
-    read: function() { return buffers[current]; },
-    write: function() { return buffers[1 - current]; },
-    swap: function() { current = 1 - current; },
+    front: function() { return bufs[idx]; },
+    back:  function() { return bufs[1 - idx]; },
+    swap:  function() { idx = 1 - idx; },
   };
 }
 
-var buf = createDoubleBuffer({ frame: "A" }, { frame: "B" });
-assert(buf.read().frame === "A", "initial read is A");
+var buf = DoubleBuffer(
+  { frame: 1, pixels: "##--" },
+  { frame: 0, pixels: "----" }
+);
 
-buf.write().frame = "A-updated";
-assert(buf.read().frame === "A", "front unchanged before swap");
+console.log("=== 渲染循环 ===");
+console.log("前台: " + JSON.stringify(buf.front()));
+
+buf.back().frame = 2;
+buf.back().pixels = "####";
+console.log("写入后台... 前台仍是: " + buf.front().pixels);
 
 buf.swap();
-assert(buf.read().frame === "A-updated", "after swap sees update");
+console.log("交换后: " + JSON.stringify(buf.front()));`,
+  python: `# 🎯 观察前台 buffer 在写入后台时如何保持稳定！
 
-buf.swap();
-assert(buf.read().frame === "A", "original object reused");
-
-console.log("All assertions passed\!");`,
-  python: `class DoubleBuffer:
+class DoubleBuffer:
     def __init__(self, a, b):
-        self._buffers = [a, b]
-        self._current = 0
-    def read(self): return self._buffers[self._current]
-    def write(self): return self._buffers[1 - self._current]
-    def swap(self): self._current = 1 - self._current
+        self._bufs = [a, b]
+        self._idx = 0
+    def front(self): return self._bufs[self._idx]
+    def back(self):  return self._bufs[1 - self._idx]
+    def swap(self):  self._idx = 1 - self._idx
 
-buf = DoubleBuffer({"frame": "A"}, {"frame": "B"})
-assert buf.read()["frame"] == "A"
-buf.write()["frame"] = "A-updated"
+buf = DoubleBuffer({"frame": 1, "pixels": "##--"}, {"frame": 0, "pixels": "----"})
+print(f"前台: {buf.front()}")
+buf.back()["pixels"] = "####"
+print(f"写入后台... 前台仍是: {buf.front()['pixels']}")
 buf.swap()
-assert buf.read()["frame"] == "A-updated"
-print("All assertions passed\!")`
+print(f"交换后: {buf.front()}")`
 };
 </script>
 

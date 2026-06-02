@@ -8,29 +8,26 @@
 
 不使用布尔数组或多字段对象，位掩码将每个标志编码为整数中的一个比特位。这带来 O(1) 的设置/检查/清除/切换操作，以及轻松的多标志组合。
 
-```mermaid
-graph LR
-    subgraph "8 位标志寄存器"
-        B7["7: —"] --- B6["6: —"] --- B5["5: —"] --- B4["4: SN"]
-        B4 --- B3["3: CB"] --- B2["2: RF"] --- B1["1: UP"] --- B0["0: PL"]
-    end
+```text
+  比特位:        7   6   5   4   3   2   1   0
+                ┌───┬───┬───┬───┬───┬───┬───┬───┐
+  标志:         │   │   │   │ SN│ CB│ RF│ UP│ PL│
+                └───┴───┴───┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┘
+                              │   │   │   │   └─ Placement  (1 << 0)
+                              │   │   │   └──── Update     (1 << 1)
+                              │   │   └──────── Ref        (1 << 2)
+                              │   └──────────── Callback   (1 << 3)
+                              └──────────────── Snapshot   (1 << 4)
 ```
 
-| 位 | 标志 | 值 | 二进制 |
-|---|------|-----|--------|
-| 0 | Placement | `1 << 0` | `00000001` |
-| 1 | Update | `1 << 1` | `00000010` |
-| 2 | Ref | `1 << 2` | `00000100` |
-| 3 | Callback | `1 << 3` | `00001000` |
-| 4 | Snapshot | `1 << 4` | `00010000` |
+**四种操作** — 均为 O(1)，无分支：
 
-| 操作 | 语法 | 效果 |
+| 目的 | 写法 | 原理 |
 |------|------|------|
-| 设置标志 | `flags \|= FLAG` | OR 开启比特位 |
-| 检查标志 | `flags & FLAG` | AND 隔离比特位 |
-| 清除标志 | `flags &= ~FLAG` | AND NOT 关闭比特位 |
-| 切换标志 | `flags ^= FLAG` | XOR 翻转比特位 |
-| 组合 | `flags \|= A \| B` | OR 合并多个标志 |
+| 设置标志 | `flags \|= FLAG` | OR 开启目标位，其他不变 |
+| 检查标志 | `flags & FLAG` | AND 隔离目标位 — 非零即已设置 |
+| 清除标志 | `flags &= ~FLAG` | AND 反转掩码关闭目标位 |
+| 切换标志 | `flags ^= FLAG` | XOR 翻转目标位 |
 
 核心洞察：一次 `&` 操作就能同时检查任意标志组合 — 无循环、无分支。
 
@@ -169,37 +166,62 @@ HasFlag(editor, Delete)  // false
 ## 动手试试
 
 <script setup>
-const bitmaskCode = [
-  '// 定义权限标志为 2 的幂',
-  'var READ    = 1 << 0;  // 0b0001',
-  'var WRITE   = 1 << 1;  // 0b0010',
-  'var EXECUTE = 1 << 2;  // 0b0100',
-  'var DELETE  = 1 << 3;  // 0b1000',
-  '',
-  '// 用 OR 组合标志',
-  'var editor = READ | WRITE;',
-  '',
-  '// 用 AND 检查',
-  'assert((editor & READ) !== 0, "editor has READ");',
-  'assert((editor & WRITE) !== 0, "editor has WRITE");',
-  'assert((editor & EXECUTE) === 0, "editor does NOT have EXECUTE");',
-  '',
-  '// 一次检查所有标志',
-  'var required = READ | WRITE;',
-  'assertEquals((editor & required) === required, true, "editor has all required");',
-  '',
-  '// 用 AND NOT 清除标志',
-  'editor = editor & ~WRITE;',
-  'assert((editor & WRITE) === 0, "WRITE cleared");',
-  '',
-  '// 用 XOR 切换标志',
-  'editor = editor ^ EXECUTE;',
-  'assert((editor & EXECUTE) !== 0, "EXECUTE toggled on");',
-  'editor = editor ^ EXECUTE;',
-  'assert((editor & EXECUTE) === 0, "EXECUTE toggled off");',
-  '',
-  'console.log("All assertions passed!");',
-].join('\n');
+const bitmaskLangs = {
+  typescript: `// 🎯 修改标志，观察二进制变化！
+
+var READ    = 1 << 0;  // 1
+var WRITE   = 1 << 1;  // 2
+var EXECUTE = 1 << 2;  // 4
+var DELETE  = 1 << 3;  // 8
+
+function show(label, flags) {
+  console.log(label + ": " + flags.toString(2).padStart(4, "0") + " (十进制 " + flags + ")");
+}
+
+var perms = 0;
+show("初始", perms);
+
+perms = perms | READ | WRITE;
+show("+ READ + WRITE", perms);
+
+console.log("有 READ?    " + ((perms & READ) !== 0));
+console.log("有 EXECUTE? " + ((perms & EXECUTE) !== 0));
+
+perms |= EXECUTE;
+show("+ EXECUTE", perms);
+
+perms &= ~WRITE;
+show("- WRITE", perms);
+
+perms ^= DELETE;
+show("^ DELETE (开)", perms);
+perms ^= DELETE;
+show("^ DELETE (关)", perms);`,
+  python: `# 🎯 修改标志，观察二进制变化！
+
+READ    = 1 << 0  # 1
+WRITE   = 1 << 1  # 2
+EXECUTE = 1 << 2  # 4
+DELETE  = 1 << 3  # 8
+
+def show(label, flags):
+    print(f"{label}: {flags:04b} (十进制 {flags})")
+
+perms = 0
+show("初始", perms)
+
+perms = perms | READ | WRITE
+show("+ READ + WRITE", perms)
+
+print(f"有 READ?    {bool(perms & READ)}")
+print(f"有 EXECUTE? {bool(perms & EXECUTE)}")
+
+perms |= EXECUTE
+show("+ EXECUTE", perms)
+
+perms &= ~WRITE
+show("- WRITE", perms)`
+};
 </script>
 
-<CodePlayground title="位掩码 Playground" lang="typescript" :code="bitmaskCode" />
+<CodePlayground title="位掩码 Playground" :languages="bitmaskLangs" />

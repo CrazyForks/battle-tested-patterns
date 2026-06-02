@@ -190,62 +190,69 @@ Run exercises: `pnpm test`
 
 <script setup>
 const dbLangs = {
-  typescript: `// Double Buffer: swap between two copies
-function createDoubleBuffer(a, b) {
-  var current = 0;
-  var buffers = [a, b];
+  typescript: `// 🎯 Watch how the front buffer stays stable while you write to the back!
+
+function DoubleBuffer(a, b) {
+  var idx = 0, bufs = [a, b];
   return {
-    read: function() { return buffers[current]; },
-    write: function() { return buffers[1 - current]; },
-    swap: function() { current = 1 - current; },
+    front: function() { return bufs[idx]; },
+    back:  function() { return bufs[1 - idx]; },
+    swap:  function() { idx = 1 - idx; },
   };
 }
 
-var buf = createDoubleBuffer({ frame: "A" }, { frame: "B" });
+var buf = DoubleBuffer(
+  { frame: 1, pixels: "##--" },
+  { frame: 0, pixels: "----" }
+);
 
-assert(buf.read().frame === "A", "initial read is A");
-assert(buf.write().frame === "B", "back buffer is B");
+console.log("=== Render Loop ===");
+console.log("Front (visible): " + JSON.stringify(buf.front()));
 
-// Write to back buffer
-buf.write().frame = "A-updated";
+// Draw to back buffer — front stays stable
+buf.back().frame = 2;
+buf.back().pixels = "####";
+console.log("Writing to back... front still: " + buf.front().pixels);
 
-// Front buffer unchanged
-assert(buf.read().frame === "A", "front still A before swap");
-
-// Swap
+// Swap — instant, zero allocation
 buf.swap();
-assert(buf.read().frame === "A-updated", "after swap, read sees update");
+console.log("After swap, front: " + JSON.stringify(buf.front()));
 
-// Swap back — zero allocation, same objects reused
+// The old front is now the back — reused, not garbage collected
+buf.back().frame = 3;
+buf.back().pixels = "#--#";
 buf.swap();
-assert(buf.read().frame === "A", "original object reused");
+console.log("Next frame: " + JSON.stringify(buf.front()));`,
+  python: `# 🎯 Watch how the front buffer stays stable while you write to the back!
 
-console.log("All assertions passed!");`,
-  python: `# Double Buffer: swap between two copies
 class DoubleBuffer:
     def __init__(self, a, b):
-        self._buffers = [a, b]
-        self._current = 0
+        self._bufs = [a, b]
+        self._idx = 0
 
-    def read(self):
-        return self._buffers[self._current]
+    def front(self): return self._bufs[self._idx]
+    def back(self):  return self._bufs[1 - self._idx]
+    def swap(self):  self._idx = 1 - self._idx
 
-    def write(self):
-        return self._buffers[1 - self._current]
+buf = DoubleBuffer(
+    {"frame": 1, "pixels": "##--"},
+    {"frame": 0, "pixels": "----"}
+)
 
-    def swap(self):
-        self._current = 1 - self._current
+print("=== Render Loop ===")
+print(f"Front (visible): {buf.front()}")
 
-buf = DoubleBuffer({"frame": "A"}, {"frame": "B"})
-assert buf.read()["frame"] == "A", "initial read is A"
-
-buf.write()["frame"] = "A-updated"
-assert buf.read()["frame"] == "A", "front unchanged before swap"
+buf.back()["frame"] = 2
+buf.back()["pixels"] = "####"
+print(f"Writing to back... front still: {buf.front()['pixels']}")
 
 buf.swap()
-assert buf.read()["frame"] == "A-updated", "after swap sees update"
+print(f"After swap, front: {buf.front()}")
 
-print("All assertions passed!")`
+buf.back()["frame"] = 3
+buf.back()["pixels"] = "#--#"
+buf.swap()
+print(f"Next frame: {buf.front()}")`
 };
 </script>
 

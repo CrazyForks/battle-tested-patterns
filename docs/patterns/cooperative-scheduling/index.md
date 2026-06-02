@@ -228,65 +228,65 @@ Run exercises: `pnpm test`
 
 <script setup>
 const csLangs = {
-  typescript: `// Cooperative Scheduling: process items, yield when budget exceeded
-function workLoop(items, processItem, shouldYield) {
-  var completed = 0;
-  while (completed < items.length) {
-    if (shouldYield()) {
-      return { completed: completed, yielded: true };
-    }
-    processItem(items[completed]);
-    completed++;
-  }
-  return { completed: completed, yielded: false };
+  typescript: `// 🎯 Simulate a work loop that yields to keep the UI responsive
+
+var items = ["render header", "render sidebar", "render content",
+             "render footer", "render ads", "render comments"];
+var budget = 3; // yield after processing 3 items
+var callCount = 0;
+
+function shouldYield() {
+  callCount++;
+  return callCount > budget;
 }
 
-// Test 1: process all when no yield
-var processed = [];
-var r1 = workLoop([1,2,3,4,5], function(x) { processed.push(x); }, function() { return false; });
-assertEquals(r1.completed, 5, "completed all 5 items");
-assertEquals(r1.yielded, false, "did not yield");
+function workLoop(tasks) {
+  var done = [];
+  callCount = 0;
+  while (tasks.length > 0) {
+    if (shouldYield()) {
+      console.log("⏸ Yielded! Remaining: " + tasks.length + " tasks");
+      console.log("  (browser can handle input/animation here)");
+      return tasks; // return remaining work
+    }
+    done.push(tasks.shift());
+    console.log("✓ " + done[done.length - 1]);
+  }
+  return []; // all done
+}
 
-// Test 2: yield after 3 items
-processed = [];
-var count = 0;
-var r2 = workLoop([10,20,30,40,50], function(x) { processed.push(x); }, function() { count++; return count > 3; });
-assertEquals(r2.completed, 3, "completed 3 before yield");
-assertEquals(r2.yielded, true, "yielded");
+console.log("=== Chunk 1 ===");
+var remaining = workLoop(items);
 
-// Test 3: resume with remaining
-var remaining = [40, 50];
-count = 0;
-var r3 = workLoop(remaining, function(x) { processed.push(x); }, function() { return false; });
-assertEquals(r3.completed, 2, "completed remaining 2");
+console.log("\\n=== Chunk 2 (resume) ===");
+callCount = 0;
+budget = 10; // finish the rest
+remaining = workLoop(remaining);
 
-console.log("All assertions passed!");`,
-  python: `# Cooperative Scheduling: process items, yield when budget exceeded
-def work_loop(items, process_item, should_yield):
-    completed = 0
-    while completed < len(items):
-        if should_yield():
-            return {"completed": completed, "yielded": True}
-        process_item(items[completed])
-        completed += 1
-    return {"completed": completed, "yielded": False}
+console.log("\\n✅ All tasks complete!");`,
+  python: `# 🎯 Simulate a work loop that yields to keep the UI responsive
 
-# Test: process all when no yield
-processed = []
-r1 = work_loop([1,2,3,4,5], lambda x: processed.append(x), lambda: False)
-assert r1["completed"] == 5, "completed all"
-assert not r1["yielded"], "did not yield"
+items = ["render header", "render sidebar", "render content",
+         "render footer", "render ads", "render comments"]
 
-# Test: yield after 3
-count = [0]
-def should_yield():
-    count[0] += 1
-    return count[0] > 3
-processed = []
-r2 = work_loop([10,20,30,40,50], lambda x: processed.append(x), should_yield)
-assert r2["completed"] == 3, "yielded after 3"
+def work_loop(tasks, budget):
+    done = []
+    for i, task in enumerate(tasks):
+        if i >= budget:
+            print(f"⏸ Yielded! Remaining: {len(tasks) - i} tasks")
+            print("  (browser can handle input/animation here)")
+            return tasks[i:]  # return remaining
+        done.append(task)
+        print(f"✓ {task}")
+    return []  # all done
 
-print("All assertions passed!")`
+print("=== Chunk 1 ===")
+remaining = work_loop(items, budget=3)
+
+print("\\n=== Chunk 2 (resume) ===")
+remaining = work_loop(remaining, budget=10)
+
+print("\\n✅ All tasks complete!")`
 };
 </script>
 

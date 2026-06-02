@@ -187,76 +187,63 @@ Run exercises: `pnpm test`
 
 <script setup>
 const diffLangs = {
-  typescript: `// Diff/Patch: compute minimal changes between two lists
+  typescript: `// 🎯 See how diff finds the minimal changes between two lists
+
 function diff(oldList, newList) {
   var ops = [];
   var oi = 0, ni = 0;
   while (oi < oldList.length && ni < newList.length) {
-    if (oldList[oi] === newList[ni]) {
-      ops.push({ type: "keep", value: oldList[oi] });
-      oi++; ni++;
-    } else if (newList.slice(ni).indexOf(oldList[oi]) === -1) {
-      ops.push({ type: "delete", value: oldList[oi] });
-      oi++;
-    } else {
-      ops.push({ type: "insert", value: newList[ni] });
-      ni++;
-    }
+    if (oldList[oi] === newList[ni]) { ops.push("  keep  " + oldList[oi]); oi++; ni++; }
+    else if (newList.slice(ni).indexOf(oldList[oi]) === -1) { ops.push("- delete " + oldList[oi]); oi++; }
+    else { ops.push("+ insert " + newList[ni]); ni++; }
   }
-  while (oi < oldList.length) { ops.push({ type: "delete", value: oldList[oi] }); oi++; }
-  while (ni < newList.length) { ops.push({ type: "insert", value: newList[ni] }); ni++; }
+  while (oi < oldList.length) { ops.push("- delete " + oldList[oi]); oi++; }
+  while (ni < newList.length) { ops.push("+ insert " + newList[ni]); ni++; }
   return ops;
 }
 
-function patch(ops) {
-  return ops.filter(function(op) { return op.type !== "delete"; }).map(function(op) { return op.value; });
-}
+// Example 1: Edit a todo list
+console.log("=== Todo List Update ===");
+var before = ["buy milk", "write code", "walk dog", "read book"];
+var after  = ["buy milk", "write code", "call mom", "walk dog"];
+console.log("Before: " + JSON.stringify(before));
+console.log("After:  " + JSON.stringify(after));
+console.log("\\nDiff:");
+diff(before, after).forEach(function(op) { console.log("  " + op); });
 
-// Test: insert + delete
-var ops = diff(["a", "b", "c", "d"], ["a", "c", "e", "d"]);
-console.log("Ops: " + JSON.stringify(ops.map(function(o) { return o.type + " " + o.value; })));
+// Example 2: Try your own!
+console.log("\\n=== Your Turn ===");
+var old2 = ["a", "b", "c"];
+var new2 = ["a", "x", "c", "d"];
+console.log("Before: " + JSON.stringify(old2));
+console.log("After:  " + JSON.stringify(new2));
+console.log("\\nDiff:");
+diff(old2, new2).forEach(function(op) { console.log("  " + op); });`,
+  python: `# 🎯 See how diff finds the minimal changes between two lists
 
-var result = patch(ops);
-assertEquals(JSON.stringify(result), JSON.stringify(["a","c","e","d"]), "patch reconstructs new list");
-
-// Test: identical lists
-var ops2 = diff([1,2,3], [1,2,3]);
-assertEquals(ops2.every(function(o) { return o.type === "keep"; }), true, "identical = all keeps");
-
-// Test: empty to populated
-var ops3 = diff([], ["x", "y"]);
-assertEquals(ops3.length, 2, "2 inserts");
-assertEquals(patch(ops3).length, 2, "patch produces 2 items");
-
-console.log("All assertions passed!");`,
-  python: `# Diff/Patch: compute minimal changes between two lists
-def diff(old_list, new_list):
+def diff(old, new):
     ops = []
     oi, ni = 0, 0
-    while oi < len(old_list) and ni < len(new_list):
-        if old_list[oi] == new_list[ni]:
-            ops.append(("keep", old_list[oi]))
-            oi += 1; ni += 1
-        elif old_list[oi] not in new_list[ni:]:
-            ops.append(("delete", old_list[oi]))
-            oi += 1
+    while oi < len(old) and ni < len(new):
+        if old[oi] == new[ni]:
+            ops.append(f"  keep   {old[oi]}"); oi += 1; ni += 1
+        elif old[oi] not in new[ni:]:
+            ops.append(f"- delete {old[oi]}"); oi += 1
         else:
-            ops.append(("insert", new_list[ni]))
-            ni += 1
-    while oi < len(old_list):
-        ops.append(("delete", old_list[oi])); oi += 1
-    while ni < len(new_list):
-        ops.append(("insert", new_list[ni])); ni += 1
+            ops.append(f"+ insert {new[ni]}"); ni += 1
+    while oi < len(old): ops.append(f"- delete {old[oi]}"); oi += 1
+    while ni < len(new): ops.append(f"+ insert {new[ni]}"); ni += 1
     return ops
 
-def patch(ops):
-    return [v for t, v in ops if t != "delete"]
-
-ops = diff(["a","b","c","d"], ["a","c","e","d"])
-result = patch(ops)
-assert result == ["a","c","e","d"], f"got {result}"
-
-print("All assertions passed!")`
+# Example: Edit a todo list
+print("=== Todo List Update ===")
+before = ["buy milk", "write code", "walk dog", "read book"]
+after  = ["buy milk", "write code", "call mom", "walk dog"]
+print(f"Before: {before}")
+print(f"After:  {after}")
+print("\\nDiff:")
+for op in diff(before, after):
+    print(f"  {op}")`
 };
 </script>
 

@@ -300,75 +300,59 @@ Run exercises: `pnpm test` · `cargo test` · `go test ./...`
 
 <script setup>
 const heapLangs = {
-  typescript: `// Min Heap: always access the smallest element in O(1)
+  typescript: `// 🎯 A task scheduler using a min heap — lowest number = highest priority
+
 function MinHeap() {
-  var heap = [];
-
-  function siftUp(i) {
-    while (i > 0) {
-      var parent = (i - 1) >>> 1;
-      if (heap[i] < heap[parent]) {
-        var tmp = heap[i]; heap[i] = heap[parent]; heap[parent] = tmp;
-        i = parent;
-      } else break;
-    }
-  }
-
-  function siftDown(i) {
-    var len = heap.length;
-    while (true) {
-      var smallest = i, left = 2*i+1, right = 2*i+2;
-      if (left < len && heap[left] < heap[smallest]) smallest = left;
-      if (right < len && heap[right] < heap[smallest]) smallest = right;
-      if (smallest !== i) {
-        var tmp = heap[i]; heap[i] = heap[smallest]; heap[smallest] = tmp;
-        i = smallest;
-      } else break;
-    }
-  }
-
+  var data = [];
+  function swap(i,j) { var t=data[i]; data[i]=data[j]; data[j]=t; }
+  function up(i) { while(i>0) { var p=(i-1)>>>1; if(data[i][0]<data[p][0]){swap(i,p);i=p;}else break; } }
+  function down(i) { var n=data.length; while(true) { var s=i,l=2*i+1,r=2*i+2;
+    if(l<n&&data[l][0]<data[s][0])s=l; if(r<n&&data[r][0]<data[s][0])s=r;
+    if(s!==i){swap(i,s);i=s;}else break; } }
   return {
-    push: function(val) { heap.push(val); siftUp(heap.length - 1); },
-    pop: function() {
-      if (!heap.length) return null;
-      var min = heap[0];
-      var last = heap.pop();
-      if (heap.length) { heap[0] = last; siftDown(0); }
-      return min;
-    },
-    peek: function() { return heap[0]; },
-    size: function() { return heap.length; },
+    push: function(priority, task) { data.push([priority, task]); up(data.length-1); },
+    pop: function() { if(!data.length)return null; var min=data[0]; var last=data.pop();
+      if(data.length){data[0]=last;down(0);} return min; },
+    peek: function() { return data[0] || null; },
+    size: function() { return data.length; },
   };
 }
 
-var h = MinHeap();
-h.push(5); h.push(1); h.push(3); h.push(2); h.push(4);
+var scheduler = MinHeap();
 
-assertEquals(h.peek(), 1, "peek returns minimum");
-assertEquals(h.pop(), 1, "pop returns 1");
-assertEquals(h.pop(), 2, "pop returns 2");
-assertEquals(h.pop(), 3, "pop returns 3");
-assertEquals(h.pop(), 4, "pop returns 4");
-assertEquals(h.pop(), 5, "pop returns 5");
-assertEquals(h.size(), 0, "heap is empty");
+// Schedule tasks with priorities (lower = more urgent)
+scheduler.push(50, "send analytics");
+scheduler.push(10, "respond to click");
+scheduler.push(30, "lazy-load images");
+scheduler.push(5,  "render frame");
+scheduler.push(20, "prefetch data");
 
-console.log("All assertions passed!");`,
-  python: `# Min Heap: always access the smallest element in O(1)
+console.log("=== Processing tasks by priority ===");
+while (scheduler.size() > 0) {
+  var task = scheduler.pop();
+  console.log("  [priority " + task[0] + "] " + task[1]);
+}`,
+  python: `# 🎯 A task scheduler using a min heap — lowest number = highest priority
 import heapq
 
-h = []
-for val in [5, 1, 3, 2, 4]:
-    heapq.heappush(h, val)
+scheduler = []
 
-assert h[0] == 1, "peek returns minimum"
-assert heapq.heappop(h) == 1, "pop returns 1"
-assert heapq.heappop(h) == 2, "pop returns 2"
-assert heapq.heappop(h) == 3, "pop returns 3"
-assert heapq.heappop(h) == 4, "pop returns 4"
-assert heapq.heappop(h) == 5, "pop returns 5"
-assert len(h) == 0, "heap is empty"
+# Schedule tasks with priorities (lower = more urgent)
+tasks = [
+    (50, "send analytics"),
+    (10, "respond to click"),
+    (30, "lazy-load images"),
+    (5,  "render frame"),
+    (20, "prefetch data"),
+]
 
-print("All assertions passed!")`
+for priority, task in tasks:
+    heapq.heappush(scheduler, (priority, task))
+
+print("=== Processing tasks by priority ===")
+while scheduler:
+    priority, task = heapq.heappop(scheduler)
+    print(f"  [priority {priority}] {task}")`
 };
 </script>
 

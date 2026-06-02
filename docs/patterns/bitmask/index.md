@@ -8,29 +8,26 @@ Pack multiple boolean flags into a single integer and manipulate them with bitwi
 
 Instead of using an array of booleans or an object with multiple fields, a bitmask encodes each flag as a single bit in an integer. This gives you O(1) set/check/clear/toggle and trivial combination of multiple flags.
 
-```mermaid
-graph LR
-    subgraph "8-bit Flag Register"
-        B7["7: —"] --- B6["6: —"] --- B5["5: —"] --- B4["4: SN"]
-        B4 --- B3["3: CB"] --- B2["2: RF"] --- B1["1: UP"] --- B0["0: PL"]
-    end
+```text
+  Bit position:  7   6   5   4   3   2   1   0
+                ┌───┬───┬───┬───┬───┬───┬───┬───┐
+  Flags:        │   │   │   │ SN│ CB│ RF│ UP│ PL│
+                └───┴───┴───┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┘
+                              │   │   │   │   └─ Placement  (1 << 0)
+                              │   │   │   └──── Update     (1 << 1)
+                              │   │   └──────── Ref        (1 << 2)
+                              │   └──────────── Callback   (1 << 3)
+                              └──────────────── Snapshot   (1 << 4)
 ```
 
-| Bit | Flag | Value | Binary |
-|-----|------|-------|--------|
-| 0 | Placement | `1 << 0` | `00000001` |
-| 1 | Update | `1 << 1` | `00000010` |
-| 2 | Ref | `1 << 2` | `00000100` |
-| 3 | Callback | `1 << 3` | `00001000` |
-| 4 | Snapshot | `1 << 4` | `00010000` |
+**Four operations** — all O(1), no branching:
 
-| Operation | Syntax | Effect |
-|-----------|--------|--------|
-| Set flag | `flags \|= FLAG` | OR turns bit on |
-| Check flag | `flags & FLAG` | AND isolates bit |
-| Clear flag | `flags &= ~FLAG` | AND NOT turns bit off |
-| Toggle flag | `flags ^= FLAG` | XOR flips bit |
-| Combine | `flags \|= A \| B` | OR merges multiple flags |
+| Want to... | Write | Why it works |
+|------------|-------|-------------|
+| Set a flag | `flags \|= FLAG` | OR turns the bit on, others unchanged |
+| Check a flag | `flags & FLAG` | AND isolates the bit — nonzero = set |
+| Clear a flag | `flags &= ~FLAG` | AND with inverted mask turns bit off |
+| Toggle a flag | `flags ^= FLAG` | XOR flips the bit |
 
 Key insight: a single `&` operation can check any combination of flags simultaneously — no loops, no branching.
 
@@ -207,64 +204,85 @@ Run exercises: `pnpm test` (TypeScript) · `cargo test` (Rust) · `go test ./...
 
 <script setup>
 const bitmaskLangs = {
-  typescript: `// Define permission flags as powers of 2
-var READ    = 1 << 0;  // 0b0001
-var WRITE   = 1 << 1;  // 0b0010
-var EXECUTE = 1 << 2;  // 0b0100
-var DELETE  = 1 << 3;  // 0b1000
+  typescript: `// 🎯 Try modifying the flags and see the binary change!
 
-// Combine flags with OR
-var editor = READ | WRITE;
+var READ    = 1 << 0;  // 1
+var WRITE   = 1 << 1;  // 2
+var EXECUTE = 1 << 2;  // 4
+var DELETE  = 1 << 3;  // 8
 
-// Check with AND
-assert((editor & READ) !== 0, "editor has READ");
-assert((editor & WRITE) !== 0, "editor has WRITE");
-assert((editor & EXECUTE) === 0, "editor does NOT have EXECUTE");
+function show(label, flags) {
+  console.log(label + ": " + flags.toString(2).padStart(4, "0") + " (decimal " + flags + ")");
+}
 
-// Check all flags at once
-var required = READ | WRITE;
-assertEquals((editor & required) === required, true, "editor has all required permissions");
+// Start with no permissions
+var perms = 0;
+show("Empty", perms);
 
-// Clear a flag with AND NOT
-editor = editor & ~WRITE;
-assert((editor & WRITE) === 0, "WRITE cleared");
+// Grant READ + WRITE
+perms = perms | READ | WRITE;
+show("+ READ + WRITE", perms);
 
-// Toggle with XOR
-editor = editor ^ EXECUTE;
-assert((editor & EXECUTE) !== 0, "EXECUTE toggled on");
-editor = editor ^ EXECUTE;
-assert((editor & EXECUTE) === 0, "EXECUTE toggled off");
+// Check flags
+console.log("Has READ?    " + ((perms & READ) !== 0));
+console.log("Has EXECUTE? " + ((perms & EXECUTE) !== 0));
 
-console.log("All assertions passed!");`,
-  python: `# Define permission flags as powers of 2
-READ    = 1 << 0  # 0b0001
-WRITE   = 1 << 1  # 0b0010
-EXECUTE = 1 << 2  # 0b0100
-DELETE  = 1 << 3  # 0b1000
+// Grant EXECUTE
+perms = perms | EXECUTE;
+show("+ EXECUTE", perms);
 
-# Combine flags with OR
-editor = READ | WRITE
+// Revoke WRITE
+perms = perms & ~WRITE;
+show("- WRITE", perms);
 
-# Check with AND
-assert editor & READ,     "editor has READ"
-assert editor & WRITE,    "editor has WRITE"
-assert not (editor & EXECUTE), "editor does NOT have EXECUTE"
+// Toggle DELETE on/off
+perms = perms ^ DELETE;
+show("^ DELETE (on)", perms);
+perms = perms ^ DELETE;
+show("^ DELETE (off)", perms);
 
-# Check all flags at once
-required = READ | WRITE
-assert (editor & required) == required, "editor has all required"
+// Check multiple at once: do we have READ+EXECUTE?
+var need = READ | EXECUTE;
+console.log("Has READ+EXECUTE? " + ((perms & need) === need));`,
+  python: `# 🎯 Try modifying the flags and see the binary change!
 
-# Clear a flag with AND NOT
-editor = editor & ~WRITE
-assert not (editor & WRITE), "WRITE cleared"
+READ    = 1 << 0  # 1
+WRITE   = 1 << 1  # 2
+EXECUTE = 1 << 2  # 4
+DELETE  = 1 << 3  # 8
 
-# Toggle with XOR
-editor = editor ^ EXECUTE
-assert editor & EXECUTE, "EXECUTE toggled on"
-editor = editor ^ EXECUTE
-assert not (editor & EXECUTE), "EXECUTE toggled off"
+def show(label, flags):
+    print(f"{label}: {flags:04b} (decimal {flags})")
 
-print("All assertions passed!")`
+# Start with no permissions
+perms = 0
+show("Empty", perms)
+
+# Grant READ + WRITE
+perms = perms | READ | WRITE
+show("+ READ + WRITE", perms)
+
+# Check flags
+print(f"Has READ?    {bool(perms & READ)}")
+print(f"Has EXECUTE? {bool(perms & EXECUTE)}")
+
+# Grant EXECUTE
+perms |= EXECUTE
+show("+ EXECUTE", perms)
+
+# Revoke WRITE
+perms &= ~WRITE
+show("- WRITE", perms)
+
+# Toggle DELETE on/off
+perms ^= DELETE
+show("^ DELETE (on)", perms)
+perms ^= DELETE
+show("^ DELETE (off)", perms)
+
+# Check multiple at once
+need = READ | EXECUTE
+print(f"Has READ+EXECUTE? {(perms & need) == need}")`
 };
 </script>
 
