@@ -50,7 +50,7 @@ See the full checklist in the [PR template](https://github.com/Totoro-jam/battle
 
 We use [Conventional Commits](https://www.conventionalcommits.org/):
 
-```
+```text
 feat: add cooperative-scheduling pattern
 fix: update broken Linux source link in bitmask
 docs: improve Core Idea diagram for double-buffering

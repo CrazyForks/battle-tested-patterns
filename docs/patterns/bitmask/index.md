@@ -8,7 +8,7 @@ Pack multiple boolean flags into a single integer and manipulate them with bitwi
 
 Instead of using an array of booleans or an object with multiple fields, a bitmask encodes each flag as a single bit in an integer. This gives you O(1) set/check/clear/toggle and trivial combination of multiple flags.
 
-```
+```text
 Bit position:   7  6  5  4  3  2  1  0
                 ┌──┬──┬──┬──┬──┬──┬──┬──┐
 Flags:          │  │  │  │SN│CB│RF│UP│PL│
