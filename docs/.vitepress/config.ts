@@ -8,6 +8,19 @@ export default withMermaid(defineConfig({
 
   base: '/battle-tested-patterns/',
 
+  sitemap: {
+    hostname: 'https://totoro-jam.github.io',
+    transformItems: (items) =>
+      items.map((item) => ({
+        ...item,
+        url: `battle-tested-patterns/${item.url}`,
+        links: item.links?.map((link) => ({
+          ...link,
+          url: `battle-tested-patterns/${link.url}`,
+        })),
+      })),
+  },
+
   head: [
     ['link', { rel: 'icon', type: 'image/svg+xml', href: '/battle-tested-patterns/favicon.svg' }],
     ['meta', { property: 'og:type', content: 'website' }],
