@@ -104,8 +104,12 @@ All of these must be updated:
 - [ ] `docs/zh/index.md` — Chinese homepage pattern table
 - [ ] `README.md` — pattern table + cheat sheet table
 - [ ] `README.zh-CN.md` — pattern table + cheat sheet table
-- [ ] `docs/by-project/more-projects.md` and ZH version (if applicable)
-- [ ] `docs/guide/pattern-connections.md` and ZH version (if pattern fits a system case study)
+- [ ] `docs/by-project/*.md` — add to ALL relevant project pages (React, Linux, Go, Redis, etc.)
+- [ ] `docs/by-project/more-projects.md` — add if project not covered by specific pages
+- [ ] `docs/zh/by-project/*.md` — sync Chinese versions
+- [ ] `README.md` cheat sheet — add to correct category table
+- [ ] `README.zh-CN.md` cheat sheet — sync Chinese version
+- [ ] `docs/guide/pattern-connections.md` + ZH — update if pattern fits a system case study
 
 ## Step 9: Full Verification
 

@@ -123,7 +123,10 @@ Add `## Challenge Questions` section at the end of the pattern doc:
 - [ ] Add to `docs/zh/index.md` homepage pattern table
 - [ ] Add to `README.md` pattern table
 - [ ] Add to `README.zh-CN.md` pattern table
-- [ ] Update relevant `docs/by-project/*.md` and `docs/zh/by-project/*.md` pages (if new source project, create a new page or add to existing)
+- [ ] Update `docs/by-project/*.md` — add pattern to ALL relevant project pages (React, Linux, Go, etc.) and `more-projects.md`
+- [ ] Update `docs/zh/by-project/*.md` — sync Chinese versions
+- [ ] Update `README.md` cheat sheet table — add to correct category (Data Structures / Concurrency / Systems / Memory / Behavioral)
+- [ ] Update `README.zh-CN.md` cheat sheet table — sync Chinese version
 
 ### 8. Self-Review
 
