@@ -12,6 +12,8 @@ Go's runtime and standard library demonstrate clean, practical pattern implement
 | [LRU Cache](/patterns/lru-cache/) | [groupcache `lru/lru.go`](https://github.com/golang/groupcache/blob/master/lru/lru.go#L23-L104) | `Cache` struct with doubly linked list + hash map, by Brad Fitzpatrick |
 | [Consistent Hashing](/patterns/consistent-hashing/) | [groupcache `consistenthash.go`](https://github.com/golang/groupcache/blob/master/consistenthash/consistenthash.go#L28-L81) | Hash ring with virtual nodes for distributed caching |
 | [Rate Limiter](/patterns/rate-limiter/) | [`x/time/rate`](https://github.com/golang/time/blob/master/rate/rate.go#L57-L66) | Token bucket rate limiter in the extended standard library |
+| [Semaphore](/patterns/semaphore/) | [`x/sync/semaphore`](https://github.com/golang/sync/blob/master/semaphore/semaphore.go#L28-L107) | Weighted semaphore — used internally by `errgroup` for goroutine concurrency limiting |
+| [Arena Allocator](/patterns/arena-allocator/) | [`arena/arena.go`](https://github.com/golang/go/blob/master/src/arena/arena.go#L44-L67) | Experimental arena allocator — `New[T]()` allocates, `Free()` releases everything at once bypassing GC |
 
 ## Further Reading
 

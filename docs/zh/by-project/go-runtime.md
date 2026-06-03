@@ -12,6 +12,8 @@ Go 的运行时和标准库展示了干净、实用的模式实现。
 | [LRU 缓存](/zh/patterns/lru-cache/) | [groupcache `lru/lru.go`](https://github.com/golang/groupcache/blob/master/lru/lru.go#L23-L104) | `Cache` 结构体，双向链表 + 哈希表，Brad Fitzpatrick 作品 |
 | [一致性哈希](/zh/patterns/consistent-hashing/) | [groupcache `consistenthash.go`](https://github.com/golang/groupcache/blob/master/consistenthash/consistenthash.go#L28-L81) | 带虚拟节点的哈希环，用于分布式缓存 |
 | [限流器](/zh/patterns/rate-limiter/) | [`x/time/rate`](https://github.com/golang/time/blob/master/rate/rate.go#L57-L66) | 扩展标准库中的令牌桶限流器 |
+| [信号量](/zh/patterns/semaphore/) | [`x/sync/semaphore`](https://github.com/golang/sync/blob/master/semaphore/semaphore.go#L28-L107) | 加权信号量——被 `errgroup` 内部使用以限制 goroutine 并发 |
+| [Arena 分配器](/zh/patterns/arena-allocator/) | [`arena/arena.go`](https://github.com/golang/go/blob/master/src/arena/arena.go#L44-L67) | 实验性 arena 分配器——`New[T]()` 分配，`Free()` 一次性释放绕过 GC |
 
 ## 延伸阅读
 

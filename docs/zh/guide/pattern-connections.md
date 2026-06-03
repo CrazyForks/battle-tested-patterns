@@ -191,24 +191,30 @@ flowchart TD
 
 | 模式 | React | Redis | Go Runtime | Linux | PostgreSQL | Kafka |
 |------|:-----:|:-----:|:----------:|:-----:|:----------:|:-----:|
-| **Bitmask** | ✅ | | | ✅ | | |
+| **Bitmask** | ✅ | | ✅ | ✅ | | |
 | **Min Heap** | ✅ | | ✅ | ✅ | | |
 | **Cooperative Scheduling** | ✅ | | ✅ | | | |
 | **Diff / Patch** | ✅ | | | | | |
 | **Double Buffering** | ✅ | | | | | |
+| **Batch Processing** | ✅ | ✅ | | ✅ | | ✅ |
+| **Dirty Flag** | ✅ | | | | | |
+| **Observer** | ✅ | | | | | |
 | **Skip List** | | ✅ | | | | |
-| **LRU Cache** | | ✅ | | | ✅ | |
+| **LRU Cache** | | ✅ | ✅ | | ✅ | |
 | **Trie** | | ✅ | | ✅ | | |
 | **Bloom Filter** | | ✅ | | | ✅ | |
-| **Batch Processing** | | ✅ | | | | ✅ |
 | **Work Stealing** | | | ✅ | | | |
 | **Free List** | | | ✅ | ✅ | | |
 | **Semaphore** | | | ✅ | ✅ | | |
 | **Object Pool** | | | ✅ | | | |
+| **Rate Limiter** | | | ✅ | ✅ | | |
+| **Arena Allocator** | | | ✅ | | | |
 | **State Machine** | | | | ✅ | | |
 | **Ring Buffer** | | | | ✅ | | ✅ |
 | **Backpressure** | | | | ✅ | | ✅ |
+| **Vtable** | | | | ✅ | | |
+| **Reference Counting** | | | | ✅ | | |
 | **MVCC** | | | | | ✅ | |
 | **Write-Ahead Log** | | | | | ✅ | |
 | **Retry Backoff** | | | | | | ✅ |
-| **Consistent Hashing** | | | | | | ✅ |
+| **Consistent Hashing** | | | ✅ | | | ✅ |

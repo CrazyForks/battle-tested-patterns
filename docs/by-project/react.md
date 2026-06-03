@@ -1,6 +1,8 @@
 # Patterns from React
 
-React's reconciler is a masterclass in combining low-level patterns. Five of our ten patterns appear in a single render cycle.
+React's reconciler is a masterclass in combining low-level patterns. The first five patterns all appear in a single render cycle.
+
+## Render Cycle Patterns
 
 | Pattern | Where in React | What It Does |
 |---------|---------------|--------------|
@@ -11,6 +13,14 @@ React's reconciler is a masterclass in combining low-level patterns. Five of our
 | [Diff / Patch](/patterns/diff-patch/) | [`ReactChildFiber.js`](https://github.com/facebook/react/blob/main/packages/react-reconciler/src/ReactChildFiber.js#L1169-L1340) | Reconcile old and new children lists |
 
 See [Pattern Connections](/guide/pattern-connections) for how these five compose in a single render cycle.
+
+## More Patterns in React
+
+| Pattern | Where in React | What It Does |
+|---------|---------------|--------------|
+| [Batch Processing](/patterns/batch-processing/) | `unstable_batchedUpdates` | Multiple `setState` calls batched into a single re-render |
+| [Dirty Flag](/patterns/dirty-flag/) | [`ReactFiberFlags.js`](https://github.com/facebook/react/blob/main/packages/react-reconciler/src/ReactFiberFlags.js#L18-L22) | Fiber flags (`Placement`, `Update`, `Deletion`) mark which subtrees need work |
+| [Observer](/patterns/observer/) | `useEffect` cleanup pattern | Subscribe on mount, unsubscribe on cleanup — decoupled state observation |
 
 ## Further Reading
 

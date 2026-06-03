@@ -4,7 +4,7 @@ import { withMermaid } from 'vitepress-plugin-mermaid';
 export default withMermaid(defineConfig({
   title: 'Battle-Tested Patterns',
   description:
-    'Battle-tested programming patterns from production codebases. Multi-language examples, precise source links, interactive playground.',
+    'Battle-tested programming patterns from production codebases. Interactive visualizations, precise source links, multi-language implementations.',
 
   base: '/battle-tested-patterns/',
 
@@ -13,7 +13,7 @@ export default withMermaid(defineConfig({
     ['meta', { property: 'og:type', content: 'website' }],
     ['meta', { property: 'og:site_name', content: 'Battle-Tested Patterns' }],
     ['meta', { property: 'og:title', content: 'Battle-Tested Patterns — Code from React, Linux, Go & More' }],
-    ['meta', { property: 'og:description', content: '30+ production-proven patterns with precise source links, multi-language implementations, exercises, and challenge questions.' }],
+    ['meta', { property: 'og:description', content: '46 production-proven patterns with interactive visualizations, precise source links, multi-language implementations, and exercises.' }],
     ['meta', { property: 'og:image', content: 'https://totoro-jam.github.io/battle-tested-patterns/og-image.png' }],
     ['meta', { property: 'og:image:width', content: '1200' }],
     ['meta', { property: 'og:image:height', content: '630' }],
@@ -22,10 +22,10 @@ export default withMermaid(defineConfig({
     ['meta', { property: 'og:locale:alternate', content: 'zh_CN' }],
     ['meta', { name: 'twitter:card', content: 'summary_large_image' }],
     ['meta', { name: 'twitter:title', content: 'Battle-Tested Patterns — Code from React, Linux, Go & More' }],
-    ['meta', { name: 'twitter:description', content: '30+ production-proven patterns with precise source links, multi-language implementations, and exercises.' }],
+    ['meta', { name: 'twitter:description', content: '46 production-proven patterns with interactive visualizations, precise source links, and multi-language implementations.' }],
     ['meta', { name: 'twitter:image', content: 'https://totoro-jam.github.io/battle-tested-patterns/og-image.png' }],
     ['meta', { name: 'author', content: 'Totoro-jam' }],
-    ['meta', { name: 'keywords', content: 'programming patterns, design patterns, system design, data structures, algorithms, React, Linux, Go, Rust, TypeScript, Python, Redis, PostgreSQL, Kafka, interview preparation, computer science' }],
+    ['meta', { name: 'keywords', content: 'programming patterns, design patterns, interactive visualizations, system design, data structures, algorithms, React, Linux, Go, Rust, TypeScript, Python, Redis, PostgreSQL, Kafka, interview preparation, computer science' }],
   ],
 
   locales: {
@@ -234,6 +234,12 @@ export default withMermaid(defineConfig({
     footer: {
       message: 'Released under the MIT License.',
       copyright: 'Copyright © 2026 Totoro-jam',
+    },
+  },
+
+  vite: {
+    build: {
+      chunkSizeWarningLimit: 800,
     },
   },
 

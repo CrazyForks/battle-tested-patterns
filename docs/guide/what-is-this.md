@@ -3,8 +3,9 @@
 **Battle-Tested Patterns** collects programming patterns that are:
 
 1. **Production-proven** — used in top-tier projects like React, Linux kernel, Go runtime, and Chromium
-2. **Cross-language** — applicable in TypeScript, Rust, Go, C, and beyond
-3. **Code-level** — concrete techniques you can apply today, not abstract architecture concepts
+2. **Interactive** — every pattern has a hands-on SVG visualization you can click, drag, and experiment with
+3. **Cross-language** — idiomatic implementations in TypeScript, Rust, Go, and Python
+4. **Code-level** — concrete techniques you can apply today, not abstract architecture concepts
 
 ## Why This Exists
 
@@ -16,8 +17,9 @@ There are plenty of "design patterns" books and "algorithms" repositories. But t
 | Algorithm repositories | Disconnected from engineering practice |
 | System Design guides | Architecture-level, not code-level |
 | "Awesome" lists | Link collections, no teaching |
+| Interactive tutorials | Usually one-off, not a systematic collection |
 
-This project fills the gap: **code-level techniques extracted from production source code, with precise references you can verify yourself**.
+This project fills the gap: **code-level techniques extracted from production source code, with interactive visualizations and precise references you can verify yourself**.
 
 ## What Makes a Pattern "Battle-Tested"?
 
@@ -31,6 +33,7 @@ We never fabricate source links. If we can't find a verifiable reference, we don
 
 ## How to Use This
 
+- **Play with visualizations** — each pattern page has an interactive SVG visualization — click, drag, and build intuition
 - **Browse patterns** — read the concept, study the production proof, then try the exercises
 - **Run exercises locally** — `pnpm test` for TypeScript, `cargo test` for Rust, `go test` for Go
 - **Try it online** — copy any code example into an official playground: [TypeScript](https://www.typescriptlang.org/play) · [Go](https://go.dev/play/) · [Rust](https://play.rust-lang.org/) · [Python](https://www.online-python.com/)

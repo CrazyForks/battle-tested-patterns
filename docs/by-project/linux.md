@@ -13,6 +13,9 @@ The Linux kernel has been refined over 30+ years. These patterns have survived d
 | [Free List](/patterns/free-list/) | [`mm/slub.c`](https://github.com/torvalds/linux/blob/master/mm/slub.c#L530-L551) | SLUB slab allocator — intrusive free list with XOR-hardened pointers |
 | [Trie](/patterns/trie/) | [`net/ipv4/fib_trie.c`](https://github.com/torvalds/linux/blob/master/net/ipv4/fib_trie.c#L80-L120) | IP routing table as a compressed trie (LC-trie) |
 | [Vtable](/patterns/vtable/) | [`include/linux/fs.h`](https://github.com/torvalds/linux/blob/master/include/linux/fs.h#L2093-L2163) | `file_operations` struct — function pointer vtable for VFS dispatch (`.read`, `.write`, `.open`) |
+| [Batch Processing](/patterns/batch-processing/) | [`block/blk-merge.c`](https://github.com/torvalds/linux/blob/master/block/blk-merge.c#L350-L395) | Block layer merges adjacent I/O requests to amortize seek time |
+| [Rate Limiter](/patterns/rate-limiter/) | [`net/sched/sch_tbf.c`](https://github.com/torvalds/linux/blob/master/net/sched/sch_tbf.c#L98-L114) | Token bucket filter for kernel traffic control |
+| [Reference Counting](/patterns/reference-counting/) | [`lib/kobject.c`](https://github.com/torvalds/linux/blob/master/lib/kobject.c) | `kref` provides reference counting for kernel objects |
 
 ## Further Reading
 
