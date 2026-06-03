@@ -148,6 +148,7 @@ Add `## Challenge Questions` section at the end of the pattern doc:
 - [ ] Go code: all called functions exist (add stubs like `func process(s string) {}`)
 - [ ] Rust code: top-level `let`/`assert!` wrapped in `fn main()`
 - [ ] Mermaid diagrams: use `×` not `*` for multiplication (Mermaid treats `*` as special)
+- [ ] Mermaid diagrams: do NOT use `timeline` chart type — it causes global render errors with vitepress-plugin-mermaid. Use ASCII text instead.
 - [ ] Production Proof: links precise to line numbers (`#L42-L80`), never `#L1`
 - [ ] More Production Uses: use bullet list with verified URLs, not comma-separated text
 - [ ] Chinese translation: section titles in Chinese (`## 更多生产案例` not `## More Production Uses`)
