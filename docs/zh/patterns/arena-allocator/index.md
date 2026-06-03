@@ -172,26 +172,26 @@ class Arena:
 
 ## 挑战题
 
-::: details Q1: An arena allocator never fragments memory. A general-purpose allocator does. Why?
-**Answer:** Because the arena allocates contiguously by bumping a pointer forward, and frees everything at once -- there are never gaps between live objects.
+::: details Q1: Arena 分配器永远不会产生内存碎片，而通用分配器会。为什么？
+**答案：** 因为 Arena 通过向前移动指针进行连续分配，并一次性释放所有内存——活跃对象之间永远不会有间隙。
 
-Fragmentation happens when objects are allocated and freed individually, leaving holes between live objects that are too small to reuse. An arena avoids this because it never frees individual objects -- it only resets the pointer to zero, reclaiming everything in one shot. The trade-off is that you can't free a single object early; if one allocation in the arena is still needed, the entire arena must stay alive.
+碎片产生于对象被逐个分配和释放时，活跃对象之间留下了太小而无法复用的空洞。Arena 避免了这个问题，因为它从不单独释放对象——只是将指针重置为零，一次性回收所有内存。代价是你无法提前释放单个对象；如果 Arena 中有一个分配仍然需要使用，整个 Arena 就必须保持存活。
 :::
 
-::: details Q2: You use an arena for per-HTTP-request allocations. One request triggers a 50MB file upload parsed into the arena. What's the problem?
-**Answer:** The arena holds the entire 50MB until the request completes, even if the parsed data is consumed incrementally and could have been freed along the way.
+::: details Q2: 你为每个 HTTP 请求使用 Arena 分配内存。某个请求触发了一个 50MB 的文件上传并解析到 Arena 中。这会有什么问题？
+**答案：** Arena 会持有这整个 50MB 直到请求完成，即使解析后的数据是增量消费的且本可以在过程中释放。
 
-Arenas work best when all allocations have roughly the same lifetime. If you parse a large file into an arena but only need a small summary, the bulk of the data sits in memory until `reset()`. The fix is either to stream-process the file without loading it all into the arena, or use a separate short-lived arena for the parsing pass and copy only the summary to the request arena.
+Arena 在所有分配具有大致相同生命周期时效果最好。如果你将一个大文件解析到 Arena 中但只需要一个小的摘要，那么大部分数据会一直驻留在内存中直到 `reset()`。解决方案要么是流式处理文件而不将其全部加载到 Arena 中，要么使用一个独立的短生命周期 Arena 进行解析，然后只将摘要复制到请求 Arena 中。
 :::
 
-::: details Q3: A colleague suggests replacing Go's garbage collector with arenas everywhere for better performance. What's the flaw in this reasoning?
-**Answer:** Arenas require that all objects within them share the same lifetime. Real programs have objects with widely varying lifetimes, which arenas cannot handle.
+::: details Q3: 一位同事建议用 Arena 全面替代 Go 的垃圾回收器以获得更好的性能。这个推理有什么缺陷？
+**答案：** Arena 要求其中所有对象共享相同的生命周期。而实际程序中的对象具有差异很大的生命周期，Arena 无法处理这种情况。
 
-If object A must outlive object B but they're in the same arena, you can't free B without also freeing A. You'd end up either leaking memory (keeping arenas alive too long) or creating dozens of micro-arenas to match different lifetimes -- which is just reinventing the allocator with more complexity. GC handles arbitrary lifetimes automatically. Arenas excel in specific scopes (per-request, per-frame, per-compilation-pass) where lifetime is uniform.
+如果对象 A 必须比对象 B 存活更久，但它们在同一个 Arena 中，你就无法在不释放 A 的情况下释放 B。最终你要么泄漏内存（让 Arena 存活太久），要么创建数十个微型 Arena 来匹配不同的生命周期——这实际上是在用更高的复杂度重新发明分配器。GC 自动处理任意的生命周期。Arena 在特定作用域（每请求、每帧、每编译阶段）中表现出色，这些场景的生命周期是统一的。
 :::
 
-::: details Q4: Two arenas exist: one for AST nodes during parsing, one for IR nodes during code generation. The IR pass needs to reference AST nodes. What's the danger?
-**Answer:** If the AST arena is reset before the IR pass finishes reading from it, the IR holds dangling references into freed memory.
+::: details Q4: 存在两个 Arena：一个用于解析阶段的 AST 节点，一个用于代码生成阶段的 IR 节点。IR 阶段需要引用 AST 节点。这有什么危险？
+**答案：** 如果 AST Arena 在 IR 阶段读取完成之前被重置，IR 就会持有指向已释放内存的悬垂引用。
 
-This is the lifetime scoping problem: arena B's objects reference arena A's objects, creating an implicit lifetime dependency. Arena A must not be reset until arena B is done. In Rust, the borrow checker enforces this statically. In C/Go/TypeScript, it's a discipline issue. The solution is either to copy needed data out of arena A before resetting it, or to enforce a strict ordering: reset A only after resetting B.
+这是生命周期作用域问题：Arena B 的对象引用了 Arena A 的对象，形成了隐式的生命周期依赖。Arena A 不能在 Arena B 完成之前被重置。在 Rust 中，借用检查器会在编译时强制执行这一点。在 C/Go/TypeScript 中，这是一个纪律问题。解决方案要么是在重置 Arena A 之前将需要的数据复制出来，要么强制执行严格的顺序：只在重置 B 之后才重置 A。
 :::

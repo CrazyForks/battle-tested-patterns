@@ -10,8 +10,8 @@ Instead of dedicating one thread per connection (expensive context switches, hig
 
 ```text
   ┌─────────────────────────────────────────────────┐
-  │                  Event Loop                      │
-  │                                                  │
+  │                  Event Loop                     │
+  │                                                 │
   │  ┌──────────┐    ┌──────────┐    ┌──────────┐   │
   │  │ Register │    │  Poll    │    │ Dispatch │   │
   │  │ interest │───►│ (block)  │───►│ ready    │   │
@@ -19,14 +19,14 @@ Instead of dedicating one thread per connection (expensive context switches, hig
   │  └──────────┘    └──────────┘    └────┬─────┘   │
   │       ▲                               │         │
   │       └───────────────────────────────┘         │
-  │                   repeat                         │
+  │                   repeat                        │
   └─────────────────────────────────────────────────┘
 
   Phase detail (libuv model):
-  ┌────────┐  ┌─────────┐  ┌──────┐  ┌───────┐  ┌───────┐
+  ┌────────┐  ┌──────────┐  ┌──────┐  ┌───────┐  ┌───────┐
   │ Timers │─►│ Pending  │─►│ Poll │─►│ Check │─►│ Close │──► next iteration
   │        │  │ callbacks│  │      │  │       │  │       │
-  └────────┘  └─────────┘  └──────┘  └───────┘  └───────┘
+  └────────┘  └──────────┘  └──────┘  └───────┘  └───────┘
 ```
 
 | Property | Value |

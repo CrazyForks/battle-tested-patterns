@@ -108,26 +108,26 @@ class Cow:
 
 ## 挑战题
 
-::: details Q1: Your CoW wrapper does a shallow copy on write. A reader and writer share a nested object `{ users: [{ name: "alice" }] }`. The writer calls `write()` and mutates `users[0].name`. Does the reader see the mutation?
-**Answer:** Yes — a shallow copy only duplicates the top-level object, so the nested `users` array and its elements are still shared references.
+::: details Q1: 你的 CoW 包装器在写入时进行浅拷贝。读者和写者共享一个嵌套对象 `{ users: [{ name: "alice" }] }`。写者调用 `write()` 并修改 `users[0].name`。读者会看到这个修改吗？
+**答案：** 会的——浅拷贝只复制顶层对象，因此嵌套的 `users` 数组及其元素仍然是共享引用。
 
-This is the "shallow CoW trap." After `write()`, the writer has a new top-level object, but `writer.users === reader.users` still holds. Mutating `users[0].name` affects both. To get true isolation, you need either a deep copy (expensive), structural sharing (copy the spine of the path to the mutation, like immutable.js), or a rule that CoW objects only contain primitives. React and Redux solve this by requiring immutable update patterns: `{ ...state, users: [...state.users] }`.
+这就是"浅 CoW 陷阱"。`write()` 之后，写者有了一个新的顶层对象，但 `writer.users === reader.users` 仍然成立。修改 `users[0].name` 会影响双方。要实现真正的隔离，你需要深拷贝（代价高）、结构共享（像 immutable.js 那样只复制修改路径的骨干）或规定 CoW 对象只包含原始类型。React 和 Redux 通过要求不可变更新模式来解决这个问题：`{ ...state, users: [...state.users] }`。
 :::
 
-::: details Q2: Linux `fork()` uses CoW for process memory pages. A child process immediately calls `exec()` to replace its memory. Why is CoW essential here?
-**Answer:** Without CoW, `fork()` would copy the entire parent address space only to discard it immediately when `exec()` loads a new program — a massive waste.
+::: details Q2: Linux `fork()` 使用 CoW 处理进程内存页。子进程立即调用 `exec()` 替换其内存。为什么 CoW 在这里至关重要？
+**答案：** 没有 CoW 的话，`fork()` 会复制整个父进程地址空间，然后在 `exec()` 加载新程序时立即丢弃——巨大的浪费。
 
-The `fork()` + `exec()` pattern is one of the most common operations in Unix. The parent may have gigabytes of memory. CoW means `fork()` is nearly instant: it just duplicates the page table entries and marks all pages read-only. When `exec()` runs, it replaces all mappings anyway, so no pages ever needed copying. Without CoW, spawning a process from a large application (like a web server forking a worker) would be prohibitively slow and memory-intensive.
+`fork()` + `exec()` 模式是 Unix 中最常见的操作之一。父进程可能有数 GB 的内存。CoW 使得 `fork()` 几乎是瞬时的：它只是复制页表条目并将所有页面标记为只读。当 `exec()` 运行时，它无论如何都会替换所有映射，因此没有页面真正需要复制。没有 CoW，从大型应用（如 web 服务器 fork 工作进程）中生成进程将会慢得无法接受且内存密集。
 :::
 
-::: details Q3: A system uses CoW for configuration objects. 100 readers share the config; a writer updates it every second. Under what workload pattern does CoW waste memory compared to a simple mutex-protected shared object?
-**Answer:** When every read is followed by a write (100% write ratio), CoW creates a full copy on every access, using more memory than a single shared object protected by a lock.
+::: details Q3: 一个系统对配置对象使用 CoW。100 个读者共享配置；一个写者每秒更新一次。在什么工作负载模式下，CoW 比简单的互斥锁保护的共享对象更浪费内存？
+**答案：** 当每次读取后都跟着一次写入（100% 写入比率）时，CoW 在每次访问时都创建完整副本，使用的内存比一个锁保护的单一共享对象更多。
 
-CoW's advantage is proportional to the read/write ratio. At 99% reads, 100 readers share one copy and only the rare writer pays for a clone — excellent. At 50% reads, half the accesses trigger copies — the benefit is marginal. At 100% writes, every access copies — you've turned a single shared object into N independent copies with no sharing benefit, plus the overhead of tracking shared state. The break-even point depends on object size, but the principle holds: CoW is for read-heavy workloads.
+CoW 的优势与读写比成正比。99% 读取时，100 个读者共享一份副本，只有偶尔的写者才为克隆付出代价——非常好。50% 读取时，一半的访问触发复制——收益微乎其微。100% 写入时，每次访问都会复制——你把单一共享对象变成了 N 个独立副本，没有任何共享优势，还加上了追踪共享状态的开销。平衡点取决于对象大小，但原则不变：CoW 适用于读多写少的工作负载。
 :::
 
-::: details Q4: Rust's `Cow<'a, str>` is an enum with `Borrowed(&'a str)` and `Owned(String)`. Why is this more useful than just always cloning the string?
-**Answer:** It lets functions accept and return string data without allocating when the input is already in the right form, achieving zero-copy in the common case.
+::: details Q4: Rust 的 `Cow<'a, str>` 是一个枚举，包含 `Borrowed(&'a str)` 和 `Owned(String)`。为什么这比总是克隆字符串更有用？
+**答案：** 它让函数在输入已经是正确形式时无需分配就能接受和返回字符串数据，在常见情况下实现零拷贝。
 
-Consider a URL decoder: most URLs have no percent-encoded characters and can be returned as-is (`Borrowed`). Only URLs with `%20` etc. need a new `String` (`Owned`). With `Cow`, the function signature is `fn decode(input: &str) -> Cow<str>` — callers get the original reference back 90% of the time with zero allocation. Without `Cow`, you'd either always clone (wasteful) or return an enum manually (which is exactly what `Cow` already is, with standard library integration).
+考虑一个 URL 解码器：大多数 URL 没有百分号编码字符，可以原样返回（`Borrowed`）。只有包含 `%20` 等的 URL 才需要新的 `String`（`Owned`）。使用 `Cow` 时，函数签名是 `fn decode(input: &str) -> Cow<str>`——调用者在 90% 的情况下得到原始引用，零分配。没有 `Cow`，你要么总是克隆（浪费），要么手动返回一个枚举（这正是 `Cow` 本身，还有标准库集成）。
 :::

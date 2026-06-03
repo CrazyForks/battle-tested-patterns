@@ -176,26 +176,26 @@ impl<T> BoundedQueue<T> {
 
 ## 挑战题
 
-::: details Q1: Your bounded queue is full. Should you block the producer or drop the newest item? How do you decide?
-**Answer:** It depends on whether data loss is acceptable. Block when every item matters (financial transactions, user actions). Drop when freshness matters more than completeness (metrics, sensor telemetry).
+::: details Q1: 你的有界队列已满。应该阻塞生产者还是丢弃最新的消息？如何决定？
+**答案：** 取决于数据丢失是否可以接受。当每条数据都重要时阻塞（金融交易、用户操作）。当新鲜度比完整性更重要时丢弃（监控指标、传感器遥测）。
 
-Blocking preserves all data but propagates slowness upstream -- if the consumer is permanently slow, the producer stalls and the whole pipeline stops. Dropping loses data but keeps the producer responsive. A common hybrid is "drop oldest" for monitoring dashboards (you want the latest readings) and "block" for event sourcing (you can't lose events). The choice is a business decision, not a technical one.
+阻塞保留了所有数据但会向上游传播延迟——如果消费者持续缓慢，生产者会停滞，整个管道都会停止。丢弃会丢失数据但保持生产者的响应能力。常见的混合策略是：监控仪表盘用"丢弃最旧的"（你需要最新的读数），事件溯源用"阻塞"（不能丢失事件）。这个选择是业务决策，而非技术决策。
 :::
 
-::: details Q2: You set Node.js stream highWaterMark to 1MB. Traffic spikes and memory usage jumps to 500MB with 500 concurrent streams. What went wrong?
-**Answer:** Each stream allocates its own highWaterMark-sized buffer, so 500 streams x 1MB = 500MB of buffer memory. The highWaterMark is per-stream, not global.
+::: details Q2: 你将 Node.js stream 的 highWaterMark 设为 1MB。流量突增时，500 个并发流导致内存飙升到 500MB。出了什么问题？
+**答案：** 每个流分配自己的 highWaterMark 大小的缓冲区，所以 500 个流 x 1MB = 500MB 缓冲内存。highWaterMark 是每个流独立的，而非全局的。
 
-highWaterMark is not a system-wide limit -- it's the threshold per individual stream at which `write()` returns `false`. With many concurrent streams, total memory is `concurrency x highWaterMark`. The fix is either to lower the highWaterMark (16KB-64KB is typical), limit concurrency, or use a global memory budget that dynamically adjusts per-stream thresholds.
+highWaterMark 不是系统级别的限制——它是每个独立流在 `write()` 返回 `false` 时的阈值。当有大量并发流时，总内存 = `并发数 x highWaterMark`。修复方法是降低 highWaterMark（16KB-64KB 是典型值）、限制并发数，或使用全局内存预算来动态调整每个流的阈值。
 :::
 
-::: details Q3: How is backpressure different from rate limiting? A teammate says they're the same thing.
-**Answer:** Rate limiting caps throughput at a fixed rate regardless of consumer capacity. Backpressure dynamically adjusts based on the consumer's actual ability to keep up.
+::: details Q3: 背压和限流有什么区别？一个队友说它们是同一个东西。
+**答案：** 限流以固定速率限制吞吐量，不考虑消费者的实际能力。背压则根据消费者的实际处理能力动态调整。
 
-Rate limiting says "max 100 requests/second" even if the consumer could handle 200. Backpressure says "send as fast as the consumer can process, whatever that speed is right now." Rate limiting is a policy; backpressure is a feedback mechanism. They can complement each other: rate limiting at the API gateway, backpressure inside the processing pipeline. But they solve different problems -- rate limiting protects against abuse, backpressure prevents resource exhaustion.
+限流说的是"最多每秒 100 个请求"，即使消费者能处理 200 个。背压说的是"以消费者当前能处理的速度发送，不管那个速度是多少"。限流是一种策略；背压是一种反馈机制。它们可以互补：在 API 网关处限流，在处理管道内部使用背压。但它们解决的是不同的问题——限流防止滥用，背压防止资源耗尽。
 :::
 
-::: details Q4: A Go developer says "I don't need backpressure, I just use buffered channels." Is that correct?
-**Answer:** Buffered channels ARE backpressure. A bounded channel blocks the sender when full, which is exactly the "block" backpressure strategy.
+::: details Q4: 一个 Go 开发者说"我不需要背压，我用带缓冲的 channel 就行了。"这个说法正确吗？
+**答案：** 带缓冲的 channel 就是背压。有界 channel 在满时阻塞发送者，这正是"阻塞"式背压策略。
 
-The developer is already using backpressure -- they just don't recognize it by name. `ch := make(chan int, 10)` creates a bounded buffer of 10. When the buffer fills, `ch <- item` blocks the goroutine, slowing the producer to match the consumer. The key question is whether the buffer size is well-chosen: too small and you get unnecessary blocking on small bursts; too large and you delay the feedback signal, allowing memory to grow.
+这位开发者已经在使用背压了——只是没有意识到而已。`ch := make(chan int, 10)` 创建了一个容量为 10 的有界缓冲区。当缓冲区满时，`ch <- item` 会阻塞 goroutine，迫使生产者放慢到与消费者匹配的速度。关键问题是缓冲区大小是否选择得当：太小会在小突发时产生不必要的阻塞；太大则会延迟反馈信号，导致内存增长。
 :::

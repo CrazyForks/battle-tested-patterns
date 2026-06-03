@@ -243,38 +243,38 @@ impl<T> Registry<T> {
 
 ## 挑战题
 
-::: details Q1: Two plugins both try to register the name "json". What should happen?
-**Answer:** Fail fast with an error at registration time.
+::: details Q1: 两个插件都尝试注册名称 "json"。应该发生什么？
+**答案：** 在注册时快速失败并报错。
 
-Silent overwrite hides bugs -- the first plugin's handler disappears without warning, causing subtle runtime failures. "Last writer wins" policies work for configuration but are dangerous for code dispatch.
+静默覆盖会隐藏 bug——第一个插件的处理器无声地消失，导致微妙的运行时故障。"最后写入者获胜"策略适用于配置但对代码分派是危险的。
 
-The correct approach: throw/return an error on duplicate registration. If intentional replacement is needed, provide an explicit `override()` or `replace()` method that signals intent.
+正确的做法：在重复注册时抛出/返回错误。如果需要有意替换，提供显式的 `override()` 或 `replace()` 方法来表明意图。
 :::
 
-::: details Q2: Your registry uses string keys. How do you prevent typos like "josn" instead of "json" from causing runtime errors?
-**Answer:** Multiple strategies:
+::: details Q2: 你的注册表使用字符串键。如何防止像 "josn" 这样的拼写错误导致运行时错误？
+**答案：** 多种策略：
 
-1. **Constants**: Define keys as exported constants (`const JSON = "json"`) so the compiler catches typos.
-2. **Enums**: Use an enum type instead of raw strings -- limits the key space at compile time.
-3. **Registration validation**: At startup, verify all expected keys are registered before accepting traffic.
-4. **Fuzzy matching**: On lookup failure, suggest similar registered names (Levenshtein distance).
+1. **常量**：将键定义为导出常量（`const JSON = "json"`），这样编译器能捕获拼写错误。
+2. **枚举**：使用枚举类型替代原始字符串——在编译时限制键空间。
+3. **注册验证**：启动时验证所有预期的键都已注册，然后再接受流量。
+4. **模糊匹配**：查找失败时，建议相似的已注册名称（Levenshtein 距离）。
 
-The best approach depends on whether the registry is open (plugins add keys) or closed (keys are known at compile time). Closed registries should use enums; open registries should validate at startup.
+最佳方法取决于注册表是开放的（插件添加键）还是封闭的（键在编译时已知）。封闭注册表应该使用枚举；开放注册表应该在启动时验证。
 :::
 
-::: details Q3: TensorFlow's REGISTER_OP uses a C++ macro to register ops at static initialization time. What's the risk?
-**Answer:** The static initialization order fiasco.
+::: details Q3: TensorFlow 的 REGISTER_OP 使用 C++ 宏在静态初始化时注册操作。风险是什么？
+**答案：** 静态初始化顺序灾难。
 
-In C++, the order of static initialization across translation units is undefined. If op A's registration depends on op B being registered first, and they're in different .cc files, the program may crash or silently fail.
+在 C++ 中，跨编译单元的静态初始化顺序是未定义的。如果操作 A 的注册依赖于操作 B 先注册，而它们在不同的 .cc 文件中，程序可能崩溃或静默失败。
 
-TensorFlow mitigates this by making registration order-independent -- each op registers itself with no dependencies on other ops. The `OpRegistry` singleton is created on first use (Meyers' singleton), avoiding the "static initialization order fiasco" for the registry itself.
+TensorFlow 通过使注册与顺序无关来缓解这个问题——每个操作独立注册，不依赖其他操作。`OpRegistry` 单例在首次使用时创建（Meyers 单例），避免了注册表本身的"静态初始化顺序灾难"。
 :::
 
-::: details Q4: How does a registry differ from dependency injection (DI)?
-**Answer:** Control flow direction.
+::: details Q4: 注册表与依赖注入（DI）有什么区别？
+**答案：** 控制流方向不同。
 
-- **Registry**: The consumer actively pulls an implementation by name. The consumer knows the name and calls `registry.get("json")`.
-- **DI**: The framework pushes dependencies into the consumer. The consumer declares what it needs (via constructor params or annotations), and the DI container wires it up.
+- **注册表**：消费者主动按名称拉取实现。消费者知道名称并调用 `registry.get("json")`。
+- **DI**：框架将依赖推送到消费者中。消费者声明它需要什么（通过构造函数参数或注解），DI 容器负责组装。
 
-Registry is simpler but couples the consumer to the registry API and string names. DI decouples further but adds framework complexity. In practice, DI containers often use an internal registry under the hood.
+注册表更简单但将消费者耦合到注册表 API 和字符串名称。DI 进一步解耦但增加了框架复杂性。实际中，DI 容器内部通常使用一个注册表。
 :::

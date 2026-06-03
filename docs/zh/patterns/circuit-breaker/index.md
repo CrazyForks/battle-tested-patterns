@@ -233,26 +233,26 @@ impl CircuitBreaker {
 
 ## 挑战题
 
-::: details Q1: Your circuit breaker has a 30-second reset timeout. The downstream service has an average recovery time of 5 seconds. A colleague suggests lowering the timeout to 5 seconds so requests resume faster. What's the tradeoff?
-**Answer:** A shorter timeout means you'll probe the service sooner, but if it hasn't recovered, each failed probe resets the timer and generates additional load on an already-struggling service.
+::: details Q1: 你的熔断器有 30 秒的重置超时。下游服务的平均恢复时间是 5 秒。一位同事建议将超时降低到 5 秒以便更快恢复请求。这个权衡是什么？
+**答案：** 更短的超时意味着你会更早探测服务，但如果服务还没恢复，每次失败的探测都会重置计时器并给已经处于困境中的服务增加额外负载。
 
-The reset timeout is a tradeoff between recovery speed and protection. If you probe too early and fail, you reopen the circuit and wait another full timeout. Meanwhile, the failed probe adds load to the unhealthy service. A good timeout should be longer than the typical recovery time — 2-3x is common — to give the downstream service breathing room. Some implementations use exponential backoff on the timeout itself.
+重置超时是恢复速度与保护之间的权衡。如果你探测得太早且失败了，你会重新打开熔断器并等待又一个完整的超时周期。同时，失败的探测给不健康的服务增加了负载。好的超时应该长于典型恢复时间——通常是 2-3 倍——给下游服务喘息空间。一些实现对超时本身使用指数退避。
 :::
 
-::: details Q2: Service A calls Service B, which calls Service C. Service C goes down. Without circuit breakers, what happens to Service A even though it doesn't directly depend on C?
-**Answer:** Service A's threads pile up waiting for Service B, which is itself blocked waiting for Service C — this is a cascading failure.
+::: details Q2: 服务 A 调用服务 B，服务 B 调用服务 C。服务 C 宕机了。没有熔断器的话，尽管服务 A 并不直接依赖 C，它会发生什么？
+**答案：** 服务 A 的线程堆积等待服务 B，而服务 B 本身也阻塞在等待服务 C——这就是级联故障。
 
-Each call from A to B occupies a thread (or connection) while B waits for C's timeout. As B's threads exhaust, B starts timing out too, causing A's threads to pile up. Soon A appears down to its own callers. This is exactly why Netflix built Hystrix: a circuit breaker on each service boundary would let B fail fast on C calls and return errors to A immediately, keeping A's threads free. Without it, one downstream failure can topple an entire call chain.
+从 A 到 B 的每次调用都在 B 等待 C 超时时占用一个线程（或连接）。当 B 的线程耗尽后，B 也开始超时，导致 A 的线程堆积。很快 A 对它自己的调用者来说也像是宕机了。这正是 Netflix 构建 Hystrix 的原因：在每个服务边界上的熔断器会让 B 对 C 的调用快速失败并立即返回错误给 A，保持 A 的线程空闲。没有它，一个下游故障可以推倒整个调用链。
 :::
 
-::: details Q3: Your circuit breaker enters HALF_OPEN and allows one probe request. But in a high-traffic system, 200 concurrent requests arrive in the same millisecond. All 200 see the state as HALF_OPEN and send probe requests simultaneously. How would you prevent this thundering herd?
-**Answer:** Use an atomic compare-and-swap (CAS) to transition from OPEN to HALF_OPEN, ensuring only one request becomes the probe while all others fail fast.
+::: details Q3: 你的熔断器进入 HALF_OPEN 状态并允许一个探测请求。但在高流量系统中，200 个并发请求在同一毫秒内到达。所有 200 个都看到状态为 HALF_OPEN 并同时发送探测请求。你如何防止这种惊群效应？
+**答案：** 使用原子性的比较并交换（CAS）操作从 OPEN 转换到 HALF_OPEN，确保只有一个请求成为探测者，其余所有请求快速失败。
 
-Netflix Hystrix solves this with `compareAndSet` on the state flag — exactly one thread wins the CAS and sends the probe. Sony's gobreaker uses a mutex with a generation counter for similar single-probe guarantees. The key insight is that HALF_OPEN is not a state you "read" passively — the transition to it should be an atomic operation that grants probe rights to exactly one caller.
+Netflix Hystrix 通过对状态标志使用 `compareAndSet` 来解决这个问题——恰好一个线程赢得 CAS 并发送探测。Sony 的 gobreaker 使用带代计数器的互斥锁实现类似的单探测保证。关键洞察是 HALF_OPEN 不是一个你被动"读取"的状态——转换到该状态应该是一个原子操作，仅授予一个调用者探测权。
 :::
 
-::: details Q4: Your team uses a circuit breaker for database calls. A developer notices the breaker trips open during a routine database migration that causes 5 seconds of elevated latency but zero actual errors. Should the circuit breaker be tracking latency, not just errors?
-**Answer:** Yes, but carefully. Latency-based tripping protects callers from slow responses, but you need distinct thresholds for "slow" vs "failed" to avoid false trips during normal variance.
+::: details Q4: 你的团队对数据库调用使用熔断器。一个开发者注意到在例行数据库迁移期间（导致 5 秒的延迟升高但零实际错误），熔断器被触发断开。熔断器是否应该追踪延迟而不仅仅是错误？
+**答案：** 是的，但需要谨慎。基于延迟的触发保护调用者免受慢响应的影响，但你需要为"慢"和"失败"设置不同的阈值，以避免在正常波动时误触发。
 
-A request that takes 10 seconds and eventually succeeds still ties up a thread for 10 seconds. In a thread-pool model, slow responses are functionally equivalent to failures because they exhaust capacity. Hystrix tracked both errors and timeouts as failures. The nuance is choosing the latency threshold: set it too low and normal P99 variance trips the breaker; set it too high and it provides no protection.
+一个耗时 10 秒但最终成功的请求仍然会占用一个线程 10 秒。在线程池模型中，慢响应在功能上等同于失败，因为它们耗尽了容量。Hystrix 将错误和超时都视为失败。微妙之处在于选择延迟阈值：设得太低，正常的 P99 方差就会触发熔断器；设得太高则无法提供保护。
 :::

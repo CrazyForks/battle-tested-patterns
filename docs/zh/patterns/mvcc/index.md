@@ -212,26 +212,26 @@ impl MVCCStore {
 
 ## 挑战题
 
-::: details Q1: Your MVCC store keeps every version of every key forever. After a year of operation, storage usage is 50x the actual live dataset size. How do production databases like PostgreSQL handle this?
-**Answer:** They run garbage collection (called "vacuuming" in PostgreSQL) to remove versions that are no longer visible to any active transaction.
+::: details Q1: 你的 MVCC 存储永久保留每个键的每个版本。运行一年后，存储使用量是实际活跃数据集的 50 倍。像 PostgreSQL 这样的生产数据库如何处理这个问题？
+**答案：** 它们运行垃圾回收（在 PostgreSQL 中称为"vacuum"）来移除任何活跃事务都不再可见的版本。
 
-PostgreSQL's `VACUUM` process identifies "dead" tuples — versions older than the oldest active transaction's snapshot. Since no transaction can ever see these versions, they're safe to reclaim. etcd uses `compaction` to discard revisions older than a threshold. The challenge is determining the "low-water mark": the oldest snapshot still in use. If a long-running transaction holds an old snapshot, it blocks garbage collection for all versions newer than that snapshot — a common source of PostgreSQL bloat.
+PostgreSQL 的 `VACUUM` 进程识别"死"元组——比最旧活跃事务的快照更老的版本。由于没有任何事务能看到这些版本，它们可以安全回收。etcd 使用 `compaction` 来丢弃比阈值更老的修订版本。挑战在于确定"低水位线"：仍在使用的最旧快照。如果一个长时间运行的事务持有旧快照，它会阻止所有比该快照新的版本的垃圾回收——这是 PostgreSQL 膨胀的常见原因。
 :::
 
-::: details Q2: Two transactions both read key "balance" (value=100) at the same snapshot timestamp, then both try to write "balance=90" (deducting 10). Under MVCC snapshot isolation, both reads succeed without blocking. What happens at commit time?
-**Answer:** One transaction commits successfully; the other detects a write-write conflict and aborts. The balance ends up at 90, not 80.
+::: details Q2: 两个事务都在相同的快照时间戳读取了键 "balance"（值=100），然后都尝试写入 "balance=90"（扣除 10）。在 MVCC 快照隔离下，两次读取都成功且不阻塞。提交时会发生什么？
+**答案：** 一个事务成功提交；另一个检测到写-写冲突并中止。余额最终是 90，不是 80。
 
-This is the "lost update" anomaly under snapshot isolation. Both transactions read the same snapshot (balance=100) and independently compute balance=90. MVCC detects the conflict at commit time using a "first-writer-wins" rule: the first to commit writes version t=200 with value=90. The second transaction tries to commit but sees that "balance" was modified after its snapshot — it must abort and retry. On retry, it reads the new value (90) and writes 80. This is why MVCC provides snapshot isolation, not serializable: it prevents lost updates but requires application-level handling of write conflicts.
+这是快照隔离下的"丢失更新"异常。两个事务读取相同的快照（balance=100）并独立计算 balance=90。MVCC 在提交时使用"先写者获胜"规则检测冲突：先提交的写入版本 t=200，值为 90。第二个事务尝试提交但发现 "balance" 在其快照之后被修改了——它必须中止并重试。重试时，它读取新值（90）并写入 80。这就是为什么 MVCC 提供的是快照隔离而非可序列化：它防止了丢失更新但需要应用层处理写冲突。
 :::
 
-::: details Q3: Your team uses MVCC with snapshot isolation for a banking system. A compliance audit asks: "Can two concurrent transfers between the same accounts produce an inconsistent total?" Your team says snapshot isolation prevents this. Are they correct?
-**Answer:** No. Snapshot isolation prevents lost updates but is vulnerable to write skew anomalies, where two transactions read overlapping data and make non-conflicting writes that together violate a constraint.
+::: details Q3: 你的团队在银行系统中使用 MVCC 快照隔离。合规审计问："两个并发的相同账户间转账能否产生不一致的总额？"你的团队说快照隔离能防止这种情况。他们说得对吗？
+**答案：** 不对。快照隔离防止了丢失更新，但容易受到写偏斜异常的影响——两个事务读取重叠数据并进行互不冲突的写入，但这些写入合在一起违反了约束。
 
-Example: accounts A=50 and B=50 with a constraint "A+B >= 0." Transaction 1 reads both, sees total=100, writes A=-10. Transaction 2 reads both (same snapshot, A=50, B=50), writes B=-60. Both pass the constraint check independently, both commit (they write different keys, so no write-write conflict), and the result is A=-10, B=-60, total=-70 — violating the constraint. Full serializability (PostgreSQL's SSI, CockroachDB's serializable mode) is needed to prevent write skew.
+例子：账户 A=50 和 B=50，约束"A+B >= 0"。事务 1 读取两者，看到总额=100，写入 A=-10。事务 2 读取两者（相同快照，A=50，B=50），写入 B=-60。两者独立通过约束检查，两者都提交（它们写的是不同的键，所以没有写-写冲突），结果是 A=-10，B=-60，总额=-70——违反了约束。需要完全可序列化（PostgreSQL 的 SSI、CockroachDB 的可序列化模式）来防止写偏斜。
 :::
 
-::: details Q4: etcd uses MVCC to power Kubernetes' configuration store. Why does a distributed key-value store benefit from keeping old versions, rather than just storing the latest value?
-**Answer:** Old versions enable watch/subscribe semantics — clients can ask "what changed since revision X?" without polling, and disconnected clients can catch up from their last-seen revision.
+::: details Q4: etcd 使用 MVCC 来支持 Kubernetes 的配置存储。为什么分布式键值存储受益于保留旧版本，而不是只存储最新值？
+**答案：** 旧版本启用了 watch/subscribe 语义——客户端可以问"从修订版本 X 以来发生了什么变化？"而无需轮询，断开连接的客户端可以从其最后看到的修订版本追赶上来。
 
-Kubernetes controllers (like the replication controller) use etcd watches to react to state changes. If etcd only stored the latest value, a controller that disconnects for 5 seconds would miss intermediate changes and need a full resync. With MVCC, the controller reconnects and says "give me all changes since revision 12345," receiving a precise stream of what changed. This is also essential for etcd's consistency guarantees: linearizable reads can be served from a specific revision, and time-travel queries enable debugging ("what was the cluster state 10 minutes ago?").
+Kubernetes 控制器（如副本控制器）使用 etcd watch 来响应状态变化。如果 etcd 只存储最新值，断开 5 秒的控制器会错过中间变化并需要完全重新同步。有了 MVCC，控制器重连并说"给我修订版本 12345 以来的所有变化"，收到精确的变更流。这对 etcd 的一致性保证也至关重要：线性化读取可以从特定修订版本提供服务，时间旅行查询支持调试（"10 分钟前集群状态是什么？"）。
 :::

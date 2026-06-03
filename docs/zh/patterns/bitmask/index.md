@@ -205,26 +205,26 @@ assert not has_flag(editor, DELETE)  # True
 
 ## 挑战题
 
-::: details Q1: Your team defines 40 feature flags as a bitmask in a JavaScript config system. QA reports that flags 32-39 behave erratically — sometimes checking a flag returns false even though it was set. What went wrong?
-**Answer:** JavaScript bitwise operators only work on 32-bit integers, so flags at positions 32 and above are silently truncated.
+::: details Q1: 你的团队在 JavaScript 配置系统中用 Bitmask 定义了 40 个功能开关。QA 报告第 32-39 号开关行为异常——即使设置了某个开关，检查时有时返回 false。出了什么问题？
+**答案：** JavaScript 位运算符只能处理 32 位整数，因此第 32 位及以上的标志会被静默截断。
 
-The `|`, `&`, `^`, and `~` operators internally convert operands to signed 32-bit integers. `1 << 32` wraps around to `1` (same as `1 << 0`), meaning flag 32 collides with flag 0. Beyond 32 flags, you need `BigInt` for bitwise operations or switch to a `Set<string>` approach.
+`|`、`&`、`^` 和 `~` 运算符在内部将操作数转换为有符号 32 位整数。`1 << 32` 会回绕为 `1`（等同于 `1 << 0`），这意味着第 32 号标志与第 0 号标志冲突。超过 32 个标志时，你需要使用 `BigInt` 进行位运算，或者改用 `Set<string>` 方案。
 :::
 
-::: details Q2: You have `permissions = Read | Write | Execute`. A junior dev writes `if (permissions === Read)` to check if a user has read access. This works in unit tests but fails in production. Why?
-**Answer:** The `===` check tests for exact equality, so it only returns true when permissions is *exactly* `Read` and nothing else.
+::: details Q2: 你有 `permissions = Read | Write | Execute`。一个初级开发者写了 `if (permissions === Read)` 来检查用户是否有读权限。这在单元测试中通过了，但在生产环境中失败了。为什么？
+**答案：** `===` 检查的是精确相等，因此只有当 permissions *恰好*是 `Read` 且没有其他权限时才返回 true。
 
-In production, users typically have multiple permissions combined. `permissions === Read` would be false for `Read | Write` (value 3 vs value 1). The correct check is `(permissions & Read) !== 0` or `(permissions & Read) === Read`, which isolates and tests just the Read bit regardless of other flags.
+在生产环境中，用户通常有多个组合权限。`permissions === Read` 对于 `Read | Write`（值为 3 vs 值为 1）会返回 false。正确的检查方式是 `(permissions & Read) !== 0` 或 `(permissions & Read) === Read`，它只隔离和测试 Read 位，不受其他标志影响。
 :::
 
-::: details Q3: React uses bitmask flags for fiber side-effects. Why would React choose a bitmask over an array of strings like `['placement', 'update', 'ref']` for tracking which effects a fiber needs?
-**Answer:** A bitmask lets React check, combine, and propagate multiple effect flags in a single integer operation instead of iterating arrays.
+::: details Q3: React 使用 Bitmask 标志来跟踪 fiber 的副作用。为什么 React 选择 Bitmask 而不是像 `['placement', 'update', 'ref']` 这样的字符串数组来追踪 fiber 需要哪些 effect？
+**答案：** Bitmask 让 React 能用单次整数运算检查、组合和传播多个 effect 标志，而不需要遍历数组。
 
-During reconciliation, React "bubbles" child effects into parent fibers using `parent.subtreeFlags |= child.flags`. With arrays, this would require deduplication and concatenation. The bitmask approach also enables checking "does this subtree have any work?" with a single `subtreeFlags !== 0` comparison — critical when traversing thousands of fiber nodes per frame.
+在协调过程中，React 使用 `parent.subtreeFlags |= child.flags` 将子节点的 effect "冒泡"到父 fiber。如果用数组，这需要去重和拼接操作。Bitmask 方案还能用单次 `subtreeFlags !== 0` 比较来检查"这个子树是否有任何工作要做"——这在每帧需要遍历数千个 fiber 节点时至关重要。
 :::
 
-::: details Q4: You're designing a permission system where roles are mutually exclusive — a user is exactly one of Admin, Editor, or Viewer. A colleague suggests using a bitmask. Is this the right pattern?
-**Answer:** No. Mutually exclusive states should use an enum, not a bitmask.
+::: details Q4: 你正在设计一个权限系统，其中角色是互斥的——用户只能是 Admin、Editor 或 Viewer 之一。一位同事建议使用 Bitmask。这个模式选对了吗？
+**答案：** 不对。互斥状态应该使用枚举（enum），而不是 Bitmask。
 
-Bitmasks shine when flags can be freely combined (`Read | Write | Execute`). For mutually exclusive roles, a bitmask lets you accidentally set `Admin | Viewer`, which is a nonsensical state. An enum enforces exactly one value at the type level, making invalid states unrepresentable. Bitmasks are for combinatorial flags; enums are for exclusive states.
+Bitmask 适用于标志可以自由组合的场景（`Read | Write | Execute`）。对于互斥角色，Bitmask 允许你意外设置 `Admin | Viewer`，这是一个无意义的状态。枚举在类型层面强制只有一个值，使无效状态无法表示。Bitmask 适用于组合标志；枚举适用于互斥状态。
 :::

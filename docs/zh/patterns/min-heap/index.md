@@ -164,26 +164,26 @@ func (h *MinHeap) Pop() (int, bool) {
 
 ## 挑战题
 
-::: details Q1: How do you convert a min heap into a max heap without changing the data structure?
-**Answer:** Negate the sort keys on insert and negate them back on extract.
+::: details Q1: 如何在不改变数据结构的情况下将最小堆转换为最大堆？
+**答案：** 在插入时取反排序键，在提取时再取反回来。
 
-Push `-priority` instead of `priority`. The min heap puts the most negative value (highest original priority) at the root. On pop, negate the key again to recover the original value. This works because a min heap over negated values is equivalent to a max heap over the original values. Python's `heapq` community uses this trick since the stdlib only provides a min heap.
+推入 `-priority` 而不是 `priority`。最小堆将最负的值（原始最高优先级）放在根部。弹出时再次取反键以恢复原始值。这之所以可行，是因为对取反值的最小堆等价于对原始值的最大堆。Python 的 `heapq` 社区使用这个技巧，因为标准库只提供最小堆。
 :::
 
-::: details Q2: Why does React use a min heap for scheduling instead of a sorted array?
-**Answer:** A sorted array has O(n) insertion (shifting elements), while a min heap has O(log n) insertion and O(1) peek.
+::: details Q2: 为什么 React 使用最小堆来调度而不是有序数组？
+**答案：** 有序数组的插入是 O(n)（需要移动元素），而最小堆的插入是 O(log n)，查看最小值是 O(1)。
 
-React's scheduler frequently inserts new tasks with varying expiration times and always needs the earliest-expiring task. A sorted array gives O(1) access to the minimum but costs O(n) to insert (binary search + shift). A min heap gives O(1) peek and O(log n) insert/remove — a better tradeoff for a dynamic queue where tasks are constantly added and removed. For a static, one-time sort, the sorted array wins.
+React 的调度器频繁插入具有不同过期时间的新任务，并且总是需要最早过期的任务。有序数组给出 O(1) 的最小值访问但 O(n) 的插入成本（二分搜索 + 移动）。最小堆给出 O(1) 的 peek 和 O(log n) 的插入/移除——对于任务不断添加和移除的动态队列来说，这是更好的权衡。对于静态的一次性排序，有序数组更优。
 :::
 
-::: details Q3: A balanced BST (like a red-black tree) also gives O(log n) insert and O(log n) find-min. Why does Linux CFS use a red-black tree but React uses a min heap?
-**Answer:** CFS needs to remove arbitrary tasks (not just the minimum) when processes exit, which a BST handles in O(log n) but a heap handles in O(n).
+::: details Q3: 平衡 BST（如红黑树）也能提供 O(log n) 的插入和 O(log n) 的查找最小值。为什么 Linux CFS 使用红黑树而 React 使用最小堆？
+**答案：** CFS 需要在进程退出时移除任意任务（不仅是最小值），BST 处理这个操作是 O(log n)，而堆是 O(n)。
 
-A min heap only efficiently removes the root. Deleting an arbitrary element requires O(n) search + O(log n) sift. A red-black tree supports O(log n) deletion of any node. CFS frequently removes processes that exit or change priority, so the BST is justified. React's scheduler almost exclusively pops the highest-priority task from the front, making the simpler min heap (with its smaller constant factors and cache-friendly array layout) the better choice.
+最小堆只能高效移除根节点。删除任意元素需要 O(n) 搜索 + O(log n) 筛选。红黑树支持 O(log n) 删除任意节点。CFS 经常移除退出或改变优先级的进程，因此 BST 是合理的。React 的调度器几乎只从前端弹出最高优先级的任务，使更简单的最小堆（具有更小的常数因子和缓存友好的数组布局）成为更好的选择。
 :::
 
-::: details Q4: You have 1 billion log entries and need the 10 most recent. Should you use a min heap or a max heap, and what size?
-**Answer:** Use a min heap of size 10. For each entry, if it's larger than the heap's minimum, pop the minimum and push the new entry.
+::: details Q4: 你有 10 亿条日志条目，需要找到最近的 10 条。应该使用最小堆还是最大堆？大小是多少？
+**答案：** 使用大小为 10 的最小堆。对于每个条目，如果它比堆的最小值大，就弹出最小值并推入新条目。
 
-This is the "top-K" pattern. A min heap of size K keeps the K largest elements seen so far, with the smallest of those K at the root as a gatekeeper. Each new element is compared to the root in O(1) — if it's smaller, skip it; if larger, replace the root in O(log K). Total cost: O(n log K) with O(K) memory, not O(n log n) for a full sort.
+这是"top-K"模式。大小为 K 的最小堆保持到目前为止看到的 K 个最大元素，其中 K 个里最小的在根部作为守门员。每个新元素与根比较，O(1)——如果更小，跳过；如果更大，替换根，O(log K)。总成本：O(n log K) 加上 O(K) 内存，而不是完全排序的 O(n log n)。
 :::

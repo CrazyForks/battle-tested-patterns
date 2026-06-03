@@ -193,28 +193,28 @@ impl LRUCache {
 
 ## 挑战题
 
-::: details Q1: LRU cache with capacity 3. Operations: put(A), put(B), put(C), put(D), get(B). What's in the cache?
-**Answer:** `{B, D, C}`
+::: details Q1: 容量为 3 的 LRU 缓存。操作：put(A), put(B), put(C), put(D), get(B)。缓存中有什么？
+**答案：** `{B, D, C}`
 
-After put(A,B,C), cache is full. put(D) evicts A (least recently used). Now `{D, C, B}`. get(B) moves B to front. Final order most→least recent: `B, D, C`.
+put(A,B,C) 后缓存满了。put(D) 淘汰 A（最近最少使用）。现在是 `{D, C, B}`。get(B) 将 B 移到最前。最终从最近到最久的顺序：`B, D, C`。
 
-Key insight: `get()` counts as "use" — it moves the entry to the front, not just returns it.
+关键洞察：`get()` 也算作"使用"——它将条目移到最前，而不仅仅是返回它。
 :::
 
-::: details Q2: You have a web server with an LRU cache for API responses. A bot crawls every page once. What happens?
-**Answer:** The bot evicts all your hot cache entries.
+::: details Q2: 你的 Web 服务器使用 LRU 缓存存储 API 响应。一个爬虫访问了每个页面一次。会发生什么？
+**答案：** 爬虫会淘汰你所有的热缓存条目。
 
-Each crawled page is accessed once, pushed to front, and evicts a frequently-used page. After the crawl, your cache is full of pages nobody will request again. This is the **scan resistance** problem — LRU is vulnerable to sequential scans. Solutions: LRU-K (evict only if accessed < K times), ARC (adaptive), or a two-tier cache.
+每个被爬取的页面只访问一次，推到前面，并淘汰一个频繁使用的页面。爬取结束后，你的缓存里全是没人会再请求的页面。这就是**抗扫描性**问题——LRU 容易受到顺序扫描的影响。解决方案：LRU-K（只有访问次数 < K 次才淘汰）、ARC（自适应）或双层缓存。
 :::
 
-::: details Q3: Why does Redis use "approximated LRU" instead of exact LRU?
-**Answer:** Exact LRU requires a doubly linked list per key — that's 2 pointers (16 bytes on 64-bit) per key just for ordering. With millions of keys, that's significant overhead.
+::: details Q3: 为什么 Redis 使用"近似 LRU"而不是精确 LRU？
+**答案：** 精确 LRU 需要每个键维护一个双向链表——在 64 位系统上仅排序就需要 2 个指针（每键 16 字节）。数百万个键时，这是很大的开销。
 
-Redis instead stores a 24-bit LRU clock per key (3 bytes) and samples N random keys when eviction is needed, evicting the one with the oldest clock. This trades perfect eviction order for O(1) memory overhead per key. In practice, sampling 10 keys gives results very close to exact LRU.
+Redis 改为每个键存储一个 24 位 LRU 时钟（3 字节），在需要淘汰时随机采样 N 个键，淘汰时钟最旧的那个。这用完美的淘汰顺序换取每键 O(1) 的内存开销。实际中，采样 10 个键的结果与精确 LRU 非常接近。
 :::
 
-::: details Q4: Can you build an LRU cache in O(1) without a doubly linked list?
-**Answer:** Yes — using a language with ordered hash maps. In JavaScript, `Map` preserves insertion order. Delete and re-insert on access to move to "most recent." This is exactly what the TypeScript implementation above does.
+::: details Q4: 你能在 O(1) 时间内构建一个不用双向链表的 LRU 缓存吗？
+**答案：** 可以——使用有序哈希表的语言。在 JavaScript 中，`Map` 保持插入顺序。在访问时先删除再重新插入即可移到"最近使用"位置。这正是上面 TypeScript 实现的做法。
 
-In languages without ordered maps (C, Go), you need the classic hash map + doubly linked list approach. Go's `groupcache` does this with `container/list`.
+在没有有序 map 的语言（C、Go）中，你需要经典的哈希表 + 双向链表方法。Go 的 `groupcache` 使用 `container/list` 来实现这一点。
 :::

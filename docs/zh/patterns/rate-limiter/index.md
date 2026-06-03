@@ -190,26 +190,26 @@ impl TokenBucket {
 
 ## 挑战题
 
-::: details Q1: Your API allows 100 requests per minute using a fixed-window counter. At 11:00:59 a client sends 100 requests, and at 11:01:01 sends another 100 requests. Both windows allow it. What is the actual rate over that 2-second span, and how would a token bucket handle this differently?
-**Answer:** The client sent 200 requests in 2 seconds (6,000/min effective rate), far exceeding the 100/min limit. A token bucket would reject most of the second burst because it would only have ~3 tokens refilled.
+::: details Q1: 你的 API 使用固定窗口计数器允许每分钟 100 个请求。在 11:00:59 客户端发送了 100 个请求，在 11:01:01 又发送了 100 个请求。两个窗口都允许。这 2 秒内的实际速率是多少？令牌桶会如何不同地处理这个问题？
+**答案：** 客户端在 2 秒内发送了 200 个请求（有效速率 6,000/分钟），远超 100/分钟的限制。令牌桶会拒绝第二次突发的大部分请求，因为只补充了约 3 个令牌。
 
-This is the "boundary burst" problem with fixed-window counters. The window resets at sharp boundaries, allowing a double-burst at the seam. A token bucket with capacity=100 and rate=100/min refills at ~1.67 tokens/second. After draining to 0 at 11:00:59, only ~3 tokens would be available at 11:01:01 — the remaining 97 requests would be rejected. Sliding window counters also solve this by interpolating between adjacent windows.
+这是固定窗口计数器的"边界突发"问题。窗口在尖锐边界处重置，允许在接缝处出现双倍突发。容量为 100、速率为 100/分钟的令牌桶以约 1.67 令牌/秒的速度补充。在 11:00:59 耗尽到 0 后，11:01:01 时只有约 3 个令牌可用——其余 97 个请求会被拒绝。滑动窗口计数器也通过在相邻窗口之间插值来解决这个问题。
 :::
 
-::: details Q2: You run 8 API server instances, each with its own token bucket allowing 100 requests/second. A client discovers this and distributes requests across all 8 servers. What is the effective rate limit they experience?
-**Answer:** The client can achieve 800 requests/second — 8x the intended limit — because per-node token buckets don't enforce a global rate.
+::: details Q2: 你运行了 8 个 API 服务器实例，每个都有自己的令牌桶，允许 100 请求/秒。一个客户端发现了这一点并将请求分布到所有 8 个服务器。它们体验到的有效速率限制是多少？
+**答案：** 客户端可以达到 800 请求/秒——预期限制的 8 倍——因为每节点的令牌桶不强制全局速率。
 
-Distributed rate limiting requires shared state. Common solutions: (1) a centralized store like Redis with atomic `INCR` and `EXPIRE`, (2) a dedicated rate-limiting service (Envoy, Kong), or (3) a "split budget" approach where each node gets 1/n of the total rate (100/8 = 12.5 req/s per node). Option 3 is simple but fragile — if traffic isn't evenly distributed, some nodes waste their budget while others reject valid requests.
+分布式限流需要共享状态。常见解决方案：(1) 使用 Redis 等集中存储配合原子 `INCR` 和 `EXPIRE`，(2) 专用限流服务（Envoy、Kong），或 (3) "分割预算"方式，每个节点获得总速率的 1/n（100/8 = 12.5 请求/秒/节点）。选项 3 简单但脆弱——如果流量分布不均匀，一些节点会浪费预算而其他节点拒绝有效请求。
 :::
 
-::: details Q3: Your token bucket has capacity=50 and refill rate=10/second. A legitimate batch job needs to send 50 requests at once, then wait 10 seconds, then send 50 more. Will the token bucket accommodate this pattern or should you use a different algorithm?
-**Answer:** The token bucket handles this perfectly — it's designed to allow bursts up to capacity while enforcing an average rate.
+::: details Q3: 你的令牌桶容量为 50，补充速率为 10/秒。一个合法的批处理任务需要一次性发送 50 个请求，然后等待 10 秒，再发送 50 个。令牌桶能适应这种模式吗？还是应该使用不同的算法？
+**答案：** 令牌桶完美处理这种情况——它设计用来允许不超过容量的突发同时强制平均速率。
 
-At the start, the bucket is full with 50 tokens, allowing the entire batch. Over the next 10 seconds, 100 tokens are refilled but capped at 50 (the capacity). The second batch of 50 drains the bucket again. The average rate is 100 requests / 10 seconds = 10/sec, exactly matching the refill rate. This burst-friendly behavior is why token bucket is preferred over leaky bucket for bursty-but-bounded workloads. A leaky bucket would force the 50 requests to drain at 10/sec, taking 5 seconds — unsuitable for batch patterns.
+开始时，桶满有 50 个令牌，允许整个批次。接下来 10 秒补充 100 个令牌但上限为 50（容量）。第二批 50 个再次耗尽桶。平均速率是 100 请求 / 10 秒 = 10/秒，恰好匹配补充速率。这种对突发友好的行为是令牌桶在突发但有界的工作负载中优于漏桶的原因。漏桶会强制 50 个请求以 10/秒的速率流出，需要 5 秒——不适合批处理模式。
 :::
 
-::: details Q4: Nginx uses a leaky bucket for `limit_req`. Go's `x/time/rate` uses a token bucket. Both limit request rates. When would you choose leaky bucket over token bucket?
-**Answer:** Choose a leaky bucket when you need to smooth traffic into a steady stream, preventing any bursts from reaching the downstream service.
+::: details Q4: Nginx 对 `limit_req` 使用漏桶。Go 的 `x/time/rate` 使用令牌桶。两者都限制请求速率。你何时会选择漏桶而非令牌桶？
+**答案：** 当你需要将流量平滑为稳定的流时选择漏桶，防止任何突发到达下游服务。
 
-A token bucket allows bursts up to capacity — great for user-facing APIs where occasional burst traffic is normal. A leaky bucket forces a constant drain rate, which protects backends that can't handle any traffic spikes (e.g., a database that degrades under concurrent writes). Nginx uses leaky bucket because reverse proxies sit in front of backends that need predictable, steady-state load. The tradeoff: leaky bucket adds latency during bursts (requests queue), while token bucket rejects excess requests instantly.
+令牌桶允许不超过容量的突发——非常适合偶尔有突发流量的面向用户的 API。漏桶强制恒定的流出速率，保护无法处理任何流量尖峰的后端（例如在并发写入下性能降低的数据库）。Nginx 使用漏桶因为反向代理位于需要可预测、稳态负载的后端前面。权衡：漏桶在突发时增加延迟（请求排队），而令牌桶立即拒绝多余请求。
 :::

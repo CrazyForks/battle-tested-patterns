@@ -95,26 +95,26 @@ def retry_with_backoff(fn, max_retries=5, base=1.0, cap=30.0):
 
 ## 挑战题
 
-::: details Q1: You remove jitter from your retry logic to make delays "predictable." Under a thundering herd scenario, what happens?
-**Answer:** All clients that failed at the same time retry at exactly the same intervals, repeatedly overloading the recovering service in synchronized waves.
+::: details Q1: 你从重试逻辑中移除了抖动（jitter）以使延迟"可预测"。在惊群场景下，会发生什么？
+**答案：** 所有在同一时间失败的客户端会以完全相同的间隔重试，以同步的波次反复过载正在恢复的服务。
 
-Without jitter, 10,000 clients that got a 503 at t=0 all retry at t=1s, then t=2s, then t=4s -- creating periodic traffic spikes that prevent recovery. Jitter spreads retries across the delay window so the recovering service sees a smooth trickle instead of synchronized bursts. This is why every production retry library includes jitter.
+没有抖动，10,000 个在 t=0 收到 503 的客户端全部在 t=1s 重试，然后 t=2s，然后 t=4s——产生周期性的流量尖峰阻止恢复。抖动将重试分散到延迟窗口内，使恢复中的服务看到平滑的涓流而非同步的爆发。这就是为什么每个生产级重试库都包含抖动。
 :::
 
-::: details Q2: Your service retries a POST /create-order endpoint that is NOT idempotent. The first attempt times out but actually succeeded on the server. What happens on retry?
-**Answer:** The retry creates a duplicate order. The customer gets charged twice.
+::: details Q2: 你的服务重试一个非幂等的 POST /create-order 端点。第一次尝试超时但实际上已在服务器上成功。重试时会发生什么？
+**答案：** 重试创建了一个重复订单。客户被收费两次。
 
-A timeout does not mean the request failed -- it means you don't know if it succeeded. Retrying a non-idempotent operation risks duplication. The fix is to make the operation idempotent using an idempotency key: the client generates a unique ID and the server deduplicates. Without idempotency, you should not retry write operations.
+超时不意味着请求失败——它意味着你不知道是否成功了。重试非幂等操作有重复的风险。修复方法是使用幂等键使操作幂等：客户端生成唯一 ID，服务器进行去重。没有幂等性保证，就不应该重试写操作。
 :::
 
-::: details Q3: A downstream service returns HTTP 400 Bad Request. Should you retry with exponential backoff?
-**Answer:** No. A 400 is a client error indicating bad input. Retrying the same request will produce the same error every time.
+::: details Q3: 下游服务返回 HTTP 400 Bad Request。你应该用指数退避重试吗？
+**答案：** 不应该。400 是客户端错误，表示输入有误。重试相同的请求每次都会产生相同的错误。
 
-Retry with backoff is designed for transient failures -- 503 Service Unavailable, 429 Too Many Requests, network timeouts, connection resets. A 400 means "your request is malformed," which won't fix itself with time. Retrying it wastes resources and delays the real fix (correcting the input). Always classify errors before deciding to retry.
+指数退避重试是为瞬态故障设计的——503 Service Unavailable、429 Too Many Requests、网络超时、连接重置。400 意味着"你的请求格式错误"，它不会随时间自行修复。重试它浪费资源并延迟真正的修复（纠正输入）。在决定重试之前，始终先对错误分类。
 :::
 
-::: details Q4: Your retry config uses baseDelay=1s, maxDelay=30s, maxRetries=10. A junior engineer asks: "Why not set maxRetries=1000 so we never lose a request?" What's wrong with that?
-**Answer:** With exponential backoff capped at 30s and 1000 retries, the client would spend up to 8+ hours retrying a single request, holding resources the entire time.
+::: details Q4: 你的重试配置使用 baseDelay=1s、maxDelay=30s、maxRetries=10。一个初级工程师问："为什么不设 maxRetries=1000 这样我们就永远不会丢失请求？"这有什么问题？
+**答案：** 指数退避上限为 30s 加上 1000 次重试，客户端将花费 8 小时以上重试单个请求，整个过程一直占用资源。
 
-High retry counts consume connection pool slots, memory, goroutines/threads, and often hold database transactions or locks open. If the downstream service is truly down, those retries won't help -- you need a circuit breaker to fail fast and shed load. In practice, 3-5 retries with backoff is enough to handle transient blips; anything longer should be handled by a persistent queue with dead-letter semantics.
+高重试次数消耗连接池槽位、内存、goroutine/线程，并且通常持有数据库事务或锁。如果下游服务确实宕机了，这些重试不会有帮助——你需要熔断器来快速失败并卸载负载。实践中，3-5 次带退避的重试足以处理瞬态抖动；更长时间的情况应该由带死信语义的持久队列来处理。
 :::

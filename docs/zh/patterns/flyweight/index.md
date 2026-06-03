@@ -85,26 +85,26 @@ print(a is b)  # True — 享元！
 
 ## 挑战题
 
-::: details Q1: Someone interns a mutable object (say, a config map) and later modifies it. What breaks?
-**Answer:** Every consumer sharing that reference sees the mutation, causing unpredictable behavior across unrelated parts of the system.
+::: details Q1: 有人对一个可变对象（比如配置字典）进行了驻留，然后又修改了它。会出什么问题？
+**答案：** 所有共享该引用的消费者都会看到这个修改，导致系统中不相关的部分出现不可预测的行为。
 
-Flyweight's entire premise is that shared instances are identical and interchangeable. If one caller mutates the shared object, all other callers silently get the changed value. This is why interned/flyweight objects must be immutable. If you need mutation, clone-on-write or don't intern.
+Flyweight 的整个前提是共享实例是相同的和可互换的。如果一个调用者修改了共享对象，所有其他调用者都会无声地获取到修改后的值。这就是为什么驻留/Flyweight 对象必须是不可变的。如果你需要修改，使用写时复制或不要驻留。
 :::
 
-::: details Q2: Python caches integers -5 to 256 as flyweights. Why not cache all integers?
-**Answer:** Because the memory cost of pre-allocating every possible integer far exceeds the savings from sharing. The cache only pays off for values that appear frequently.
+::: details Q2: Python 将 -5 到 256 的整数缓存为 Flyweight。为什么不缓存所有整数？
+**答案：** 因为预分配所有可能整数的内存开销远超共享带来的节省。缓存只在频繁出现的值上才有回报。
 
-The range -5 to 256 was chosen empirically -- these cover loop counters, array indices, boolean-like values, and common constants. Caching `1_000_000` would waste memory since most large integers appear only once. The flyweight pattern only saves memory when duplicates are common.
+-5 到 256 的范围是经验选择的——涵盖了循环计数器、数组索引、布尔类值和常见常量。缓存 `1_000_000` 会浪费内存，因为大多数大整数只出现一次。Flyweight 模式只在重复项常见时才能节省内存。
 :::
 
-::: details Q3: You build a string interner for a compiler. After processing 10,000 source files, the interner holds 2 million strings and uses 500MB. What went wrong?
-**Answer:** The interner never evicts entries, so it accumulates every string ever seen -- including one-off identifiers and string literals that are never referenced again.
+::: details Q3: 你为编译器构建了一个字符串驻留器。处理 10,000 个源文件后，驻留器持有 200 万个字符串并使用了 500MB。出了什么问题？
+**答案：** 驻留器从不淘汰条目，因此它积累了所有曾经见过的字符串——包括那些一次性的标识符和再也不会被引用的字符串字面量。
 
-A production interner needs a strategy for scope: either clear it per-compilation-unit, use weak references so unreferenced strings get collected, or limit interning to identifiers (which repeat frequently) and skip arbitrary string literals. Unbounded growth is the classic flyweight pitfall.
+生产级驻留器需要一个作用域策略：要么按编译单元清除，要么使用弱引用以便未引用的字符串被回收，要么只对标识符（频繁重复）进行驻留而跳过任意字符串字面量。无限增长是 Flyweight 的经典陷阱。
 :::
 
-::: details Q4: Two threads simultaneously call `intern("hello")` and both see it as missing from the pool. What can go wrong?
-**Answer:** Both threads create a new instance and insert it, resulting in two different objects for the same key -- breaking the "same reference for same value" guarantee.
+::: details Q4: 两个线程同时调用 `intern("hello")`，且都发现池中没有该条目。会出什么问题？
+**答案：** 两个线程各自创建一个新实例并插入，导致同一个键对应两个不同的对象——破坏了"相同值相同引用"的保证。
 
-Without synchronization, you get a race: thread A checks the pool, finds nothing, creates the object; thread B does the same before A inserts. Now consumers on different threads hold different references for `"hello"`, defeating identity comparison (`===` / `is`). The fix is a lock around the check-and-insert, or a concurrent map with `putIfAbsent` semantics.
+没有同步机制时，你会遇到竞态：线程 A 检查池，没找到，创建对象；线程 B 在 A 插入之前做了同样的事。现在不同线程上的消费者持有 `"hello"` 的不同引用，身份比较（`===` / `is`）失效。修复方法是在检查和插入操作周围加锁，或使用支持 `putIfAbsent` 语义的并发 map。
 :::

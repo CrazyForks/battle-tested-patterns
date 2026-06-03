@@ -102,26 +102,26 @@ print(msgs)  # ["hello"]
 
 ## 挑战题
 
-::: details Q1: A React component subscribes to a store in `useEffect` but forgets to return a cleanup function. What happens when the component unmounts?
-**Answer:** The listener remains registered, causing a memory leak and phantom updates to an unmounted component.
+::: details Q1: 一个 React 组件在 `useEffect` 中订阅了 store，但忘记返回清理函数。组件卸载时会发生什么？
+**答案：** 监听器仍然保持注册状态，导致内存泄漏和对已卸载组件的幽灵更新。
 
-The store holds a reference to the listener callback, which closes over the component's state. The component is unmounted but never garbage collected because the store still references it. Worse, when the store emits, the stale listener runs and may call `setState` on an unmounted component. This is the classic observer memory leak — every `subscribe` must have a corresponding `unsubscribe`, and `useEffect`'s cleanup function is the mechanism React provides for this.
+store 持有监听器回调的引用，而该回调闭包捕获了组件的状态。组件已卸载但永远不会被垃圾回收，因为 store 仍然引用它。更糟糕的是，当 store 发出事件时，过期的监听器会运行并可能在已卸载的组件上调用 `setState`。这是经典的 Observer 内存泄漏——每个 `subscribe` 都必须有对应的 `unsubscribe`，而 `useEffect` 的清理函数就是 React 为此提供的机制。
 :::
 
-::: details Q2: You have 3 observers: A logs to a file, B updates the UI, C sends a network request. Does the order they are notified matter?
-**Answer:** In most implementations, observers are called in registration order, but you should not rely on this — the pattern makes no ordering guarantees.
+::: details Q2: 你有 3 个观察者：A 记录日志到文件，B 更新 UI，C 发送网络请求。它们被通知的顺序重要吗？
+**答案：** 在大多数实现中，观察者按注册顺序调用，但你不应该依赖这一点——该模式不保证顺序。
 
-If B's UI update depends on A's log completing first, you have an implicit coupling that the observer pattern is supposed to eliminate. Each observer should be independent. If ordering matters, you need a different pattern: a middleware chain, a pipeline, or explicit dependency declaration. Node.js's `EventEmitter` calls listeners in registration order, but Redux explicitly snapshots the listener array to avoid order-dependent bugs during subscribe/unsubscribe within a dispatch.
+如果 B 的 UI 更新依赖于 A 的日志先完成，那你就有了一个隐式耦合，而 Observer 模式本应消除这种耦合。每个观察者应该是独立的。如果顺序很重要，你需要不同的模式：中间件链、管道或显式依赖声明。Node.js 的 `EventEmitter` 按注册顺序调用监听器，但 Redux 显式地快照监听器数组以避免在 dispatch 过程中 subscribe/unsubscribe 导致的顺序依赖 bug。
 :::
 
-::: details Q3: An `emit('data', payload)` call triggers 50 synchronous observers, one of which throws an exception. What happens to observers 2-50?
-**Answer:** In a naive implementation, observers 2-50 never execute — the exception propagates up and aborts the `emit` loop.
+::: details Q3: 一次 `emit('data', payload)` 调用触发了 50 个同步观察者，其中一个抛出了异常。第 2-50 个观察者会怎样？
+**答案：** 在简单实现中，第 2-50 个观察者永远不会执行——异常向上传播并中止了 `emit` 循环。
 
-This is why production implementations wrap each listener call in a try-catch. Node.js `EventEmitter` does NOT do this by default — one throwing listener kills the rest. You must handle errors yourself. RxJS uses an error boundary per subscriber. The design choice is: fail-fast (one bad observer stops everything) vs. fault-tolerant (isolate failures, continue notifying). For critical systems, always isolate observer failures.
+这就是为什么生产级实现会用 try-catch 包裹每个监听器调用。Node.js `EventEmitter` 默认不这样做——一个抛出异常的监听器会杀死其余的。你必须自己处理错误。RxJS 为每个订阅者使用错误边界。设计选择是：快速失败（一个坏观察者停止一切）vs 容错（隔离故障，继续通知）。对于关键系统，始终隔离观察者失败。
 :::
 
-::: details Q4: Should observer notifications be synchronous or asynchronous? What breaks if you switch from sync to async?
-**Answer:** Synchronous notifications guarantee that all observers have processed the event before `emit()` returns; switching to async breaks any code that assumes state is updated immediately after emitting.
+::: details Q4: Observer 通知应该是同步的还是异步的？如果从同步切换到异步会破坏什么？
+**答案：** 同步通知保证在 `emit()` 返回之前所有观察者都已处理完事件；切换到异步会破坏任何假设在发出事件后状态立即更新的代码。
 
-With sync: `emit('change'); readState()` sees the updated state because observers ran inline. With async: `emit('change'); readState()` sees the OLD state because observers are queued. This breaks patterns like Redux where `dispatch()` is expected to have fully completed by the time it returns. Async notification is better for performance (non-blocking) but requires the system to handle the "eventually consistent" gap between emit and observer execution.
+同步时：`emit('change'); readState()` 能看到更新后的状态，因为观察者是内联运行的。异步时：`emit('change'); readState()` 看到的是旧状态，因为观察者被排队了。这会破坏像 Redux 这样的模式，其中 `dispatch()` 预期在返回时已完全完成。异步通知对性能更好（非阻塞），但要求系统处理 emit 和观察者执行之间的"最终一致性"间隙。
 :::

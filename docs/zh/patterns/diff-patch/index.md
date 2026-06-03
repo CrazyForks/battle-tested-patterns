@@ -117,26 +117,26 @@ pub fn diff<T: PartialEq + Clone>(old: &[T], new: &[T]) -> Vec<Op<T>> {
 
 ## 挑战题
 
-::: details Q1: React's diff produces insert/delete/update ops but not "move." How does it handle a list that was merely reordered?
-**Answer:** React does not emit explicit "move" operations. Instead, it reuses existing DOM nodes and repositions them via `insertBefore`.
+::: details Q1: React 的 diff 生成插入/删除/更新操作，但没有"移动"操作。它如何处理仅仅重新排序的列表？
+**答案：** React 不发出显式的"移动"操作。它通过 `insertBefore` 复用现有 DOM 节点并重新定位。
 
-Without keys, React compares children by position — reordering looks like every element changed. With keys, React builds a map of `key -> fiber`, matches old and new children by key, and reuses existing DOM nodes. It tracks a `lastPlacedIndex` and flags fibers that need repositioning — the browser moves the DOM node rather than destroying and recreating it. This is simpler than computing a minimum-edit-distance move sequence but produces near-optimal DOM mutations for typical UI lists.
+没有 key 时，React 按位置比较子元素——重新排序看起来像每个元素都变了。有 key 时，React 构建 `key -> fiber` 的映射，按 key 匹配新旧子元素，复用现有 DOM 节点。它追踪 `lastPlacedIndex` 并标记需要重新定位的 fiber——浏览器移动 DOM 节点而不是销毁并重建。这比计算最小编辑距离的移动序列更简单，但对于典型 UI 列表能产生接近最优的 DOM 变更。
 :::
 
-::: details Q2: The greedy diff algorithm in this pattern is O(n*m) worst case. What causes this, and how does Myers' algorithm improve it?
-**Answer:** The greedy algorithm's `some()` call scans the remaining new list for each old item, creating O(n*m) comparisons. Myers' algorithm runs in O((n+m) * d) where d is the edit distance.
+::: details Q2: 本模式中的贪心 diff 算法最坏情况为 O(n*m)。是什么导致了这种情况？Myers 算法如何改进？
+**答案：** 贪心算法的 `some()` 调用为每个旧元素扫描剩余的新列表，产生 O(n*m) 次比较。Myers 算法的复杂度为 O((n+m) * d)，其中 d 是编辑距离。
 
-Myers' key insight is that it searches for the shortest edit script by exploring diagonals in an edit graph. When the two lists are similar (small d), it runs in nearly O(n+m). The greedy approach has no such optimization — it doesn't minimize the edit sequence and degrades badly when the lists have many differences scattered throughout.
+Myers 的关键洞察是通过在编辑图中探索对角线来搜索最短编辑脚本。当两个列表相似（d 较小）时，它近似以 O(n+m) 运行。贪心方法没有这种优化——它不最小化编辑序列，当列表中有很多分散的差异时退化严重。
 :::
 
-::: details Q3: Two developers independently edit the same file. Developer A deletes line 5; Developer B modifies line 5. How does a diff-based merge handle this conflict?
-**Answer:** This is a true conflict that cannot be auto-resolved — the merge tool must flag it for human review.
+::: details Q3: 两个开发者独立编辑同一个文件。开发者 A 删除了第 5 行；开发者 B 修改了第 5 行。基于 diff 的合并如何处理这个冲突？
+**答案：** 这是一个真正的冲突，无法自动解决——合并工具必须标记它供人工审查。
 
-Three-way merge computes two diffs: (base -> A) and (base -> B). If both diffs touch the same region, they conflict. A's diff says "delete line 5," B's diff says "replace line 5." These are mutually exclusive operations on the same hunk. The merge tool inserts conflict markers (`<<<<<<<`, `=======`, `>>>>>>>`) and the developer decides. Non-overlapping changes in different regions merge cleanly.
+三路合并计算两个 diff：（基准 -> A）和（基准 -> B）。如果两个 diff 都涉及同一区域，就产生冲突。A 的 diff 说"删除第 5 行"，B 的 diff 说"替换第 5 行"。这是同一个代码块上的互斥操作。合并工具插入冲突标记（`<<<<<<<`、`=======`、`>>>>>>>`），由开发者决定。不同区域的非重叠变更可以干净地合并。
 :::
 
-::: details Q4: You need to sync state between a server and 10,000 connected clients. Should you diff the full state and send patches, or use a different approach?
-**Answer:** Diffing the full state per client does not scale. Use event sourcing or operational transforms to send individual mutations as they happen.
+::: details Q4: 你需要在服务器和 10,000 个连接的客户端之间同步状态。你应该对完整状态做 diff 并发送补丁，还是使用不同的方法？
+**答案：** 对每个客户端做完整状态的 diff 无法扩展。使用事件溯源或操作转换，在变更发生时发送单个变更操作。
 
-Computing a diff requires holding both old and new state, and the diff cost is proportional to state size. With 10,000 clients, you'd compute 10,000 diffs per update. Instead, capture each mutation as a small operation (e.g., "set user.name = X") and broadcast it. Clients apply operations incrementally. Diff-patch is better suited for periodic reconciliation (like React's render cycle) or offline sync, not real-time high-fan-out distribution.
+计算 diff 需要同时持有新旧状态，且 diff 成本与状态大小成正比。有 10,000 个客户端时，每次更新你要计算 10,000 个 diff。相反，将每个变更捕获为小操作（例如"set user.name = X"）并广播。客户端增量应用操作。Diff-patch 更适合周期性对账（如 React 的渲染周期）或离线同步，不适合实时高扇出分发。
 :::

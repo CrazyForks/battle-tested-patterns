@@ -117,20 +117,20 @@ class RingBuffer:
 
 ## 挑战题
 
-::: details Q1: You implement a ring buffer with capacity 8, but without a separate `count` field — you only track `head` and `tail`. When `head === tail`, you can't tell if the buffer is completely full or completely empty. How do production systems solve this?
-**Answer:** The most common solution is to either keep a separate count, or allocate capacity + 1 slots and treat `(tail + 1) % capacity === head` as full.
+::: details Q1: 你实现了一个容量为 8 的环形缓冲区，但没有单独的 `count` 字段——你只追踪 `head` 和 `tail`。当 `head === tail` 时，你无法区分缓冲区是完全满还是完全空。生产系统如何解决这个问题？
+**答案：** 最常见的解决方案是维护一个单独的计数，或者分配 capacity + 1 个槽位并将 `(tail + 1) % capacity === head` 视为满。
 
-With only `head` and `tail`, both the empty and full states look identical (`head === tail`). LMAX Disruptor uses sequence numbers that grow monotonically rather than wrapping pointers, so `tail - head` directly gives the count. The "waste one slot" approach sacrifices one element of capacity but avoids the overhead of maintaining an atomic counter in concurrent scenarios.
+只用 `head` 和 `tail` 时，空和满两种状态看起来一样（`head === tail`）。LMAX Disruptor 使用单调递增的序列号而非回绕指针，因此 `tail - head` 直接给出计数。"浪费一个槽位"的方法牺牲了一个元素的容量，但避免了在并发场景中维护原子计数器的开销。
 :::
 
-::: details Q2: The LMAX Disruptor requires ring buffer capacity to be a power of 2. Your colleague says any size works since you're using `% capacity` anyway. Why does LMAX insist on power-of-2?
-**Answer:** Power-of-2 sizing lets you replace the modulo operation with a bitwise AND (`index & (capacity - 1)`), which is significantly faster.
+::: details Q2: LMAX Disruptor 要求环形缓冲区容量必须是 2 的幂。你的同事说用 `% capacity` 就行所以任何大小都可以。为什么 LMAX 坚持要求 2 的幂？
+**答案：** 2 的幂大小让你可以用位与运算（`index & (capacity - 1)`）替代取模运算，这要快得多。
 
-The modulo operator `%` compiles to a division instruction, which takes 20-40 CPU cycles on most architectures. A bitwise AND takes 1 cycle. In a system processing 6 million events per second, this optimization on every enqueue and dequeue adds up. It only works because `n & (2^k - 1)` is mathematically equivalent to `n % 2^k` when the divisor is a power of 2.
+取模运算符 `%` 编译为除法指令，在大多数架构上需要 20-40 个 CPU 周期。位与运算只需 1 个周期。在每秒处理 600 万个事件的系统中，每次入队和出队的这个优化累积起来很可观。这之所以可行是因为当除数是 2 的幂时，`n & (2^k - 1)` 在数学上等价于 `n % 2^k`。
 :::
 
-::: details Q3: Your logging system uses a ring buffer for recent log entries. During a production incident, you notice the oldest logs you need for debugging have already been overwritten. Increasing the buffer size to "large enough" is not practical. What architectural change would you make?
-**Answer:** Add a drain/consumer that flushes entries to persistent storage before they're overwritten, turning the ring buffer into a staging area rather than the final store.
+::: details Q3: 你的日志系统使用环形缓冲区存储最近的日志条目。在一次生产事故中，你发现调试所需的最旧日志已经被覆盖了。将缓冲区大小增加到"足够大"是不现实的。你会做什么架构上的改变？
+**答案：** 添加一个在条目被覆盖之前将其刷写到持久存储的消费者，把环形缓冲区变成暂存区而非最终存储。
 
-A ring buffer is inherently bounded — that's its strength (predictable memory) and its limitation (data loss under sustained load). The pattern used by Linux's `io_uring` and kernel trace buffers is to have a consumer that reads entries and persists them. The ring buffer absorbs bursts, and the consumer handles steady-state throughput. This separates the write-fast concern from the store-everything concern.
+环形缓冲区天生是有界的——这既是它的优势（可预测的内存）也是它的局限（持续高负载下的数据丢失）。Linux 的 `io_uring` 和内核跟踪缓冲区使用的模式是有一个消费者读取条目并持久化。环形缓冲区吸收突发，消费者处理稳态吞吐。这将"写入要快"的关注点与"存储一切"的关注点分离开来。
 :::

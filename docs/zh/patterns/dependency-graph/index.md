@@ -280,26 +280,26 @@ impl DependencyGraph {
 
 ## 挑战题
 
-::: details Q1: Given a dependency graph where A->C, B->C, and A and B have no dependencies, how many tasks can run in parallel? How does topological sort reveal this?
-**Answer:** A and B can run in parallel (both have in-degree 0). C must wait for both. Maximum parallelism is 2.
+::: details Q1: 给定一个依赖图，其中 A->C、B->C，且 A 和 B 没有依赖。可以并行运行多少个任务？拓扑排序如何揭示这一点？
+**答案：** A 和 B 可以并行运行（两者入度都为 0）。C 必须等待两者完成。最大并行度为 2。
 
-Topological sort using Kahn's algorithm naturally exposes parallelism: all nodes with in-degree 0 at any given step can execute simultaneously. In this example, the first "wave" is {A, B} (both in-degree 0), and the second wave is {C} (in-degree drops to 0 after both A and B complete). Build systems like Bazel and Make exploit this by processing each wave in parallel.
+使用 Kahn 算法的拓扑排序自然地暴露了并行性：在任何给定步骤中，所有入度为 0 的节点可以同时执行。在这个例子中，第一"波"是 {A, B}（都是入度 0），第二波是 {C}（在 A 和 B 都完成后入度降为 0）。像 Bazel 和 Make 这样的构建系统正是通过并行处理每一波来利用这一点的。
 :::
 
-::: details Q2: Package D depends on both B and C. B depends on A. C also depends on A. This is a "diamond dependency." Does topological sort handle it correctly?
-**Answer:** Yes. Topological sort handles diamonds correctly because it tracks in-degree, not paths. A runs first, then B and C (in parallel), then D.
+::: details Q2: 包 D 依赖 B 和 C。B 依赖 A。C 也依赖 A。这是一个"菱形依赖"。拓扑排序能正确处理吗？
+**答案：** 可以。拓扑排序正确处理菱形依赖，因为它追踪的是入度而不是路径。A 先运行，然后 B 和 C（并行），最后 D。
 
-A diamond is not a cycle -- it's just two paths converging on the same node. Kahn's algorithm processes A (in-degree 0), decrements B and C's in-degrees to 0, processes both, then decrements D's in-degree to 0 and processes it. The potential problem is not in ordering but in version conflicts: if B needs A v1 and C needs A v2, you have a compatibility issue that the graph structure alone doesn't solve.
+菱形不是环——它只是两条路径汇聚到同一个节点。Kahn 算法处理 A（入度 0），将 B 和 C 的入度减为 0，处理两者，然后将 D 的入度减为 0 并处理它。潜在问题不在于排序，而在于版本冲突：如果 B 需要 A v1 而 C 需要 A v2，你就有了一个仅靠图结构无法解决的兼容性问题。
 :::
 
-::: details Q3: You change file `utils.ts` in a large project. An incremental build system only recompiles files that depend on `utils.ts`. How does the dependency graph enable this?
-**Answer:** The build system walks the dependency graph forward from `utils.ts`, collecting all transitive dependents. Only those files (plus `utils.ts` itself) need recompilation.
+::: details Q3: 你在一个大项目中修改了文件 `utils.ts`。增量构建系统只重新编译依赖 `utils.ts` 的文件。依赖图是如何实现这一点的？
+**答案：** 构建系统从 `utils.ts` 出发沿依赖图正向遍历，收集所有传递依赖者。只有这些文件（加上 `utils.ts` 本身）需要重新编译。
 
-This is the key advantage of maintaining a dependency graph over a flat file list. Without the graph, you'd have to recompile everything or maintain manual lists of dependencies. With the graph, you compute the affected subgraph in O(V+E) time. Tools like webpack's `ModuleGraph` and Bazel's action graph do exactly this -- they track which outputs depend on which inputs and invalidate only the affected subtree.
+这是维护依赖图相比于扁平文件列表的关键优势。没有图，你要么重新编译所有文件，要么手动维护依赖列表。有了图，你可以在 O(V+E) 时间内计算受影响的子图。像 webpack 的 `ModuleGraph` 和 Bazel 的 action graph 这样的工具正是这样做的——它们追踪哪些输出依赖于哪些输入，只使受影响的子树失效。
 :::
 
-::: details Q4: A developer adds a dependency from module A to module B, but B already transitively depends on A (B -> C -> A). What should the build system do?
-**Answer:** Reject the change. Adding A -> B creates a cycle (A -> B -> C -> A), which means there is no valid build order.
+::: details Q4: 一个开发者添加了从模块 A 到模块 B 的依赖，但 B 已经传递依赖 A（B -> C -> A）。构建系统应该怎么做？
+**答案：** 拒绝这个变更。添加 A -> B 会形成环（A -> B -> C -> A），这意味着不存在有效的构建顺序。
 
-Kahn's algorithm detects this: after processing all zero-in-degree nodes, some nodes remain with non-zero in-degree -- those nodes form the cycle. The build system should report the exact cycle path so the developer can redesign the dependency (e.g., extract shared code into a new module, use dependency inversion, or use lazy/dynamic imports to break the compile-time cycle).
+Kahn 算法会检测到这一点：在处理完所有入度为零的节点后，仍有一些节点的入度非零——这些节点形成了环。构建系统应该报告确切的环路径，以便开发者重新设计依赖关系（例如将共享代码提取到新模块中、使用依赖反转，或使用延迟/动态导入来打破编译时的循环）。
 :::

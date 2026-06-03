@@ -11,7 +11,7 @@ The dirty flag pattern avoids redundant computation by tracking whether derived 
 ```text
   Mutation cycle:
 
-  ┌─────────┐   set()    ┌─────────────┐
+  ┌─────────┐   set()     ┌─────────────┐
   │  Clean  │ ──────────► │    Dirty    │
   │ (valid  │             │ (stale      │
   │  cache) │             │  cache)     │

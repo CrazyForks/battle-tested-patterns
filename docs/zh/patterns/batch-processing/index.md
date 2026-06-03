@@ -102,26 +102,26 @@ class BatchProcessor:
 
 ## 挑战题
 
-::: details Q1: Your batch processor uses maxSize=100 and maxWaitMs=50ms. Traffic drops to 1 request/second. What happens, and how do you fix it?
-**Answer:** Each request waits the full 50ms timeout before flushing a batch of 1, adding unnecessary latency.
+::: details Q1: 你的批处理器使用 maxSize=100 和 maxWaitMs=50ms。流量降到每秒 1 个请求。会发生什么？如何修复？
+**答案：** 每个请求都要等待完整的 50ms 超时才刷新一个只有 1 条数据的批次，增加了不必要的延迟。
 
-The timeout triggers with just a single item in the queue because the batch never reaches 100 items. The fix is to make the batch size and/or timeout adaptive -- for example, flush immediately when the queue has been idle, or use a shorter timeout when the queue depth is low. Kafka's `linger.ms` works this way: it only delays if there are more records expected.
+因为批次永远达不到 100 条，超时会在队列中只有一条数据时触发。修复方法是让批次大小和/或超时自适应——例如，当队列空闲时立即刷新，或者当队列深度较低时使用更短的超时。Kafka 的 `linger.ms` 就是这样工作的：它只在预期还有更多记录时才延迟。
 :::
 
-::: details Q2: A batch of 100 database inserts fails because row 57 violates a unique constraint. What should happen to the other 99 rows?
-**Answer:** It depends on whether you need atomicity. If the batch runs in a single transaction, all 100 rows roll back. If not, you need per-item error handling.
+::: details Q2: 一个包含 100 条数据库插入的批次失败了，因为第 57 行违反了唯一约束。其余 99 行应该怎么处理？
+**答案：** 取决于你是否需要原子性。如果批次在单个事务中运行，所有 100 行都会回滚。如果不是，你需要逐条错误处理。
 
-The common production approach is to return a result array with per-item success/failure status (like Elasticsearch's Bulk API does). This lets callers retry only the failed items. If you wrap the entire batch in one transaction for atomicity, a single bad row kills the whole batch -- which is simpler but wastes work.
+常见的生产方案是返回一个包含每条数据成功/失败状态的结果数组（就像 Elasticsearch 的 Bulk API 那样）。这样调用方只需重试失败的条目。如果你为了原子性将整个批次包在一个事务中，一条坏数据就会让整个批次失败——虽然更简单但浪费了工作。
 :::
 
-::: details Q3: You have both a size trigger (maxSize=50) and a time trigger (maxWaitMs=100ms). A burst of 200 items arrives in 10ms. How many batches fire, and when?
-**Answer:** Four batches of 50 fire immediately, all within that 10ms burst. The time trigger never activates.
+::: details Q3: 你同时设置了数量触发器（maxSize=50）和时间触发器（maxWaitMs=100ms）。一个 200 条数据的突发在 10ms 内到达。会触发多少个批次？何时触发？
+**答案：** 4 个各 50 条的批次会立即触发，全部在那 10ms 的突发期内。时间触发器永远不会激活。
 
-The size trigger takes priority whenever the queue reaches maxSize. As items pour in, the queue hits 50, flushes, hits 50 again, flushes, and so on. The timer is only relevant when the queue has items but hasn't reached maxSize -- it's a "don't wait forever" safety net, not the primary trigger under load.
+每当队列达到 maxSize 时，数量触发器会优先触发。随着数据涌入，队列达到 50，刷新，再达到 50，再刷新，以此类推。计时器只在队列有数据但未达到 maxSize 时才有意义——它是"不要永远等待"的安全网，而非高负载下的主要触发器。
 :::
 
-::: details Q4: Why does Kafka batch per-partition rather than using a single global batch across all partitions?
-**Answer:** Because each partition is an independent append-only log on a specific broker. A single cross-partition batch would need to be split at send time anyway.
+::: details Q4: 为什么 Kafka 按分区批处理，而不是使用跨所有分区的单一全局批次？
+**答案：** 因为每个分区是特定 broker 上的独立追加日志。单一的跨分区批次在发送时无论如何都需要拆分。
 
-Batching per-partition means each batch maps to exactly one network request to one broker, keeping the I/O path simple. It also preserves per-partition ordering guarantees. A global batch would require grouping by destination at flush time, adding complexity with no throughput benefit.
+按分区批处理意味着每个批次精确映射到对一个 broker 的一次网络请求，保持 I/O 路径简洁。它还保留了每分区的顺序保证。全局批次在刷新时需要按目标分组，增加了复杂度但没有吞吐量收益。
 :::

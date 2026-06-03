@@ -9,24 +9,24 @@
 每个中间件接收一个上下文和一个 `next()` 函数。调用 `next()` 将控制传递给链中下一个中间件。`next()` 返回后，中间件可以运行后处理逻辑。不调用 `next()` 则短路整个链。这创建了一个"洋葱模型"——请求向内流入，响应向外流出。
 
 ```text
-  请求 ──────────────────────────────────────► 响应
+  Request ──────────────────────────────────────► Response
 
   ┌─────────────────────────────────────────────────┐
-  │  中间件 A（日志）                                │
+  │  Middleware A (logging)                         │
   │  ┌─────────────────────────────────────────┐    │
-  │  │  中间件 B（鉴权）                        │    │
+  │  │  Middleware B (auth)                    │    │
   │  │  ┌─────────────────────────────────┐    │    │
-  │  │  │  中间件 C（处理器）              │    │    │
+  │  │  │  Middleware C (handler)         │    │    │
   │  │  │                                 │    │    │
-  │  │  │  处理请求 → 响应                 │    │    │
+  │  │  │  process request → response     │    │    │
   │  │  │                                 │    │    │
   │  │  └─────────────────────────────────┘    │    │
-  │  │  后处理（添加鉴权头）                    │    │
+  │  │  post-process (add auth headers)        │    │
   │  └─────────────────────────────────────────┘    │
-  │  后处理（记录耗时）                              │
+  │  post-process (log duration)                    │
   └─────────────────────────────────────────────────┘
 
-  执行顺序:
+  Execution order:
   A.pre → B.pre → C.pre → C.post → B.post → A.post
 ```
 
@@ -190,20 +190,20 @@ impl Pipeline {
 
 ## 挑战题
 
-::: details Q1: You have middleware A (logging), B (auth), C (handler). A user sends a request with an invalid token. B rejects it by NOT calling next(). What does A's post-processing see?
-**Answer:** A's post-processing still runs. When B doesn't call `next()`, C never executes. But B's function returns normally to A (since A called `next()` which invoked B). A's code after its `next()` call executes as usual.
+::: details Q1: 你有中间件 A（日志）、B（认证）、C（处理器）。用户发送了一个带无效 token 的请求。B 通过不调用 next() 来拒绝它。A 的后处理会看到什么？
+**答案：** A 的后处理仍然会运行。当 B 不调用 `next()` 时，C 永远不会执行。但 B 的函数正常返回给 A（因为 A 调用了 `next()` 来调用 B）。A 在 `next()` 调用之后的代码照常执行。
 
-This is the onion model in action: A wraps B wraps C. Even if B short-circuits, A's wrapping is still intact. This is why logging middleware works correctly even for rejected requests -- it records the duration and status regardless of whether downstream middleware ran.
+这就是洋葱模型的运作方式：A 包裹 B，B 包裹 C。即使 B 短路了，A 的包裹仍然完好。这就是为什么日志中间件即使对被拒绝的请求也能正确工作——它记录持续时间和状态，无论下游中间件是否运行。
 :::
 
-::: details Q2: You swap the order of auth middleware and rate-limiter middleware. What security issue can this create?
-**Answer:** If rate-limiting runs before auth, unauthenticated requests consume rate-limit quota. An attacker can exhaust the rate limit for legitimate users by sending a flood of invalid requests, causing a denial of service for authenticated users.
+::: details Q2: 你交换了认证中间件和限流中间件的顺序。这会产生什么安全问题？
+**答案：** 如果限流在认证之前运行，未认证的请求会消耗限流配额。攻击者可以通过发送大量无效请求来耗尽合法用户的限流配额，对已认证用户造成拒绝服务。
 
-If auth runs first, invalid requests are rejected immediately (cheap) and never reach the rate limiter. The rate limiter then only counts authenticated requests, which is the correct behavior. **Middleware ordering is a security concern**, not just a correctness one.
+如果认证先运行，无效请求会被立即拒绝（开销低）且永远不会到达限流器。限流器则只计算已认证的请求，这才是正确的行为。**中间件顺序是安全问题**，而不仅仅是正确性问题。
 :::
 
-::: details Q3: Koa uses `async/await` middleware. Express uses callback-style `(req, res, next)`. What practical difference does this make for error handling?
-**Answer:** In Koa, `await next()` means errors from downstream middleware automatically propagate via promise rejection. A single try/catch in outer middleware catches all downstream errors:
+::: details Q3: Koa 使用 `async/await` 中间件。Express 使用回调风格的 `(req, res, next)`。这对错误处理有什么实际区别？
+**答案：** 在 Koa 中，`await next()` 意味着下游中间件的错误会通过 Promise rejection 自动传播。外层中间件中的单个 try/catch 即可捕获所有下游错误：
 
 ```javascript
 app.use(async (ctx, next) => {
@@ -212,13 +212,13 @@ app.use(async (ctx, next) => {
 });
 ```
 
-In Express, errors must be explicitly passed via `next(err)`, and a special 4-argument error handler `(err, req, res, next)` must be registered. If a middleware throws synchronously or an async callback rejects without calling `next(err)`, the error is lost and the request hangs.
+在 Express 中，错误必须通过 `next(err)` 显式传递，且必须注册一个特殊的 4 参数错误处理器 `(err, req, res, next)`。如果中间件同步抛出异常或异步回调 reject 但没有调用 `next(err)`，错误就会丢失且请求挂起。
 
-The async/await model makes the onion pattern natural -- try/catch/finally maps directly to setup/handle/cleanup.
+async/await 模型使洋葱模式自然契合——try/catch/finally 直接映射到设置/处理/清理。
 :::
 
-::: details Q4: Can you implement middleware ordering that runs some middleware only for specific routes (like Express's `app.get('/api', authMiddleware, handler)`)?
-**Answer:** Yes -- add a predicate to each middleware that checks the context before executing. The pipeline wraps each middleware in a conditional:
+::: details Q4: 你能实现只对特定路由运行某些中间件的中间件排序吗（像 Express 的 `app.get('/api', authMiddleware, handler)`）？
+**答案：** 可以——为每个中间件添加一个在执行前检查上下文的谓词。管道将每个中间件包裹在条件判断中：
 
 ```javascript
 function routeMiddleware(path, mw) {
@@ -229,5 +229,5 @@ function routeMiddleware(path, mw) {
 }
 ```
 
-Express implements this by maintaining separate middleware stacks per route. When a request arrives, it finds the matching route and only runs that route's middleware chain. This is essentially a tree of pipelines rather than a single flat chain.
+Express 通过为每个路由维护单独的中间件栈来实现这一点。当请求到达时，它找到匹配的路由并只运行该路由的中间件链。这本质上是管道的树形结构而非单一的扁平链。
 :::

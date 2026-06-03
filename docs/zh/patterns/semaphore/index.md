@@ -85,26 +85,26 @@ async def limited_work():
 
 ## 挑战题
 
-::: details Q1: A semaphore with max=1 behaves like a mutex. Why would you ever use a mutex instead of a semaphore(1)?
-**Answer:** A mutex has ownership semantics — only the thread that acquired it can release it — which prevents accidental release by another thread and enables priority inheritance.
+::: details Q1: 最大值为 1 的信号量行为类似互斥锁。为什么你要用互斥锁而不是 semaphore(1)？
+**答案：** 互斥锁有所有权语义——只有获取它的线程才能释放它——这防止了其他线程的意外释放并启用了优先级继承。
 
-A semaphore is an anonymous counter: any thread can call `release()` regardless of who called `acquire()`. This means a bug where thread B accidentally releases thread A's semaphore goes undetected. A mutex tracks its owner, so an unlock by a non-owner is an error (or panic). Additionally, mutex ownership enables priority inheritance: if a high-priority thread is waiting for a mutex held by a low-priority thread, the OS can temporarily boost the holder's priority. Semaphores can't do this because there's no "holder."
+信号量是匿名计数器：任何线程都可以调用 `release()`，无论谁调用了 `acquire()`。这意味着线程 B 意外释放线程 A 的信号量这种 bug 不会被检测到。互斥锁追踪其所有者，所以非所有者的解锁是错误（或 panic）。此外，互斥锁的所有权启用了优先级继承：如果高优先级线程在等待低优先级线程持有的互斥锁，操作系统可以临时提升持有者的优先级。信号量做不到这一点，因为没有"持有者"。
 :::
 
-::: details Q2: Three high-priority tasks and one low-priority task share a semaphore(1). The low-priority task acquires the semaphore, then a medium-priority task preempts it. The high-priority tasks are now blocked. What is this called and how is it solved?
-**Answer:** This is priority inversion — a high-priority task is indirectly blocked by a medium-priority task that preempts the low-priority lock holder.
+::: details Q2: 三个高优先级任务和一个低优先级任务共享 semaphore(1)。低优先级任务获取了信号量，然后一个中优先级任务抢占了它。高优先级任务现在被阻塞了。这叫什么？如何解决？
+**答案：** 这是优先级反转——高优先级任务被中优先级任务间接阻塞，后者抢占了持有锁的低优先级任务。
 
-The classic example is the Mars Pathfinder bug. The medium-priority task runs indefinitely because it doesn't need the semaphore, preventing the low-priority task from finishing and releasing the semaphore. Solutions: (1) priority inheritance — temporarily boost the lock holder to the highest waiter's priority, (2) priority ceiling — assign the semaphore a ceiling priority equal to the highest-priority task that uses it, (3) avoid holding semaphores across preemption points.
+经典例子是火星探路者（Mars Pathfinder）bug。中优先级任务无限运行因为它不需要信号量，阻止了低优先级任务完成并释放信号量。解决方案：(1) 优先级继承——临时将锁持有者提升到最高等待者的优先级，(2) 优先级天花板——为信号量分配一个等于使用它的最高优先级任务的天花板优先级，(3) 避免在抢占点之间持有信号量。
 :::
 
-::: details Q3: You use a semaphore(10) to limit concurrent database connections. Under load, you discover connections are being created and destroyed rapidly. What is wrong with this design?
-**Answer:** A semaphore only limits concurrency, not reuse. You need a connection pool (object pool pattern) combined with a semaphore, not a semaphore alone.
+::: details Q3: 你使用 semaphore(10) 来限制并发数据库连接。在负载下，你发现连接在快速地创建和销毁。这个设计有什么问题？
+**答案：** 信号量只限制并发度，不提供复用。你需要将连接池（对象池模式）与信号量结合使用，而不是单独使用信号量。
 
-A semaphore permits up to 10 tasks to proceed but doesn't manage the connections themselves. Each task creates a new connection, uses it, and destroys it — the semaphore just gates how many do this simultaneously. A connection pool holds 10 pre-created connections and lends them out. The pool internally uses a semaphore (or equivalent blocking mechanism) to make callers wait when all connections are checked out. The semaphore is the concurrency primitive; the pool is the resource manager.
+信号量允许最多 10 个任务继续执行，但不管理连接本身。每个任务创建一个新连接，使用它，然后销毁——信号量只是控制有多少任务可以同时这样做。连接池持有 10 个预创建的连接并借出它们。池在内部使用信号量（或等效的阻塞机制）使所有连接都被借出时让调用者等待。信号量是并发原语；池是资源管理器。
 :::
 
-::: details Q4: Go uses a buffered channel as a semaphore (`sem := make(chan struct{}, N)`). What advantage does this have over a traditional semaphore implementation?
-**Answer:** It composes naturally with Go's `select` statement, enabling timeout, cancellation, and multi-resource acquisition without additional APIs.
+::: details Q4: Go 使用带缓冲的 channel 作为信号量（`sem := make(chan struct{}, N)`）。相比传统信号量实现，这有什么优势？
+**答案：** 它与 Go 的 `select` 语句自然组合，无需额外 API 即可实现超时、取消和多资源获取。
 
-With a channel-based semaphore, you can write `select { case sem <- struct{}{}: /* acquired */ case <-ctx.Done(): /* cancelled */ }` — combining acquisition with context cancellation in one construct. A traditional semaphore needs a separate `TryAcquire` or `AcquireWithTimeout` method. The channel approach also benefits from Go's runtime scheduler: goroutines blocked on channel operations are parked efficiently without consuming OS threads. The tradeoff is that channels have slightly higher overhead than a mutex-based counter for simple cases.
+使用基于 channel 的信号量，你可以写 `select { case sem <- struct{}{}: /* 获取成功 */ case <-ctx.Done(): /* 已取消 */ }`——在一个构造中组合获取与上下文取消。传统信号量需要单独的 `TryAcquire` 或 `AcquireWithTimeout` 方法。channel 方式还受益于 Go 的运行时调度器：在 channel 操作上阻塞的 goroutine 被高效挂起而不消耗 OS 线程。权衡是在简单场景下 channel 比基于 mutex 的计数器有稍高的开销。
 :::

@@ -11,7 +11,7 @@
 ```text
   Mutation cycle:
 
-  ┌─────────┐   set()    ┌─────────────┐
+  ┌─────────┐   set()     ┌─────────────┐
   │  Clean  │ ──────────► │    Dirty    │
   │ (valid  │             │ (stale      │
   │  cache) │             │  cache)     │
@@ -237,30 +237,30 @@ impl<T, F: Fn() -> T> DirtyFlag<T, F> {
 
 ## 挑战题
 
-::: details Q1: A scene graph has 1000 nodes. The root moves, making all descendants dirty. But only 3 nodes are actually rendered this frame. How many recomputations happen?
-**Answer:** 3 recomputations (plus ancestors of each rendered node).
+::: details Q1: 一个场景图有 1000 个节点。根节点移动，使所有子孙节点变脏。但本帧实际只渲染 3 个节点。会发生多少次重新计算？
+**答案：** 3 次重新计算（加上每个被渲染节点的祖先节点）。
 
-Setting 1000 nodes dirty costs O(1000) -- just flipping booleans. But recomputation only happens when `getWorldPosition()` is called on a node. Only the 3 rendered nodes trigger recomputation, and each walks up to the root to compute its chain. If the 3 nodes share ancestors, those ancestors are recomputed once and cached (flag cleared).
+将 1000 个节点标记为脏的开销是 O(1000)——只是翻转布尔值。但重新计算只在节点的 `getWorldPosition()` 被调用时才发生。只有 3 个被渲染的节点会触发重新计算，每个节点向上遍历到根节点计算其变换链。如果这 3 个节点共享祖先节点，那些祖先只计算一次并缓存（标记清除）。
 
-This is the key insight: dirty-flag cost is proportional to nodes **read**, not nodes **dirtied**.
+这是关键洞察：脏标记的开销与**被读取**的节点数成正比，而非与**被标脏**的节点数成正比。
 :::
 
-::: details Q2: React marks fiber nodes with flags like Placement|Update. Why use bitmask flags instead of a simple boolean dirty flag?
-**Answer:** Multiple orthogonal kinds of "dirty."
+::: details Q2: React 用 Placement|Update 等标志标记 fiber 节点。为什么使用 Bitmask 标志而不是简单的布尔脏标记？
+**答案：** 多种正交的"脏"类型。
 
-A fiber node can need a placement (new DOM node), an update (changed props), a deletion, a ref update, or a layout effect -- all independently. A single boolean can only say "something changed." Bitmask flags encode **what** changed, so the commit phase can process each kind of work separately without re-examining the fiber.
+一个 fiber 节点可能需要 placement（新 DOM 节点）、update（props 变更）、deletion、ref 更新或 layout effect——全都是独立的。单个布尔值只能说"有东西变了"。Bitmask 标志编码了**什么**变了，这样 commit 阶段可以分别处理每种工作而无需重新检查 fiber。
 
-This is a combination of the Dirty Flag pattern and the Bitmask pattern -- each bit is an independent dirty flag for a specific concern.
+这是 Dirty Flag 模式和 Bitmask 模式的组合——每个位是针对特定关注点的独立脏标记。
 :::
 
-::: details Q3: Your dirty-flag cache has a bug: `get()` returns stale data. The flag is set correctly. What's wrong?
-**Answer:** The compute function captures stale closures or references.
+::: details Q3: 你的脏标记缓存有一个 bug：`get()` 返回了过期数据。标记设置是正确的。什么出了问题？
+**答案：** 计算函数捕获了过期的闭包或引用。
 
-Common causes:
+常见原因：
 
-1. The compute function closes over a variable that has since been reassigned (stale closure in React, for example).
-2. The compute function reads from a cached/memoized source that is itself stale.
-3. The dirty flag is cleared before the computation finishes (async compute).
+1. 计算函数闭包捕获了一个后来被重新赋值的变量（例如 React 中的过期闭包）。
+2. 计算函数从一个本身就是过期的缓存/记忆化源中读取。
+3. 脏标记在计算完成之前就被清除了（异步计算）。
 
-Fix: ensure the compute function reads current values at call time, not captured values from registration time. In React, this is why `useMemo` takes a dependency array -- it creates a new compute function when dependencies change.
+修复：确保计算函数在调用时读取当前值，而不是注册时捕获的值。在 React 中，这就是为什么 `useMemo` 需要依赖数组——当依赖变化时它会创建新的计算函数。
 :::

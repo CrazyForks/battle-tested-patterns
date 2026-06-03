@@ -194,28 +194,28 @@ impl LamportClock {
 
 ## 挑战题
 
-::: details Q1: Process A has Lamport clock 5, Process B has clock 3. Can you determine which event happened first?
-**Answer:** No. Lamport clocks only guarantee: if A causally precedes B, then `clock(A) < clock(B)`. The converse is NOT guaranteed.
+::: details Q1: 进程 A 的 Lamport 时钟为 5，进程 B 的时钟为 3。你能确定哪个事件先发生吗？
+**答案：** 不能。Lamport 时钟只保证：如果 A 因果先于 B，则 `clock(A) < clock(B)`。反过来不成立。
 
-`clock(A) = 5 > clock(B) = 3` does NOT mean A happened after B. They could be concurrent events on different machines that never communicated. To detect concurrency, you need a **vector clock** -- one counter per node, with component-wise comparison.
+`clock(A) = 5 > clock(B) = 3` 并不意味着 A 发生在 B 之后。它们可能是不同机器上从未通信过的并发事件。要检测并发性，你需要**向量时钟**——每个节点一个计数器，按分量比较。
 :::
 
-::: details Q2: How does a Hybrid Logical Clock (HLC) improve on a pure Lamport clock?
-**Answer:** An HLC combines a physical timestamp (wall clock) with a logical counter. The physical part gives you real-time proximity -- "this happened around 2:30 PM." The logical part breaks ties and maintains the Lamport guarantee.
+::: details Q2: 混合逻辑时钟（HLC）相比纯 Lamport 时钟有什么改进？
+**答案：** HLC 将物理时间戳（挂钟时间）与逻辑计数器结合。物理部分给你实时近似性——"这大约发生在下午 2:30"。逻辑部分打破平局并维持 Lamport 保证。
 
-Rule: `hlc = max(local_wall_clock, local_hlc, remote_hlc)`. If the wall clock advances, the logical part resets. If the wall clock is behind (NTP hasn't caught up), the logical part increments.
+规则：`hlc = max(local_wall_clock, local_hlc, remote_hlc)`。如果挂钟前进，逻辑部分重置。如果挂钟落后（NTP 还没追上），逻辑部分递增。
 
-CockroachDB uses HLC because it needs both: causal ordering for consistency AND real-time bounds for transaction deadlines. A pure Lamport clock gives ordering but the numbers are meaningless as time. A pure wall clock gives time but can go backward.
+CockroachDB 使用 HLC 因为它两者都需要：因果排序保证一致性，实时边界保证事务截止时间。纯 Lamport 时钟给出排序但数字作为时间没有意义。纯挂钟给出时间但可能倒退。
 :::
 
-::: details Q3: Your cache uses an epoch counter for invalidation. A server restarts and the epoch resets to 0. What breaks?
-**Answer:** Stale cache entries appear valid. A client with cached epoch 5 sees the server's epoch 0 and might incorrectly conclude it has newer data (or, depending on the protocol, force a full re-fetch).
+::: details Q3: 你的缓存使用 epoch 计数器进行失效。服务器重启后 epoch 重置为 0。什么会出问题？
+**答案：** 过期的缓存条目看起来是有效的。一个缓存了 epoch 5 的客户端看到服务器的 epoch 0，可能错误地认为自己的数据更新（或者根据协议，强制完全重新获取）。
 
-Solutions: (1) persist the epoch to disk and restore on restart, (2) use a combination of server ID + epoch so restarts are distinguishable, (3) use a timestamp-based epoch that only increases. etcd solves this with persistent revision + a member ID that changes on rejoin.
+解决方案：(1) 将 epoch 持久化到磁盘并在重启时恢复，(2) 使用服务器 ID + epoch 的组合使重启可区分，(3) 使用只增不减的基于时间戳的 epoch。etcd 通过持久化修订号 + 在重新加入时变化的成员 ID 来解决这个问题。
 :::
 
-::: details Q4: You're building an event sourcing system. Should you use Lamport clocks or sequence numbers as event IDs?
-**Answer:** Sequence numbers are better for a single-writer event store. A Lamport clock adds unnecessary complexity when there's only one source of events -- a simple auto-incrementing integer is a perfectly valid logical clock.
+::: details Q4: 你正在构建一个事件溯源系统。应该使用 Lamport 时钟还是序列号作为事件 ID？
+**答案：** 对于单写者事件存储，序列号更好。当只有一个事件源时，Lamport 时钟增加了不必要的复杂性——简单的自增整数就是完全有效的逻辑时钟。
 
-Lamport clocks shine when multiple independent writers exist (distributed systems). For single-writer: use a sequence number. For multi-writer with one coordinating node: use a centralized sequence (like Kafka partition offsets). For truly distributed multi-writer: use Lamport or vector clocks. Match the tool to the distribution model.
+Lamport 时钟在多个独立写者存在时（分布式系统）才发挥优势。单写者：使用序列号。多写者但有一个协调节点：使用集中式序列（如 Kafka 分区偏移量）。真正分布式的多写者：使用 Lamport 或向量时钟。工具应与分布模型匹配。
 :::

@@ -235,20 +235,20 @@ impl HashRing {
 
 ## 挑战题
 
-::: details Q1: You have a hash ring with 3 physical nodes, each with 1 virtual node (no replicas). One node owns 60% of the key space while the others own 20% each. How do virtual nodes fix this, and why does groupcache default to a high replica count?
-**Answer:** Virtual nodes spread each physical node across multiple positions on the ring, making the distribution converge toward uniform as the number of virtual nodes increases.
+::: details Q1: 你有一个包含 3 个物理节点的哈希环，每个节点只有 1 个虚拟节点（没有副本）。一个节点占了 60% 的键空间，其余两个各占 20%。虚拟节点如何解决这个问题？为什么 groupcache 默认使用较高的副本数？
+**答案：** 虚拟节点将每个物理节点分散到环上的多个位置，随着虚拟节点数量的增加，分布趋向均匀。
 
-With only 1 position per node, the arc lengths between nodes are determined by hash values — essentially random, leading to high variance. With 100-200 virtual nodes per physical node, the law of large numbers kicks in and each physical node owns approximately 1/n of the ring. Groupcache defaults to a high replica count because statistical uniformity requires many samples. The tradeoff is memory: more virtual nodes means a larger sorted key array and ring map.
+每个节点只有 1 个位置时，节点间的弧长由哈希值决定——本质上是随机的，导致高方差。当每个物理节点有 100-200 个虚拟节点时，大数定律开始起作用，每个物理节点大约拥有环的 1/n。groupcache 默认使用较高的副本数是因为统计均匀性需要大量样本。权衡在于内存：更多虚拟节点意味着更大的排序键数组和环映射。
 :::
 
-::: details Q2: Node B crashes and is removed from a 5-node ring. Which node(s) absorb its traffic? Does every remaining node share the load equally?
-**Answer:** Only the node immediately clockwise from B on the ring absorbs all of B's keys — the other three nodes are completely unaffected.
+::: details Q2: 节点 B 崩溃并从 5 节点的环中移除。哪些节点吸收了它的流量？每个剩余节点是否均匀分担负载？
+**答案：** 只有环上 B 顺时针方向的下一个节点吸收了 B 的所有键——其他三个节点完全不受影响。
 
-This is both the strength and weakness of consistent hashing. When B is removed, keys that mapped to B now "fall through" to the next clockwise node. Without virtual nodes, one node absorbs 100% of the redistributed load, potentially doubling its traffic. With virtual nodes, B's multiple ring positions are distributed, so its keys scatter across multiple successor nodes — closer to an even split. This is a key reason virtual nodes exist: they turn a "one neighbor absorbs all" failure into a "many neighbors share the load" failure.
+这既是一致性哈希的优势也是其劣势。当 B 被移除时，映射到 B 的键现在"落到"下一个顺时针节点。没有虚拟节点时，一个节点吸收 100% 的重新分配负载，可能使其流量翻倍。有了虚拟节点，B 的多个环位置是分散的，因此它的键会分散到多个后继节点——更接近均匀分配。这是虚拟节点存在的关键原因：它们将"一个邻居吸收全部"的故障转变为"多个邻居分担负载"的故障。
 :::
 
-::: details Q3: Your cache cluster uses consistent hashing. A new product launch causes one specific key ("homepage_banner") to receive 100x the normal request rate. Consistent hashing maps it to Node C, which is now overloaded while other nodes are idle. Does consistent hashing solve hotspot problems?
-**Answer:** No. Consistent hashing distributes keys evenly across nodes, but it cannot distribute load evenly when individual keys have vastly different request rates.
+::: details Q3: 你的缓存集群使用一致性哈希。新产品上线导致一个特定键（"homepage_banner"）收到正常请求率 100 倍的流量。一致性哈希将它映射到节点 C，该节点现在过载而其他节点空闲。一致性哈希能解决热点问题吗？
+**答案：** 不能。一致性哈希将键均匀分配到节点上，但当单个键的请求率差异巨大时，它无法均匀分配负载。
 
-Consistent hashing solves the key *assignment* problem, not the key *popularity* problem. A single hot key always maps to one node. Solutions include: read replicas (cache the hot key on multiple nodes), request-level load balancing (route reads for hot keys randomly), or key splitting (split "homepage_banner" into "homepage_banner:1" through "homepage_banner:10" spread across nodes). The bounded-loads extension to consistent hashing addresses this by redirecting overflow traffic to the next node on the ring.
+一致性哈希解决的是键的*分配*问题，而非键的*热度*问题。单个热键总是映射到一个节点。解决方案包括：读副本（在多个节点上缓存热键）、请求级负载均衡（将热键的读取随机路由）或键分片（将 "homepage_banner" 拆分为 "homepage_banner:1" 到 "homepage_banner:10" 分布在多个节点上）。一致性哈希的有界负载扩展通过将溢出流量重定向到环上的下一个节点来解决此问题。
 :::

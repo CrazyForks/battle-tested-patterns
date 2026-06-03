@@ -14,13 +14,13 @@ Instead of immediately removing data, write a special "tombstone" record that sh
   delete("B")                      get("B")
       │                                │
       ▼                                ▼
-  ┌──────────┐                   ┌──────────┐
+  ┌──────────┐                   ┌───────────┐
   │ Log/SST  │                   │  Lookup   │
-  ├──────────┤                   ├──────────┤
+  ├──────────┤                   ├───────────┤
   │ A = "v1" │                   │ Found:    │
   │ B = tomb │ ◄── tombstone     │ B = tomb  │──► return NOT FOUND
   │ C = "v3" │                   │           │
-  └──────────┘                   └──────────┘
+  └──────────┘                   └───────────┘
 
   Compaction (background):
   ┌──────────┐      ┌──────────┐

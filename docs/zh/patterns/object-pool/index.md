@@ -122,26 +122,26 @@ class ObjectPool:
 
 ## 挑战题
 
-::: details Q1: Your pool is initialized with 10 objects, but at peak load you need 100. Should the pool grow dynamically or reject requests beyond 10?
-**Answer:** It depends on the resource type. Grow dynamically for cheap objects (buffers); enforce a hard cap for expensive/limited resources (database connections).
+::: details Q1: 你的池初始化了 10 个对象，但峰值负载时需要 100 个。池应该动态增长还是拒绝超过 10 个的请求？
+**答案：** 取决于资源类型。对于廉价对象（缓冲区）动态增长；对于昂贵/有限资源（数据库连接）强制硬上限。
 
-A buffer pool should grow on demand and optionally shrink during idle periods — the cost of allocating an extra buffer is low. A database connection pool should enforce `maxSize` because each connection consumes server memory, file descriptors, and auth state. Requests beyond the cap should queue and wait (with a timeout) rather than creating unbounded connections that crash the database. HikariCP defaults to a max of 10 connections for this reason.
+缓冲区池应该按需增长并在空闲时可选地缩小——分配额外缓冲区的成本很低。数据库连接池应该强制 `maxSize`，因为每个连接消耗服务器内存、文件描述符和认证状态。超过上限的请求应该排队等待（带超时）而不是创建无限连接导致数据库崩溃。HikariCP 正是因为这个原因默认最大 10 个连接。
 :::
 
-::: details Q2: A developer calls `pool.get()` but never calls `pool.release()`. How does this "object leak" manifest, and how can you detect it?
-**Answer:** The pool gradually empties and starts allocating new objects every time, defeating its purpose and potentially exhausting resources.
+::: details Q2: 开发者调用了 `pool.get()` 但从未调用 `pool.release()`。这种"对象泄漏"如何表现？如何检测？
+**答案：** 池逐渐变空并开始每次都分配新对象，失去了其作用并可能耗尽资源。
 
-Detection strategies: (1) track outstanding objects with a Set and log warnings when count exceeds a threshold, (2) use weak references and a finalizer to detect objects that were GC'd without being returned, (3) wrap pooled objects in a proxy that auto-releases after a timeout. Go's `sync.Pool` sidesteps this entirely — it offers no guarantees about object retention and lets the GC reclaim idle pool entries, making leaks less catastrophic but the pool less predictable.
+检测策略：(1) 使用 Set 追踪未归还对象，当数量超过阈值时记录警告，(2) 使用弱引用和终结器来检测被 GC 回收但未归还的对象，(3) 将池化对象包装在超时后自动释放的代理中。Go 的 `sync.Pool` 完全回避了这个问题——它不保证对象保留并让 GC 回收空闲的池条目，使泄漏不那么灾难性但池也不那么可预测。
 :::
 
-::: details Q3: Two goroutines call `pool.Get()` simultaneously. What makes Go's `sync.Pool` safe here without an explicit mutex around every get/put?
-**Answer:** `sync.Pool` uses per-P (per-processor) local pools with lock-free access, falling back to a shared pool with a mutex only when the local pool is empty.
+::: details Q3: 两个 goroutine 同时调用 `pool.Get()`。是什么使 Go 的 `sync.Pool` 在这里不需要显式的 mutex 就是安全的？
+**答案：** `sync.Pool` 使用每 P（每处理器）的本地池进行无锁访问，只有当本地池为空时才回退到带 mutex 的共享池。
 
-Each OS thread (P in Go's scheduler) has its own private pool slot. `Get()` first checks the local slot (no lock needed — only one goroutine runs on a P at a time). If empty, it steals from other Ps' pools under a lock. `Put()` goes to the local slot first. This per-P sharding pattern minimizes contention. For a hand-rolled pool in a multithreaded environment, you would need a mutex or a lock-free data structure like a concurrent stack.
+每个 OS 线程（Go 调度器中的 P）有自己的私有池槽。`Get()` 首先检查本地槽（不需要锁——一个 P 上一次只运行一个 goroutine）。如果为空，它在锁保护下从其他 P 的池中偷取。`Put()` 也先去本地槽。这种每 P 分片模式最大限度地减少了竞争。对于手工编写的多线程环境池，你需要 mutex 或像并发栈这样的无锁数据结构。
 :::
 
-::: details Q4: You build an object pool for HTTP request objects in a Node.js server. After profiling, you discover it's slower than just using `new Request()`. What went wrong?
-**Answer:** In V8's generational GC, short-lived small objects are allocated and collected almost for free — the pool's reset logic and bookkeeping cost more than the allocation it avoids.
+::: details Q4: 你在 Node.js 服务器中为 HTTP 请求对象构建了一个对象池。性能分析后发现它比直接使用 `new Request()` 更慢。出了什么问题？
+**答案：** 在 V8 的分代 GC 中，短生命周期的小对象几乎可以免费分配和回收——池的重置逻辑和簿记成本比它避免的分配还要高。
 
-V8's young generation GC uses bump-pointer allocation (essentially free) and collects short-lived objects by copying survivors, not scanning garbage. If your `Request` objects are small, created per-request, and discarded immediately, GC handles them efficiently. The pool adds overhead: maintaining the free list, resetting object state, preventing V8 from optimizing object shapes. Object pools shine for expensive constructors (DB connections, compiled regexes) or GC-pause-sensitive contexts (game loops), not for cheap objects in a modern GC runtime.
+V8 的新生代 GC 使用指针碰撞分配（本质上是免费的）并通过复制存活者来收集短生命周期对象，而不是扫描垃圾。如果你的 `Request` 对象很小、按请求创建、立即丢弃，GC 能高效处理。池增加了额外开销：维护空闲链表、重置对象状态、阻止 V8 优化对象形状。对象池适用于昂贵的构造函数（数据库连接、编译后的正则表达式）或对 GC 暂停敏感的上下文（游戏循环），不适用于现代 GC 运行时中的廉价对象。
 :::

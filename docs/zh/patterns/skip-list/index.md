@@ -269,20 +269,20 @@ impl SkipList {
 
 ## 挑战题
 
-::: details Q1: A skip list uses `Math.random()` to decide node promotion levels. Your colleague argues this makes skip list performance "unreliable" since a bad random sequence could produce O(n) search. Is this a real concern in production?
-**Answer:** In theory yes, but in practice the probability is astronomically low — comparable to a hash table degenerating to O(n) from collisions.
+::: details Q1: 跳表使用 `Math.random()` 来决定节点的提升层级。你的同事认为这使得跳表性能"不可靠"，因为糟糕的随机序列可能导致 O(n) 搜索。这在生产中是真正的顾虑吗？
+**答案：** 理论上是的，但实际中这个概率极低——相当于哈希表因碰撞退化到 O(n) 的概率。
 
-With promotion probability p=0.5, the chance of a node reaching level k is (1/2)^k. The expected maximum level for n elements is O(log n). For a skip list to degrade to O(n), a large fraction of nodes would need to be at level 0 only — an event with probability so close to zero it's practically impossible. Redis chose skip lists over red-black trees for this reason: the average-case guarantees are strong enough, and the implementation is dramatically simpler. LevelDB uses skip lists for the same reasoning.
+提升概率 p=0.5 时，节点达到第 k 层的概率是 (1/2)^k。n 个元素的期望最大层级是 O(log n)。跳表退化到 O(n) 需要大部分节点都只在第 0 层——这个事件的概率接近零，实际上不可能发生。Redis 选择跳表而非红黑树正是因为这个原因：平均情况的保证足够强，且实现大大简化。LevelDB 出于同样的原因使用跳表。
 :::
 
-::: details Q2: Redis uses a skip list (not a red-black tree or B-tree) for sorted sets. Both skip lists and balanced BSTs offer O(log n) operations. What makes skip lists preferable for Redis's use case?
-**Answer:** Skip lists are simpler to implement correctly, support efficient range queries by following forward pointers, and are easier to make lock-free for concurrent access.
+::: details Q2: Redis 对有序集合使用跳表（而非红黑树或 B 树）。跳表和平衡 BST 都提供 O(log n) 操作。是什么使跳表更适合 Redis 的用例？
+**答案：** 跳表实现起来更简单且正确，通过跟随前向指针支持高效范围查询，且更容易实现无锁并发访问。
 
-In a balanced BST, range queries require an in-order traversal that bounces between parent and child pointers. In a skip list, once you find the range start at level 0, you simply follow forward pointers — sequential and cache-friendly. Additionally, lock-free skip list algorithms (used in LevelDB and ConcurrentSkipListMap) are well-understood, while lock-free balanced tree algorithms are notoriously complex. Antirez (Redis creator) also cited implementation simplicity: skip list insert/delete code is straightforward compared to red-black tree rotations.
+在平衡 BST 中，范围查询需要在父节点和子节点指针之间来回跳转的中序遍历。在跳表中，一旦在第 0 层找到范围起点，你只需跟随前向指针——顺序且缓存友好。此外，无锁跳表算法（用于 LevelDB 和 ConcurrentSkipListMap）已被充分理解，而无锁平衡树算法则出了名的复杂。Antirez（Redis 创造者）也指出了实现的简洁性：跳表的插入/删除代码比红黑树的旋转要直观得多。
 :::
 
-::: details Q3: LevelDB's skip list supports concurrent reads without locks but requires external synchronization for writes. Why not make writes lock-free too?
-**Answer:** LevelDB only has one writer thread (the memtable writer), so lock-free writes add complexity without benefit — the design constraint is concurrent readers, not concurrent writers.
+::: details Q3: LevelDB 的跳表支持无锁并发读取但写入需要外部同步。为什么不把写入也做成无锁的？
+**答案：** LevelDB 只有一个写入线程（memtable 写入者），所以无锁写入增加了复杂性但没有收益——设计约束是并发读取者，而非并发写入者。
 
-LevelDB's LSM-tree architecture funnels all writes through a single write-ahead log and then into the memtable. Since there's only one writer, a mutex is trivial and adds no contention. The skip list uses atomic operations for the forward pointers so that the single writer and multiple reader threads can operate simultaneously without read locks. This is the SWMR (single-writer, multiple-reader) insight: optimize for the actual concurrency pattern, not the general case.
+LevelDB 的 LSM-tree 架构将所有写入汇集到单个 write-ahead log 然后进入 memtable。由于只有一个写入者，mutex 是简单的且不会产生竞争。跳表对前向指针使用原子操作，使得单个写入者和多个读取线程可以同时操作而无需读锁。这就是 SWMR（单写者多读者）洞察：为实际的并发模式优化，而非为一般情况优化。
 :::

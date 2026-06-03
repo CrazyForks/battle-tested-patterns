@@ -10,32 +10,32 @@
 
 ```text
   ┌────────────┐
-  │  Resource   │   refcount = 1
-  │  (value)    │
+  │  Resource  │   refcount = 1
+  │  (value)   │
   └─────┬──────┘
         │
      owner A
 
   A.clone() → B
   ┌────────────┐
-  │  Resource   │   refcount = 2
-  │  (value)    │
+  │  Resource  │   refcount = 2
+  │  (value)   │
   └──┬─────┬───┘
      │     │
   owner A  owner B
 
   A.drop()
   ┌────────────┐
-  │  Resource   │   refcount = 1
-  │  (value)    │
+  │  Resource  │   refcount = 1
+  │  (value)   │
   └─────┬──────┘
         │
      owner B
 
   B.drop()
   ┌────────────┐
-  │  Resource   │   refcount = 0 → cleanup()!
-  │  (value)    │
+  │  Resource  │   refcount = 0 → cleanup()!
+  │  (value)   │
   └────────────┘
 ```
 
@@ -268,28 +268,28 @@ impl<T> Drop for Rc<T> {
 
 ## 挑战题
 
-::: details Q1: Object A references B, and B references A. Both have refcount 2. You drop your handle to A. What happens?
-**Answer:** Memory leak. Dropping your handle to A decrements A's refcount to 1 (B still references A). A's refcount never reaches 0, so A is never freed. Since A is never freed, it never drops its reference to B, so B's refcount stays at 1 forever.
+::: details Q1: 对象 A 引用 B，B 引用 A。两者的引用计数都是 2。你释放了对 A 的句柄。会发生什么？
+**答案：** 内存泄漏。释放你对 A 的句柄将 A 的引用计数减为 1（B 仍然引用 A）。A 的引用计数永远不会到 0，所以 A 永远不会被释放。由于 A 永远不会被释放，它永远不会释放对 B 的引用，所以 B 的引用计数也永远保持在 1。
 
-This is the **reference cycle problem** -- the fundamental weakness of reference counting. Solutions: (1) use weak references for back-pointers (Rust's `Weak<T>`, Python's `weakref`), (2) add a cycle-detecting GC on top (CPython does this), (3) redesign to avoid cycles entirely.
+这就是**引用循环问题**——引用计数的根本弱点。解决方案：(1) 对反向指针使用弱引用（Rust 的 `Weak<T>`、Python 的 `weakref`），(2) 在上层添加循环检测 GC（CPython 就是这样做的），(3) 重新设计以完全避免循环。
 :::
 
-::: details Q2: CPython uses refcounting as its primary GC strategy, yet it still has a cycle collector. Why not just use refcounting alone?
-**Answer:** Reference counting alone cannot reclaim reference cycles. Any data structure with mutual references (parent-child, graph edges, closures capturing `self`) would leak.
+::: details Q2: CPython 使用引用计数作为主要的 GC 策略，但它仍然有循环收集器。为什么不只使用引用计数？
+**答案：** 仅靠引用计数无法回收引用循环。任何有相互引用的数据结构（父子关系、图的边、捕获 `self` 的闭包）都会泄漏。
 
-CPython's cycle collector (`gc` module) periodically walks objects that *could* form cycles (containers like lists, dicts, objects with `__dict__`) and identifies unreachable groups. The refcount handles the ~95% of objects that don't participate in cycles, making the cycle collector's job lighter. This hybrid approach gives deterministic cleanup for most objects while still handling cycles.
+CPython 的循环收集器（`gc` 模块）定期遍历*可能*形成循环的对象（如 list、dict、有 `__dict__` 的对象等容器）并识别不可达的组。引用计数处理约 95% 不参与循环的对象，使循环收集器的工作更轻松。这种混合方法为大多数对象提供确定性清理，同时仍然处理循环。
 :::
 
-::: details Q3: Rust's `Arc` uses `fetch_add(1, Relaxed)` for Clone but `fetch_sub(1, Release)` for Drop. Why different memory orderings?
-**Answer:** Clone only needs to ensure the counter is incremented -- no data is accessed or freed, so `Relaxed` (cheapest ordering) suffices. The counter just needs to go up atomically.
+::: details Q3: Rust 的 `Arc` 在 Clone 时使用 `fetch_add(1, Relaxed)`，但在 Drop 时使用 `fetch_sub(1, Release)`。为什么使用不同的内存序？
+**答案：** Clone 只需要确保计数器递增——不访问或释放数据，所以 `Relaxed`（最便宜的内存序）就够了。计数器只需要原子地增加。
 
-Drop is different: before freeing the resource, all previous writes by all threads must be visible. `Release` on the decrement ensures that the thread doing the final cleanup (which uses an `Acquire` fence) sees all data written by every thread that ever held a reference. Without this, the destructor might read stale data.
+Drop 不同：在释放资源之前，所有线程的所有先前写入必须可见。在递减上使用 `Release` 确保执行最终清理的线程（使用 `Acquire` 屏障）能看到每个曾持有引用的线程写入的所有数据。没有这个保证，析构函数可能读到过期数据。
 
-This is a classic performance optimization -- `Relaxed` is essentially free on x86, while `Release` involves a store barrier.
+这是经典的性能优化——`Relaxed` 在 x86 上本质上是免费的，而 `Release` 涉及存储屏障。
 :::
 
-::: details Q4: You're building a resource pool. Should you use reference counting or a finalizer/destructor?
-**Answer:** Neither alone is ideal for pools. Reference counting triggers cleanup at zero, but "cleanup" for a pooled resource should mean "return to pool," not "destroy."
+::: details Q4: 你正在构建一个资源池。应该使用引用计数还是终结器/析构函数？
+**答案：** 两者单独都不适合池。引用计数在归零时触发清理，但池化资源的"清理"应该意味着"返回到池中"，而不是"销毁"。
 
-The correct pattern is: wrap the pool item in a ref-counted handle where the "cleanup" callback returns the item to the pool instead of freeing it. This is exactly how database connection pools work -- `Drop` on the handle returns the connection rather than closing it. The pool itself manages actual destruction (e.g., on shutdown or when connections are stale).
+正确的模式是：将池化项包装在引用计数句柄中，其中"清理"回调将项返回到池中而不是释放它。这正是数据库连接池的工作方式——句柄上的 `Drop` 返回连接而不是关闭它。池本身管理实际的销毁（例如在关闭时或连接过期时）。
 :::

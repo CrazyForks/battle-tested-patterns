@@ -106,26 +106,26 @@ light.send("TIMER")  # "yellow"
 
 ## 挑战题
 
-::: details Q1: A form has 4 steps, each with a "valid" and "invalid" sub-state, plus a "submitting" and "submitted" state. That's 4*2 + 2 = 10 states. If you add a "dirty/clean" dimension, it doubles to 20. How do you avoid this state explosion?
-**Answer:** Use parallel (orthogonal) state machines — one for the form step, one for validation status, one for dirty tracking — instead of one flat machine with every combination.
+::: details Q1: 一个表单有 4 个步骤，每个步骤有"有效"和"无效"子状态，加上"提交中"和"已提交"状态。就是 4*2 + 2 = 10 个状态。如果你添加"脏/干净"维度，翻倍到 20。如何避免这种状态爆炸？
+**答案：** 使用并行（正交）状态机——一个管表单步骤，一个管验证状态，一个管脏标记——而不是用一个扁平状态机包含所有组合。
 
-This is exactly what statecharts (Harel's extension of FSMs) solve. Each concern runs as an independent region: the step machine handles `NEXT`/`BACK`, the validation machine handles `VALIDATE`/`INVALIDATE`, the dirty machine handles `CHANGE`/`SAVE`. They compose without multiplying. XState supports this via `type: 'parallel'`. The total states are 4 + 2 + 2 = 8 instead of 4 × 2 × 2 = 16.
+这正是状态图（Harel 对 FSM 的扩展）解决的问题。每个关注点作为独立区域运行：步骤机处理 `NEXT`/`BACK`，验证机处理 `VALIDATE`/`INVALIDATE`，脏标记机处理 `CHANGE`/`SAVE`。它们组合而不是相乘。XState 通过 `type: 'parallel'` 支持这一点。总状态数是 4 + 2 + 2 = 8，而不是 4 x 2 x 2 = 16。
 :::
 
-::: details Q2: In the traffic light example, you want the light to stay red for 60s but yellow for only 5s. Where does this timing logic belong — in the state machine or outside it?
-**Answer:** The timing lives outside the machine as the event source; the machine only defines which transitions are valid.
+::: details Q2: 在交通灯示例中，你希望红灯保持 60 秒但黄灯只有 5 秒。这个定时逻辑应该在状态机内部还是外部？
+**答案：** 定时逻辑在状态机外部作为事件源；状态机只定义哪些转换是有效的。
 
-A state machine is not a scheduler — it defines *what* can happen, not *when*. An external timer fires a `TIMER` event after the appropriate delay. The machine receives the event and transitions. This separation is important: the same machine definition works whether timers are real (production), instant (tests), or manual (debugging). Putting delays inside transitions couples the machine to time, making it harder to test and reason about.
+状态机不是调度器——它定义*什么*可以发生，而非*何时*发生。外部定时器在适当的延迟后触发 `TIMER` 事件。状态机接收事件并转换。这种分离很重要：无论定时器是真实的（生产）、即时的（测试）还是手动的（调试），同样的状态机定义都能工作。将延迟放在转换内部会将状态机耦合到时间，使其更难测试和推理。
 :::
 
-::: details Q3: You add a guard condition: "only transition from `loading` to `success` if the response has status 200." What happens if no guard matches — is the event silently dropped?
-**Answer:** Yes, in most implementations the event is silently ignored and the machine stays in its current state.
+::: details Q3: 你添加了一个守卫条件："只有当响应状态码为 200 时才从 `loading` 转换到 `success`。"如果没有守卫匹配会怎样——事件是否被静默丢弃？
+**答案：** 是的，在大多数实现中事件被静默忽略，状态机保持在当前状态。
 
-This is by design — an unhandled event is not an error in state machine semantics. If no transition matches (because no guard passes), the machine remains stable. This is safer than throwing an exception, because events often arrive asynchronously and may be irrelevant to the current state. If you need to handle "no transition matched" explicitly, model it as a catch-all transition to an error state, or use an `onEvent` hook to log unhandled events.
+这是设计如此——在状态机语义中，未处理的事件不是错误。如果没有转换匹配（因为没有守卫通过），状态机保持稳定。这比抛出异常更安全，因为事件通常是异步到达的，可能与当前状态无关。如果你需要显式处理"没有转换匹配"的情况，将其建模为到错误状态的兜底转换，或使用 `onEvent` 钩子记录未处理的事件。
 :::
 
-::: details Q4: TCP has 11 states and ~25 transitions. Could you replace the state machine with a series of `if/else` checks on boolean flags like `isConnected`, `isSynSent`, `isFinWait`?
-**Answer:** Technically yes, but you lose the guarantee that impossible states are unrepresentable — boolean flags allow invalid combinations like `isConnected && isFinWait`.
+::: details Q4: TCP 有 11 个状态和约 25 个转换。你能用一系列 `if/else` 检查布尔标志如 `isConnected`、`isSynSent`、`isFinWait` 来替代状态机吗？
+**答案：** 技术上可以，但你失去了"不可能的状态不可表示"的保证——布尔标志允许 `isConnected && isFinWait` 这样的无效组合。
 
-With 11 booleans you have 2^11 = 2048 possible combinations, of which only 11 are valid. Every `if/else` must guard against the 2037 invalid states. A state machine makes this impossible by construction: the entity is always in exactly one state, and only defined transitions can change it. The TCP spec itself is defined as a state diagram, not as boolean logic, because the state machine representation is provably correct while the boolean approach is provably fragile.
+11 个布尔值有 2^11 = 2048 种可能的组合，其中只有 11 种是有效的。每个 `if/else` 都必须防范那 2037 种无效状态。状态机通过构造使这不可能：实体始终恰好在一个状态中，只有定义的转换才能改变它。TCP 规范本身就是用状态图定义的，而不是布尔逻辑，因为状态机表示是可证明正确的，而布尔方法是可证明脆弱的。
 :::

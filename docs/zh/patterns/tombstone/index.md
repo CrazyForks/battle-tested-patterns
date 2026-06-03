@@ -14,13 +14,13 @@
   delete("B")                      get("B")
       │                                │
       ▼                                ▼
-  ┌──────────┐                   ┌──────────┐
+  ┌──────────┐                   ┌───────────┐
   │ Log/SST  │                   │  Lookup   │
-  ├──────────┤                   ├──────────┤
+  ├──────────┤                   ├───────────┤
   │ A = "v1" │                   │ Found:    │
   │ B = tomb │ ◄── tombstone     │ B = tomb  │──► return NOT FOUND
   │ C = "v3" │                   │           │
-  └──────────┘                   └──────────┘
+  └──────────┘                   └───────────┘
 
   Compaction (background):
   ┌──────────┐      ┌──────────┐
@@ -330,26 +330,26 @@ impl TombstoneStore {
 
 ## 挑战题
 
-::: details Q1: A Cassandra cluster with gc_grace_seconds=10 days. Node C goes down for 15 days. What happens when C comes back online?
-**Answer:** Node C may resurrect deleted data.
+::: details Q1: 一个 Cassandra 集群设置 gc_grace_seconds=10 天。节点 C 宕机了 15 天。当 C 恢复上线时会发生什么？
+**答案：** 节点 C 可能会复活已删除的数据。
 
-While C was down, other nodes deleted some keys and their tombstones expired (gc_grace_seconds=10 days). When C comes back, it still has the original data without tombstones. During anti-entropy repair, C's "live" data wins because there's no tombstone to contradict it. The deleted data reappears across the cluster.
+在 C 宕机期间，其他节点删除了一些键，它们的墓碑已过期（gc_grace_seconds=10 天）。当 C 恢复时，它仍然拥有没有墓碑的原始数据。在反熵修复期间，C 的"活"数据获胜，因为没有墓碑来否定它。已删除的数据在整个集群中重新出现。
 
-Fix: Run `nodetool repair` before gc_grace_seconds expires, or increase gc_grace_seconds to exceed the maximum expected downtime.
+修复：在 gc_grace_seconds 过期前运行 `nodetool repair`，或者增加 gc_grace_seconds 使其超过预期的最大宕机时间。
 :::
 
-::: details Q2: Your LSM-tree database has a "tombstone accumulation" problem -- reads are getting slower. Why?
-**Answer:** Tombstones must be checked during reads.
+::: details Q2: 你的 LSM-tree 数据库有"墓碑累积"问题——读取变得越来越慢。为什么？
+**答案：** 读取时必须检查墓碑。
 
-When you read a key, the database must scan from the newest SSTable to the oldest. If it finds a tombstone, it knows the key is deleted -- but it still had to read through all the levels to find it. Worse, range scans must check every tombstone in the range to filter deleted keys.
+当你读取一个键时，数据库必须从最新的 SSTable 扫描到最旧的。如果找到墓碑，它知道键已被删除——但它仍然需要读取所有层级才能找到它。更糟糕的是，范围扫描必须检查范围内的每个墓碑以过滤已删除的键。
 
-If compaction falls behind or the delete rate is high, tombstones pile up across levels. Solutions: trigger compaction more aggressively on tombstone-heavy SSTables, or use "single delete" (RocksDB) which cancels exactly one put, avoiding tombstone persistence.
+如果压缩落后或删除率很高，墓碑会在各层级堆积。解决方案：对墓碑较多的 SSTable 更积极地触发压缩，或使用 "single delete"（RocksDB），它精确取消一次 put，避免墓碑持久化。
 :::
 
-::: details Q3: Why can't you just immediately delete the tombstone after all replicas acknowledge the deletion?
-**Answer:** Because of read-repair and anti-entropy.
+::: details Q3: 为什么不能在所有副本确认删除后立即删除墓碑？
+**答案：** 因为读修复和反熵。
 
-Even if all currently-live replicas acknowledge the deletion, a temporarily-offline replica might still hold the original data. When it comes back, it would re-introduce the data. The tombstone must persist long enough to "win" conflict resolution against stale data from any replica that was down.
+即使所有当前在线的副本都确认了删除，一个临时离线的副本可能仍然持有原始数据。当它恢复时，它会重新引入数据。墓碑必须持续足够长的时间，以在冲突解决中"赢过"来自任何宕机副本的过期数据。
 
-This is why Cassandra uses `gc_grace_seconds` -- it's the maximum expected time for a node to be offline. The tombstone lives at least that long to guarantee it outlives any stale replica.
+这就是 Cassandra 使用 `gc_grace_seconds` 的原因——它是节点离线的最大预期时间。墓碑至少存活这么长时间，以保证它比任何过期副本存活更久。
 :::

@@ -83,26 +83,26 @@ first_10 = [next(evens) for _ in range(10)]
 
 ## 挑战题
 
-::: details Q1: You create an infinite iterator `fibonacci()` and call `.collect()` on it. What happens?
-**Answer:** The program runs until it exhausts memory and crashes — `collect()` tries to materialize an infinite sequence into a finite array.
+::: details Q1: 你创建了一个无限迭代器 `fibonacci()` 并对它调用 `.collect()`。会发生什么？
+**答案：** 程序会一直运行直到耗尽内存并崩溃——`collect()` 试图将无限序列物化为有限数组。
 
-Infinite iterators are only safe with operations that consume a bounded number of elements: `take(n)`, `find()`, `any()`, `first()`. Terminal operations like `collect()`, `count()`, or `fold()` attempt to consume every element and will never terminate on an infinite source. This is why lazy evaluation requires discipline: the chain must include a bounding combinator before any materializing terminal. Rust's type system does not prevent this — it's a runtime issue.
+无限迭代器只有在使用消费有界数量元素的操作时才是安全的：`take(n)`、`find()`、`any()`、`first()`。终端操作如 `collect()`、`count()` 或 `fold()` 会尝试消费每一个元素，在无限源上永远不会终止。这就是为什么惰性求值需要纪律：链式调用中必须在任何物化终端之前包含一个限界组合子。Rust 的类型系统无法阻止这种情况——这是一个运行时问题。
 :::
 
-::: details Q2: You have `iter.filter(expensiveCheck).take(5).collect()`. Does `expensiveCheck` run on all elements or only until 5 pass?
-**Answer:** `expensiveCheck` runs only until 5 elements pass the filter — then `take` stops pulling from the source.
+::: details Q2: 你有 `iter.filter(expensiveCheck).take(5).collect()`。`expensiveCheck` 会对所有元素运行还是只运行到 5 个通过为止？
+**答案：** `expensiveCheck` 只运行到 5 个元素通过过滤器为止——然后 `take` 停止从源拉取。
 
-This is the power of lazy evaluation: `take(5)` pulls from `filter`, which pulls from the source, one element at a time. Once `take` has accumulated 5 passing elements, it stops requesting more. If only 1 in 10 elements passes the filter, `expensiveCheck` runs on roughly 50 elements (to find 5 that pass), not 1 million. This demand-driven execution is why lazy iterators excel at early termination — no wasted work.
+这就是惰性求值的威力：`take(5)` 从 `filter` 拉取，`filter` 从源拉取，每次一个元素。一旦 `take` 积累了 5 个通过的元素，它就停止请求更多。如果每 10 个元素只有 1 个通过过滤器，`expensiveCheck` 大约运行 50 次（找到 5 个通过的），而不是 100 万次。这种按需驱动的执行是惰性迭代器擅长提前终止的原因——没有浪费的工作。
 :::
 
-::: details Q3: You try to iterate over the same iterator twice. The second loop produces no elements. Why, and how do you fix it?
-**Answer:** Most iterators are single-use — once consumed, their internal cursor is at the end and `next()` returns `None`/`done` forever.
+::: details Q3: 你尝试对同一个迭代器迭代两次。第二次循环没有产生任何元素。为什么？如何修复？
+**答案：** 大多数迭代器是一次性的——消费完毕后，其内部游标在末尾，`next()` 永远返回 `None`/`done`。
 
-An iterator is a stateful cursor, not a collection. After the first loop exhausts it, the state is permanently "finished." To iterate twice, you need either: (1) create a new iterator from the original source (`source.iter()` called twice), (2) collect into a collection first and iterate the collection, or (3) use a "replayable" abstraction like Kotlin's `Sequence` or Rust's `IntoIterator` on a collection (which creates a fresh iterator each time). Python generators have the same single-use constraint.
+迭代器是有状态的游标，不是集合。第一次循环耗尽后，状态就永久"完成"了。要迭代两次，你需要：(1) 从原始源创建新的迭代器（调用两次 `source.iter()`），(2) 先收集到集合中再迭代集合，或 (3) 使用"可重放"的抽象，如 Kotlin 的 `Sequence` 或 Rust 对集合的 `IntoIterator`（每次创建新的迭代器）。Python 的生成器也有同样的一次性约束。
 :::
 
-::: details Q4: Two consumers need to process the same stream of events — one filters for errors, the other counts totals. Can they share a single iterator?
-**Answer:** No, a single iterator has one cursor. You need either `tee` (clone the iterator) or a broadcast pattern (observer) to feed multiple consumers.
+::: details Q4: 两个消费者需要处理同一个事件流——一个过滤错误，另一个统计总数。它们能共享一个迭代器吗？
+**答案：** 不能，一个迭代器只有一个游标。你需要 `tee`（克隆迭代器）或广播模式（Observer）来向多个消费者提供数据。
 
-Python's `itertools.tee` creates N independent iterators from one source by buffering elements that one consumer has read but others haven't. The catch: if one consumer is much faster than the other, the buffer grows unboundedly. For truly independent consumption of a live stream, the observer/pub-sub pattern is more appropriate — the source pushes to all subscribers rather than subscribers pulling from a shared cursor. Iterators are fundamentally single-consumer; multiple consumers need a fan-out mechanism.
+Python 的 `itertools.tee` 通过缓冲一个消费者已读但其他消费者未读的元素，从一个源创建 N 个独立的迭代器。问题在于：如果一个消费者比另一个快得多，缓冲区会无限增长。对于真正独立地消费实时流，Observer/发布-订阅模式更合适——源向所有订阅者推送，而不是订阅者从共享游标拉取。迭代器从根本上是单消费者的；多消费者需要扇出机制。
 :::

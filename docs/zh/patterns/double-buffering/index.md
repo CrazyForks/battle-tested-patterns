@@ -133,26 +133,26 @@ func (db *DoubleBuffer[T]) Swap() {
 
 ## 挑战题
 
-::: details Q1: If double buffering eliminates tearing, why do GPUs use triple buffering?
-**Answer:** Triple buffering decouples the swap timing from vsync, reducing input latency without reintroducing tearing.
+::: details Q1: 如果双缓冲消除了撕裂，为什么 GPU 还要使用三缓冲？
+**答案：** 三缓冲将交换时机与 vsync 解耦，在不重新引入撕裂的情况下降低输入延迟。
 
-With double buffering and vsync enabled, if the GPU finishes a frame early, it must wait for the next vsync interval before swapping — the CPU/GPU pipeline stalls. A third buffer lets the GPU keep rendering into a spare back buffer while the front buffer waits for vsync. The display always gets the most recently completed frame, so latency drops while tearing stays eliminated.
+在启用 vsync 的双缓冲中，如果 GPU 提前完成一帧，它必须等到下一个 vsync 间隔才能交换——CPU/GPU 管线停滞。第三个缓冲区让 GPU 可以继续渲染到备用后缓冲区，同时前缓冲区等待 vsync。显示器总是得到最近完成的帧，所以延迟降低而撕裂仍然被消除。
 :::
 
-::: details Q2: A junior developer proposes calling `swap()` in the middle of writing to the back buffer to "publish partial progress." What goes wrong?
-**Answer:** This reintroduces the exact tearing problem double buffering is designed to prevent.
+::: details Q2: 一个初级开发者提议在写入后缓冲区的过程中调用 `swap()` 来"发布部分进展"。会出什么问题？
+**答案：** 这会重新引入双缓冲设计用来防止的撕裂问题。
 
-The whole point of double buffering is that the swap happens only after the back buffer is fully written. If you swap mid-write, readers now see a half-updated buffer — some pixels from the old frame, some from the new. The invariant is: the back buffer is private to the writer until the swap makes it public atomically.
+双缓冲的要点在于交换只在后缓冲区完全写入后才发生。如果你在写入中途交换，读者会看到一个半更新的缓冲区——一些像素来自旧帧，一些来自新帧。不变量是：后缓冲区在交换使其原子性公开之前，对写者是私有的。
 :::
 
-::: details Q3: React's fiber tree uses double buffering, but it never actually swaps two screen buffers. What is being "swapped" and why does it still qualify?
-**Answer:** React swaps which fiber tree is "current" and which is "work-in-progress" by reassigning a single pointer (`root.current = finishedWork`).
+::: details Q3: React 的 fiber 树使用双缓冲，但它实际上从不交换两个屏幕缓冲区。被"交换"的是什么？为什么它仍然符合双缓冲模式？
+**答案：** React 通过重新赋值单个指针（`root.current = finishedWork`）来交换哪棵 fiber 树是"当前的"、哪棵是"进行中的"。
 
-The pattern is structural, not visual. React maintains two fiber trees linked via `.alternate`. During rendering, it builds the work-in-progress tree without affecting what is displayed. On commit, it atomically designates the WIP tree as "current." The old current becomes the next WIP tree (recycled, not GC'd). This is the same principle as GPU buffer swapping: prepare privately, publish atomically, recycle the old version.
+这个模式是结构性的，而非视觉性的。React 通过 `.alternate` 维护两棵关联的 fiber 树。渲染期间，它构建进行中的树而不影响当前显示的内容。提交时，它原子性地将 WIP 树指定为"当前"。旧的当前树变成下一个 WIP 树（回收利用，不是 GC）。这与 GPU 缓冲区交换是同一个原理：私密准备，原子发布，回收旧版本。
 :::
 
-::: details Q4: Double buffering uses 2x memory. Under what condition does this cost become zero effective overhead?
-**Answer:** When you would have needed a separate "scratch" buffer anyway to prepare the next state.
+::: details Q4: 双缓冲使用 2 倍内存。在什么条件下这个开销实际上变为零？
+**答案：** 当你无论如何都需要一个单独的"草稿"缓冲区来准备下一个状态时。
 
-If the alternative to double buffering is allocating a new buffer every frame and discarding the old one, double buffering actually saves memory by reusing two fixed buffers forever. The 2x cost only hurts when compared to an in-place update scenario — and in-place updates risk tearing. So the real cost comparison is: 2 persistent buffers vs. N short-lived allocations plus GC pressure.
+如果双缓冲的替代方案是每帧分配一个新缓冲区然后丢弃旧的，那么双缓冲通过永远复用两个固定缓冲区实际上节省了内存。2 倍的开销只在与原地更新场景比较时才显得痛苦——而原地更新有撕裂风险。因此真正的比较是：2 个持久缓冲区 vs N 个短生命周期的分配加上 GC 压力。
 :::

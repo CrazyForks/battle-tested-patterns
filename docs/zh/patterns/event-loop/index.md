@@ -10,22 +10,23 @@
 
 ```text
   ┌─────────────────────────────────────────────────┐
-  │                  事件循环                         │
-  │                                                  │
+  │                  Event Loop                     │
+  │                                                 │
   │  ┌──────────┐    ┌──────────┐    ┌──────────┐   │
-  │  │ 注册兴趣 │    │   轮询   │    │ 分发就绪 │   │
-  │  │  (fds)   │───►│  (阻塞)  │───►│  处理器  │   │
+  │  │ Register │    │  Poll    │    │ Dispatch │   │
+  │  │ interest │───►│ (block)  │───►│ ready    │   │
+  │  │ (fds)    │    │          │    │ handlers │   │
   │  └──────────┘    └──────────┘    └────┬─────┘   │
   │       ▲                               │         │
   │       └───────────────────────────────┘         │
-  │                   重复                           │
+  │                   repeat                        │
   └─────────────────────────────────────────────────┘
 
-  阶段详情（libuv 模型）:
-  ┌────────┐  ┌─────────┐  ┌──────┐  ┌───────┐  ┌───────┐
-  │ 定时器 │─►│ 待处理  │─►│ 轮询 │─►│ 检查  │─►│ 关闭  │──► 下一轮
-  │        │  │  回调    │  │      │  │       │  │       │
-  └────────┘  └─────────┘  └──────┘  └───────┘  └───────┘
+  Phase detail (libuv model):
+  ┌────────┐  ┌──────────┐  ┌──────┐  ┌───────┐  ┌───────┐
+  │ Timers │─►│ Pending  │─►│ Poll │─►│ Check │─►│ Close │──► next iteration
+  │        │  │ callbacks│  │      │  │       │  │       │
+  └────────┘  └──────────┘  └──────┘  └───────┘  └───────┘
 ```
 
 | 属性 | 值 |
@@ -228,30 +229,30 @@ impl EventLoop {
 
 ## 挑战题
 
-::: details Q1: Your Node.js server handles 5,000 WebSocket connections fine, but adding a single endpoint that computes a Fibonacci number blocks ALL connections. Why?
-**Answer:** The event loop is single-threaded. While computing Fibonacci (CPU-bound, synchronous), the event loop cannot process any I/O events. All 5,000 WebSocket connections are frozen until the computation completes.
+::: details Q1: 你的 Node.js 服务器处理 5,000 个 WebSocket 连接没有问题，但添加了一个计算 Fibonacci 数的端点后，所有连接都被阻塞了。为什么？
+**答案：** 事件循环是单线程的。在计算 Fibonacci（CPU 密集型、同步操作）时，事件循环无法处理任何 I/O 事件。所有 5,000 个 WebSocket 连接都会冻结，直到计算完成。
 
-Solutions: (1) offload CPU work to a `worker_threads` pool, (2) break computation into chunks with `setImmediate()` to yield back to the event loop between chunks, (3) use a separate microservice for heavy computation. This is the fundamental tradeoff of the event loop model -- cooperative multitasking means one bad actor blocks everyone.
+解决方案：(1) 将 CPU 工作卸载到 `worker_threads` 池，(2) 使用 `setImmediate()` 将计算分成小块，在块之间让出控制权给事件循环，(3) 使用单独的微服务进行密集计算。这是事件循环模型的根本权衡——协作式多任务意味着一个坏参与者会阻塞所有人。
 :::
 
-::: details Q2: Redis is single-threaded and uses an event loop, yet it handles 100K+ operations per second. How?
-**Answer:** Redis operations are extremely fast -- most are O(1) hash table lookups or O(log N) sorted set operations that take microseconds. The event loop overhead is negligible compared to network I/O time.
+::: details Q2: Redis 是单线程的且使用事件循环，但它能处理每秒 10 万以上的操作。它是怎么做到的？
+**答案：** Redis 的操作极快——大多数是 O(1) 的哈希表查找或 O(log N) 的有序集合操作，耗时在微秒级别。与网络 I/O 时间相比，事件循环的开销微不足道。
 
-The bottleneck is not CPU but network: reading/writing to sockets, parsing the protocol, and serializing responses. Since Redis uses non-blocking I/O via `aeProcessEvents`, it processes one command per event (read -> parse -> execute -> write) and immediately moves to the next ready socket. There's no context switching, no lock contention, and the entire dataset fits in memory -- pure sequential throughput.
+瓶颈不在 CPU 而在网络：读写 socket、解析协议、序列化响应。由于 Redis 通过 `aeProcessEvents` 使用非阻塞 I/O，它每个事件处理一个命令（读取 -> 解析 -> 执行 -> 写入）并立即转向下一个就绪的 socket。没有上下文切换，没有锁竞争，整个数据集都在内存中——纯粹的顺序吞吐。
 :::
 
-::: details Q3: libuv's `uv_run` has three modes: DEFAULT, ONCE, NOWAIT. When would you use each?
-**Answer:**
+::: details Q3: libuv 的 `uv_run` 有三种模式：DEFAULT、ONCE、NOWAIT。你何时使用每种？
+**答案：**
 
-- **DEFAULT**: Normal operation -- run until all handles/requests are done. This is what `node app.js` uses. The process stays alive until there are no more timers, servers, or pending callbacks.
-- **ONCE**: Process one round of events, then return. Useful for embedding libuv in another event loop (e.g., a game engine's main loop that also needs to handle Node.js events).
-- **NOWAIT**: Like ONCE but never blocks on I/O poll. Only processes already-ready events. Useful for polling in a tight loop where blocking would cause missed frames or deadlines.
+- **DEFAULT**：正常运行——运行直到所有句柄/请求完成。这是 `node app.js` 使用的模式。进程保持存活直到没有更多计时器、服务器或待处理的回调。
+- **ONCE**：处理一轮事件然后返回。适用于将 libuv 嵌入到另一个事件循环中（例如游戏引擎的主循环也需要处理 Node.js 事件）。
+- **NOWAIT**：类似 ONCE 但永不阻塞在 I/O 轮询上。只处理已就绪的事件。适用于在紧密循环中轮询，这种情况下阻塞会导致丢帧或超期。
 
-The key difference: DEFAULT blocks indefinitely, ONCE blocks for one iteration, NOWAIT never blocks.
+关键区别：DEFAULT 无限期阻塞，ONCE 阻塞一次迭代，NOWAIT 永不阻塞。
 :::
 
-::: details Q4: Why does Nginx use multiple worker processes each with its own event loop, rather than one single event loop?
-**Answer:** One event loop on one CPU core wastes the other cores. Nginx spawns N worker processes (typically one per CPU core), each running its own independent event loop.
+::: details Q4: 为什么 Nginx 使用多个工作进程且每个都有自己的事件循环，而不是使用单一事件循环？
+**答案：** 一个事件循环在一个 CPU 核上运行会浪费其他核。Nginx 启动 N 个工作进程（通常每个 CPU 核一个），每个运行自己独立的事件循环。
 
-This gives you: (1) multi-core utilization without shared-state threading bugs, (2) process isolation -- one crashed worker doesn't take down others, (3) zero-downtime reload -- new workers start with new config while old workers drain. The `SO_REUSEPORT` socket option lets all workers accept connections on the same port, with the kernel load-balancing across them.
+这带来了：(1) 多核利用率而无共享状态线程 bug，(2) 进程隔离——一个崩溃的 worker 不会拖垮其他的，(3) 零停机重载——新 worker 使用新配置启动，旧 worker 排空连接。`SO_REUSEPORT` socket 选项让所有 worker 在同一端口上接受连接，由内核在它们之间负载均衡。
 :::

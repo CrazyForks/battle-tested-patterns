@@ -16,7 +16,7 @@ Each middleware receives a context and a `next()` function. Calling `next()` pas
   │  ┌─────────────────────────────────────────┐    │
   │  │  Middleware B (auth)                    │    │
   │  │  ┌─────────────────────────────────┐    │    │
-  │  │  │  Middleware C (handler)          │    │    │
+  │  │  │  Middleware C (handler)         │    │    │
   │  │  │                                 │    │    │
   │  │  │  process request → response     │    │    │
   │  │  │                                 │    │    │

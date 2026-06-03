@@ -206,26 +206,26 @@ impl FreeList {
 
 ## 挑战题
 
-::: details Q1: A bug causes `free(slot)` to be called twice on the same slot. What happens with a naive free list, and how do production systems detect this?
-**Answer:** The slot appears twice in the free list. Two subsequent `alloc()` calls return the same slot, and two callers write to overlapping memory, causing data corruption.
+::: details Q1: 一个 bug 导致 `free(slot)` 对同一个槽位被调用了两次。在简单的 Free List 中会发生什么？生产系统如何检测这种情况？
+**答案：** 该槽位在空闲链表中出现两次。两次后续的 `alloc()` 调用返回同一个槽位，两个调用者写入重叠的内存，导致数据损坏。
 
-Double-free is one of the most dangerous memory bugs. Detection techniques include: a bitmap tracking which slots are allocated (check before freeing), poison values written into freed slots (detect if the value is already the poison), and the Linux SLUB allocator's approach of XOR-encoding free list pointers with a per-cache random value so corruption is detected on the next alloc. Some allocators abort immediately on double-free rather than silently corrupting.
+双重释放是最危险的内存 bug 之一。检测技术包括：使用位图追踪哪些槽位已分配（释放前检查）、在已释放的槽位中写入毒值（检测该值是否已经是毒值），以及 Linux SLUB 分配器的方法——用每缓存的随机值对空闲链表指针做 XOR 编码，以便在下次分配时检测到损坏。一些分配器在双重释放时立即中止，而不是静默损坏。
 :::
 
-::: details Q2: An intrusive free list stores the "next" pointer inside the free slot itself. What's the advantage over a separate index array, and what's the risk?
-**Answer:** Intrusive lists use zero extra memory -- the next pointer occupies space that's unused anyway (the slot is free). The risk is that a use-after-free bug can overwrite the next pointer, corrupting the entire free list.
+::: details Q2: 侵入式空闲链表将"next"指针存储在空闲槽位本身内部。相比单独的索引数组，它有什么优势？风险是什么？
+**答案：** 侵入式链表不使用额外内存——next 指针占用的空间本来就是闲置的（槽位是空闲的）。风险在于使用后释放（use-after-free）的 bug 可能覆盖 next 指针，破坏整个空闲链表。
 
-With a non-intrusive design (separate array of indices), corrupting a freed slot's data doesn't break the free list structure. With intrusive design, if code accidentally writes to a freed slot, it overwrites the next pointer and the free list chain breaks -- subsequent allocs may return garbage addresses. This is why Linux's SLUB uses `CONFIG_SLAB_FREELIST_HARDENED` to XOR-encode the pointers.
+使用非侵入式设计（单独的索引数组）时，破坏已释放槽位的数据不会破坏空闲链表结构。使用侵入式设计时，如果代码意外写入已释放的槽位，它会覆盖 next 指针导致空闲链表断裂——后续的分配可能返回垃圾地址。这就是为什么 Linux 的 SLUB 使用 `CONFIG_SLAB_FREELIST_HARDENED` 对指针做 XOR 编码。
 :::
 
-::: details Q3: Free lists return the most recently freed slot (LIFO). Why is this better for performance than returning the oldest freed slot (FIFO)?
-**Answer:** The most recently freed slot is likely still in CPU cache. Reusing it immediately gives better cache hit rates than returning a slot freed long ago.
+::: details Q3: 空闲链表返回最近释放的槽位（LIFO）。为什么这比返回最早释放的槽位（FIFO）性能更好？
+**答案：** 最近释放的槽位很可能仍在 CPU 缓存中。立即复用它比返回很久以前释放的槽位有更好的缓存命中率。
 
-LIFO reuse is a deliberate cache optimization. When you free slot N and immediately alloc, you get slot N back -- which was just accessed and is likely still in L1/L2 cache. FIFO would return a slot freed many operations ago, which has probably been evicted from cache. For hot allocation paths (game engines doing thousands of alloc/free per frame), this cache locality difference is measurable.
+LIFO 复用是一种有意为之的缓存优化。当你释放槽位 N 并立即分配时，你会得到槽位 N——它刚刚被访问过，很可能仍在 L1/L2 缓存中。FIFO 会返回很多操作之前释放的槽位，它很可能已被逐出缓存。对于热分配路径（游戏引擎每帧进行数千次分配/释放），这种缓存局部性差异是可测量的。
 :::
 
-::: details Q4: You have a free list pool of 1,000 slots. Monitoring shows the pool is 95% allocated at steady state, and alloc() frequently returns null. Should you increase the pool size?
-**Answer:** Not necessarily. First check whether allocated slots are actually in use or are being leaked (allocated but never freed).
+::: details Q4: 你有一个 1,000 个槽位的空闲链表池。监控显示在稳定状态下池已分配 95%，`alloc()` 经常返回 null。你应该增加池的大小吗？
+**答案：** 不一定。首先检查已分配的槽位是否确实在使用中，还是被泄漏了（分配后从未释放）。
 
-A common bug is forgetting to call `free()` on slots that are no longer needed, causing the pool to slowly drain. Adding more slots just delays the inevitable exhaustion. Check the `allocated` count over time -- if it monotonically increases, you have a leak. If it fluctuates around 950 with occasional spikes to 1000, then the pool is genuinely too small and should be increased.
+一个常见的 bug 是忘记对不再需要的槽位调用 `free()`，导致池慢慢耗尽。增加更多槽位只是延迟了不可避免的耗尽。检查 `allocated` 计数随时间的变化——如果它单调递增，你有泄漏。如果它在 950 附近波动偶尔飙升到 1000，那么池确实太小了，应该增加。
 :::

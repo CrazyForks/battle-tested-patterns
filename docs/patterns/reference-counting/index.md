@@ -10,32 +10,32 @@ Reference counting assigns each shared resource a counter. Every new owner (clon
 
 ```text
   ┌────────────┐
-  │  Resource   │   refcount = 1
-  │  (value)    │
+  │  Resource  │   refcount = 1
+  │  (value)   │
   └─────┬──────┘
         │
      owner A
 
   A.clone() → B
   ┌────────────┐
-  │  Resource   │   refcount = 2
-  │  (value)    │
+  │  Resource  │   refcount = 2
+  │  (value)   │
   └──┬─────┬───┘
      │     │
   owner A  owner B
 
   A.drop()
   ┌────────────┐
-  │  Resource   │   refcount = 1
-  │  (value)    │
+  │  Resource  │   refcount = 1
+  │  (value)   │
   └─────┬──────┘
         │
      owner B
 
   B.drop()
   ┌────────────┐
-  │  Resource   │   refcount = 0 → cleanup()!
-  │  (value)    │
+  │  Resource  │   refcount = 0 → cleanup()!
+  │  (value)   │
   └────────────┘
 ```
 

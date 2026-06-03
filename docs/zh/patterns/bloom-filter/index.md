@@ -209,26 +209,26 @@ class BloomFilter:
 
 ## 挑战题
 
-::: details Q1: You deploy a bloom filter with m=1000 bits and k=3 hashes to check URL membership. After inserting 800 URLs, your false positive rate is unacceptably high. You expected around 1%. What went wrong?
-**Answer:** The bit array is oversaturated — 800 items in 1000 bits means most bits are set to 1, making almost any query return "maybe yes."
+::: details Q1: 你部署了一个 m=1000 位、k=3 个哈希函数的 Bloom Filter 来检查 URL 的成员关系。插入 800 个 URL 后，假阳性率高得无法接受。你预期大约是 1%。出了什么问题？
+**答案：** 位数组过度饱和——1000 位中插入 800 个元素意味着大多数位都被设为 1，几乎任何查询都会返回"可能存在"。
 
-The false positive rate formula `(1 - e^(-kn/m))^k` shows that with k=3, n=800, m=1000, approximately 91% of bits are set, giving a ~75% false positive rate. The fix is to increase m. For a 1% false positive rate with n=800 and k=3, you need roughly m=11,500 bits (about 1.4 KB). The rule of thumb is ~10 bits per element for a 1% false positive rate.
+假阳性率公式 `(1 - e^(-kn/m))^k` 表明，当 k=3、n=800、m=1000 时，大约 91% 的位被置位，假阳性率约为 75%。修复方法是增大 m。对于 n=800、k=3 的 1% 假阳性率，你需要大约 m=11,500 位（约 1.4 KB）。经验法则是每个元素约 10 位可达到 1% 的假阳性率。
 :::
 
-::: details Q2: Your colleague proposes deleting items from a bloom filter by clearing the bits that were set during insertion. Why does this break the data structure?
-**Answer:** Clearing bits for one item can destroy membership evidence for other items whose hashes mapped to the same bit positions.
+::: details Q2: 你的同事提议通过清除插入时设置的位来从 Bloom Filter 中删除元素。为什么这会破坏数据结构？
+**答案：** 清除一个元素的位可能会破坏其他元素的成员关系证据，因为其他元素的哈希也映射到了相同的位位置。
 
-In a bloom filter, multiple items share bits. If "apple" and "banana" both hash to bit position 5, clearing bit 5 when removing "apple" creates a false negative for "banana" — violating the bloom filter's fundamental guarantee of zero false negatives. Counting bloom filters solve this by storing counters instead of single bits, decrementing on delete and only clearing when the counter reaches zero.
+在 Bloom Filter 中，多个元素共享位。如果 "apple" 和 "banana" 都哈希到位位置 5，删除 "apple" 时清除位 5 会导致 "banana" 的假阴性——违反了 Bloom Filter 零假阴性的基本保证。计数 Bloom Filter 通过存储计数器而非单个位来解决这个问题，删除时递减计数器，只在计数器归零时才清除。
 :::
 
-::: details Q3: Your system has two bloom filters — one built from server A's dataset and another from server B's dataset. A query needs to check "was this key seen by either server?" Can you answer this without querying both filters separately?
-**Answer:** Yes. Bitwise OR the two bit arrays together to create a union filter that answers "seen by A or B" in a single query.
+::: details Q3: 你的系统有两个 Bloom Filter——一个基于服务器 A 的数据集构建，另一个基于服务器 B 的数据集构建。一个查询需要检查"这个键是否被任一服务器见过？"你能不单独查询两个过滤器就回答这个问题吗？
+**答案：** 可以。对两个位数组进行按位 OR 操作，创建一个联合过滤器，可以在单次查询中回答"被 A 或 B 见过"。
 
-This works because a bloom filter's membership test is purely a function of which bits are set. ORing the arrays produces a filter where a bit is set if it was set in either A or B, which is exactly the union semantics. The resulting filter has a higher false positive rate (more bits are set), but zero false negatives are preserved. This property makes bloom filters uniquely composable — you cannot do this with hash sets without transferring all elements.
+这之所以可行，是因为 Bloom Filter 的成员测试纯粹取决于哪些位被设置。对数组进行 OR 运算产生的过滤器中，如果一个位在 A 或 B 中任一被设置，它就是被设置的——这正是并集语义。结果过滤器的假阳性率更高（更多位被设置），但零假阴性的保证不变。这个特性使 Bloom Filter 具有独特的可组合性——你无法在不传输所有元素的情况下对 hash set 做到这一点。
 :::
 
-::: details Q4: LevelDB uses bloom filters to skip disk reads for nonexistent keys. If the bloom filter says "maybe yes" for a key that doesn't actually exist, what is the cost? What if it said "no" for a key that does exist?
-**Answer:** A false positive costs one unnecessary disk read (wasted I/O but correct result). A false negative would return "key not found" for an existing key — silent data loss.
+::: details Q4: LevelDB 使用 Bloom Filter 来跳过对不存在的键的磁盘读取。如果 Bloom Filter 对一个实际不存在的键说"可能存在"，代价是什么？如果它对一个确实存在的键说"不存在"呢？
+**答案：** 假阳性的代价是一次不必要的磁盘读取（浪费了 I/O 但结果正确）。假阴性则会对一个存在的键返回"键未找到"——这是无声的数据丢失。
 
-This asymmetry is why bloom filters guarantee zero false negatives. A false positive just means "we checked the disk and the key wasn't there" — the system self-corrects at the cost of one extra I/O. But if a bloom filter could produce false negatives, the database would skip the disk read entirely and incorrectly report the key as missing. That's data corruption, not a performance issue. The entire value of bloom filters in databases depends on this one-sided error guarantee.
+这种不对称性正是 Bloom Filter 保证零假阴性的原因。假阳性只是意味着"我们检查了磁盘但键不在那里"——系统以一次额外 I/O 的代价自我修正。但如果 Bloom Filter 可能产生假阴性，数据库会完全跳过磁盘读取并错误地报告键不存在。那是数据损坏，而不是性能问题。Bloom Filter 在数据库中的全部价值都依赖于这种单边错误保证。
 :::

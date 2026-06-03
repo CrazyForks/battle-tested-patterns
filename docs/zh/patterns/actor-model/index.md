@@ -187,26 +187,26 @@ impl<S> Actor<S> {
 
 ## 挑战题
 
-::: details Q1: Actors communicate only via asynchronous messages, with no shared state or locks. A colleague claims "actors can't deadlock since there are no locks." Is this true?
-**Answer:** Actors can still deadlock through circular message dependencies, even without any locks.
+::: details Q1: Actor 之间只通过异步消息通信，没有共享状态和锁。一位同事声称"Actor 不会死锁，因为没有锁"。这个说法正确吗？
+**答案：** 即使没有锁，Actor 仍然可能因为循环消息依赖而发生死锁。
 
-If Actor A sends a message to Actor B and waits for a response, while Actor B sends a message to Actor A and waits for a response, neither can process the other's message — both mailboxes contain an unprocessed message that requires the other to proceed. This is logically equivalent to a lock-based deadlock. The mitigation is to avoid synchronous request-reply patterns between actors, use timeouts on all message exchanges, or design message flows as DAGs (directed acyclic graphs) rather than cycles.
+如果 Actor A 向 Actor B 发送消息并等待回复，同时 Actor B 也向 Actor A 发送消息并等待回复，那么双方都无法处理对方的消息——两个邮箱中各有一条未处理的消息，而处理它需要对方先响应。这在逻辑上等价于基于锁的死锁。缓解措施包括：避免 Actor 之间的同步请求-应答模式、为所有消息交换设置超时，或者将消息流设计为 DAG（有向无环图）而非环形结构。
 :::
 
-::: details Q2: Your actor system has a fast producer actor sending 10,000 messages/second to a slow consumer actor that processes 100 messages/second. The consumer's mailbox grows unboundedly. How should an actor system handle this back pressure?
-**Answer:** Bounded mailboxes with explicit back-pressure signals — when the mailbox is full, the sender must either drop messages, block, or receive a rejection signal.
+::: details Q2: 你的 Actor 系统中，一个高速生产者 Actor 以每秒 10,000 条消息的速率发送，而消费者 Actor 每秒只能处理 100 条。消费者的邮箱无限增长。Actor 系统应该如何处理这种背压？
+**答案：** 使用有界邮箱并配合显式的背压信号——当邮箱满时，发送方必须丢弃消息、阻塞或收到拒绝信号。
 
-Unbounded mailboxes are a common pitfall in actor systems — they trade memory for liveness, eventually causing OOM crashes. Akka offers `BoundedMailbox` which blocks senders when full, and flow-control via Akka Streams (reactive streams back-pressure). Erlang processes have unbounded mailboxes by design but rely on the OTP supervision tree to restart processes that consume too much memory. The architectural insight is that back-pressure is a system design concern, not just an actor concern — you need to decide at each producer-consumer boundary what happens when the consumer can't keep up.
+无界邮箱是 Actor 系统中常见的陷阱——它用内存换取活性，最终会导致 OOM 崩溃。Akka 提供了 `BoundedMailbox`，在邮箱满时阻塞发送方，并通过 Akka Streams 实现流控（响应式流背压）。Erlang 进程的邮箱在设计上是无界的，但依赖 OTP 监督树来重启内存消耗过大的进程。架构层面的洞察是：背压是系统设计问题，而不仅仅是单个 Actor 的问题——你需要在每个生产者-消费者边界上决定当消费者跟不上时该怎么办。
 :::
 
-::: details Q3: An actor processing a payment message crashes mid-execution due to a bug. The payment was partially processed (funds debited but not credited). How does Erlang/OTP handle actor crashes without corrupting the system?
-**Answer:** OTP's supervision tree restarts the crashed actor with fresh state — the key insight is that actor state is ephemeral and the source of truth lives elsewhere (database, message log).
+::: details Q3: 一个正在处理支付消息的 Actor 由于 bug 在执行过程中崩溃。支付被部分处理（资金已扣除但未入账）。Erlang/OTP 如何在不破坏系统的情况下处理 Actor 崩溃？
+**答案：** OTP 的监督树会用全新的状态重启崩溃的 Actor——关键洞察是 Actor 状态是临时的，真正的数据源在别处（数据库、消息日志）。
 
-Erlang's "let it crash" philosophy means actors don't try to recover from unexpected errors — they die, and a supervisor process restarts them. But this only works if the actor's side effects are either idempotent or transactional. For the payment case, the debit and credit should be wrapped in a database transaction, or the actor should use an outbox pattern: write the intent to a durable log first, then execute. If it crashes mid-execution, the restarted actor replays the log. The actor model isolates the crash (other actors are unaffected), but durability and consistency still require explicit design.
+Erlang 的"任其崩溃"哲学意味着 Actor 不会尝试从意外错误中恢复——它们直接终止，由 supervisor 进程重启。但这只在 Actor 的副作用是幂等的或事务性的情况下才有效。对于支付场景，扣款和入账应该包裹在数据库事务中，或者 Actor 应该使用 outbox 模式：先将意图写入持久化日志，再执行操作。如果在执行过程中崩溃，重启后的 Actor 会重放日志。Actor 模型隔离了崩溃（其他 Actor 不受影响），但持久性和一致性仍然需要显式设计。
 :::
 
-::: details Q4: Erlang can run millions of actors (processes) on a single machine, each with only ~2KB of memory. The Go implementation in this doc uses goroutines with a channel mailbox. Could you run 1 million Go actors the same way?
-**Answer:** Yes for the goroutine count (Go supports millions of goroutines), but each channel in the implementation allocates a buffer of 100 elements, and the combined channel overhead is significant.
+::: details Q4: Erlang 可以在单台机器上运行数百万个 Actor（进程），每个仅占用约 2KB 内存。本文档中的 Go 实现使用 goroutine 配合 channel 邮箱。你能以同样的方式运行 100 万个 Go Actor 吗？
+**答案：** 就 goroutine 数量而言可以（Go 支持数百万个 goroutine），但实现中每个 channel 分配了 100 个元素的缓冲区，累积的 channel 开销是显著的。
 
-A goroutine starts at ~2-4KB stack (similar to Erlang), so 1 million goroutines cost ~2-4GB of stack memory alone. Each buffered channel adds its buffer size times the element size. Since Go 1.14, goroutines are asynchronously preempted via signals, so CPU-bound actors won't starve others. The deeper difference is Erlang's per-process garbage collection — each actor's GC pause is independent and microsecond-scale, while Go's GC is global and can pause all actors. For truly massive actor counts, Erlang's BEAM VM was purpose-built for this; Go can approximate it but with different GC tradeoffs.
+一个 goroutine 的初始栈约 2-4KB（与 Erlang 类似），因此 100 万个 goroutine 仅栈内存就需要约 2-4GB。每个带缓冲的 channel 还会额外占用"缓冲区大小 x 元素大小"的内存。自 Go 1.14 起，goroutine 通过信号实现异步抢占，因此 CPU 密集型 Actor 不会饿死其他 Actor。更深层的区别在于 Erlang 的按进程垃圾回收——每个 Actor 的 GC 暂停是独立的且在微秒级别，而 Go 的 GC 是全局的，可能暂停所有 Actor。对于真正大规模的 Actor 数量，Erlang 的 BEAM VM 是专门为此构建的；Go 可以近似实现，但有不同的 GC 权衡。
 :::

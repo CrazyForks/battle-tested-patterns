@@ -162,26 +162,26 @@ func (s *Scheduler) WorkLoop() bool {
 
 ## 挑战题
 
-::: details Q1: React yields every 5ms. What happens if you increase this to 50ms? What if you decrease it to 0.5ms?
-**Answer:** 50ms causes visible UI jank (3 dropped frames at 60fps); 0.5ms wastes most time on yield overhead instead of useful work.
+::: details Q1: React 每 5ms 让出控制权。如果你将其增加到 50ms 会怎样？如果减少到 0.5ms 呢？
+**答案：** 50ms 会导致可见的 UI 卡顿（在 60fps 下丢 3 帧）；0.5ms 会将大部分时间浪费在让出的开销上而不是有用的工作。
 
-The 5ms target is a sweet spot: short enough that a frame's 16ms budget still has room for browser paint and input handling, but long enough that the scheduler does meaningful work per slice. At 50ms, user input and animations freeze noticeably. At 0.5ms, the overhead of checking the clock, scheduling a `MessageChannel` callback, and re-entering the work loop dominates — you spend more time scheduling than working.
+5ms 是一个最佳平衡点：足够短，一帧 16ms 的预算还有余量留给浏览器绑制和输入处理；又足够长，调度器在每个时间片内能完成有意义的工作。50ms 时，用户输入和动画会明显冻结。0.5ms 时，检查时钟、调度 `MessageChannel` 回调和重新进入工作循环的开销占主导——你花在调度上的时间比工作还多。
 :::
 
-::: details Q2: A cooperatively scheduled task has a bug where it never returns `true` (never signals completion). What happens to the system?
-**Answer:** The task monopolizes every time slice forever, starving all other queued tasks.
+::: details Q2: 一个协作调度的任务有一个 bug，它永远不会返回 `true`（永远不发出完成信号）。系统会发生什么？
+**答案：** 该任务永远垄断每个时间片，饿死所有其他排队的任务。
 
-Unlike preemptive scheduling, the scheduler cannot forcibly remove a misbehaving task. The work loop gives the buggy task CPU time every slice, it runs for 5ms, yields, gets picked up again — endlessly. Other tasks in the queue never execute. This is the fundamental weakness of cooperative scheduling: it trusts tasks to behave. Production schedulers mitigate this with timeouts or starvation detection that can cancel or deprioritize stuck tasks.
+与抢占式调度不同，调度器无法强制移除行为异常的任务。工作循环在每个时间片给这个有 bug 的任务 CPU 时间，它运行 5ms，让出，再次被选中——无限循环。队列中的其他任务永远不会执行。这是协作调度的根本弱点：它信任任务会正常行为。生产级调度器通过超时或饥饿检测来缓解此问题，可以取消或降低卡住任务的优先级。
 :::
 
-::: details Q3: Why does React use `MessageChannel` instead of `setTimeout(fn, 0)` for yielding?
-**Answer:** `setTimeout(fn, 0)` has a minimum 4ms delay enforced by browsers after several nested calls, making it too slow for 5ms time slices.
+::: details Q3: 为什么 React 使用 `MessageChannel` 而不是 `setTimeout(fn, 0)` 来让出控制权？
+**答案：** `setTimeout(fn, 0)` 在多次嵌套调用后，浏览器会强制至少 4ms 的延迟，对于 5ms 的时间片来说太慢了。
 
-After about 5 nested `setTimeout` calls, browsers clamp the delay to at least 4ms (HTML spec). This means a 5ms time slice followed by a 4ms yield gap wastes nearly half the time. `MessageChannel` posts a macrotask without the 4ms clamping — the browser can interleave paint and input handling between macrotasks, then dispatch the callback typically in under 1ms. This keeps the scheduler responsive without wasting idle time on artificial delays.
+大约 5 次嵌套 `setTimeout` 调用后，浏览器会将延迟钳制到至少 4ms（HTML 规范）。这意味着 5ms 的时间片加上 4ms 的让出间隔，几乎浪费了一半的时间。`MessageChannel` 发送一个宏任务而不受 4ms 的钳制——浏览器可以在宏任务之间插入绑制和输入处理，然后通常在 1ms 内分发回调。这使调度器保持响应而不会在人为延迟上浪费空闲时间。
 :::
 
-::: details Q4: A colleague says "just use Web Workers instead of cooperative scheduling — they run in parallel." Why isn't this a replacement?
-**Answer:** Web Workers cannot access the DOM, so they cannot perform UI rendering work like React's reconciliation.
+::: details Q4: 一位同事说"直接用 Web Workers 代替协作调度就好了——它们可以并行运行。"为什么这不能替代？
+**答案：** Web Workers 无法访问 DOM，因此它们无法执行像 React 协调这样的 UI 渲染工作。
 
-React's cooperative scheduling exists specifically because reconciliation must read and write DOM state, which is only available on the main thread. Workers are great for pure computation (parsing, compression, image processing), but any task that touches the DOM, measures layout, or updates the UI must run on the main thread. Cooperative scheduling is how you share that single thread fairly among rendering, input handling, and application logic.
+React 的协作调度之所以存在，正是因为协调过程必须读写 DOM 状态，而 DOM 只在主线程上可用。Workers 非常适合纯计算（解析、压缩、图像处理），但任何涉及 DOM、测量布局或更新 UI 的任务都必须在主线程上运行。协作调度是你在渲染、输入处理和应用逻辑之间公平共享单线程的方式。
 :::
