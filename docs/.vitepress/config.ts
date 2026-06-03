@@ -45,6 +45,7 @@ export default withMermaid(defineConfig({
               items: [
                 { text: 'What is This?', link: '/guide/what-is-this' },
                 { text: 'Pattern Connections', link: '/guide/pattern-connections' },
+                { text: 'Pattern Timeline', link: '/guide/timeline' },
                 { text: 'How to Contribute', link: '/guide/how-to-contribute' },
               ],
             },
@@ -137,6 +138,7 @@ export default withMermaid(defineConfig({
               items: [
                 { text: '这是什么？', link: '/zh/guide/what-is-this' },
                 { text: '模式如何协作', link: '/zh/guide/pattern-connections' },
+                { text: '模式时间线', link: '/zh/guide/timeline' },
                 { text: '如何贡献', link: '/zh/guide/how-to-contribute' },
               ],
             },
