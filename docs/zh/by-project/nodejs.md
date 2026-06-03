@@ -11,3 +11,5 @@
 | [依赖图](/zh/patterns/dependency-graph/) | pnpm | [`graph-sequencer`](https://github.com/pnpm/pnpm/blob/main/deps/graph-sequencer/src/index.ts#L22-L125) | 工作区包的拓扑排序确定构建顺序 |
 | [限流器](/zh/patterns/rate-limiter/) | Express | [`express-rate-limit`](https://github.com/express-rate-limit/express-rate-limit) | API 限流的令牌桶中间件 |
 | [熔断器](/zh/patterns/circuit-breaker/) | opossum | [`lib/circuit.js`](https://github.com/nodeshift/opossum/blob/main/lib/circuit.js) | Node.js 微服务弹性熔断器 |
+| [事件循环](/zh/patterns/event-loop/) | Node.js (libuv) | [`deps/uv/src/unix/core.c`](https://github.com/nodejs/node/blob/main/deps/uv/src/unix/core.c) | `uv_run()` — 通过 epoll/kqueue 实现单线程 I/O 多路复用 |
+| [中间件链](/zh/patterns/middleware-chain/) | Koa.js | [`koa-compose`](https://github.com/koajs/compose/blob/master/index.js) | 通过 `async/await` 将中间件组合为洋葱模型管道 |

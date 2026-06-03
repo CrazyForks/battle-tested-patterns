@@ -7,3 +7,6 @@
 | [Arena 分配器](/zh/patterns/arena-allocator/) | [bumpalo `lib.rs`](https://github.com/fitzgen/bumpalo/blob/main/src/lib.rs#L378-L383) | `Bump` — Rust 经典 arena 分配器，被 wasm-bindgen 和 Deno 使用 |
 | [工作窃取](/zh/patterns/work-stealing/) | [Tokio `worker.rs`](https://github.com/tokio-rs/tokio/blob/master/tokio/src/runtime/scheduler/multi_thread/worker.rs#L1136-L1175) | `Core::steal_work` — 多线程异步运行时的工作窃取 |
 | [依赖图](/zh/patterns/dependency-graph/) | [Cargo `resolver/`](https://github.com/rust-lang/cargo/blob/master/src/cargo/core/resolver/dep_cache.rs#L1-L50) | 基于 DAG 的依赖解析，确定 crate 编译顺序 |
+| [引用计数](/zh/patterns/reference-counting/) | [`alloc/src/sync.rs`](https://github.com/rust-lang/rust/blob/main/library/alloc/src/sync.rs) | `Arc<T>` — 跨线程共享所有权的原子引用计数 |
+| [驻留](/zh/patterns/interning/) | [rustc `symbol.rs`](https://github.com/rust-lang/rust/blob/master/compiler/rustc_span/src/symbol.rs#L24-L79) | `Symbol` 是全局驻留器中的 `u32` 索引——所有标识符驻留实现 O(1) 比较 |
+| [信号量](/zh/patterns/semaphore/) | [Tokio `semaphore.rs`](https://github.com/tokio-rs/tokio/blob/master/tokio/src/sync/semaphore.rs) | `Semaphore` — 异步感知的有界并发控制 |

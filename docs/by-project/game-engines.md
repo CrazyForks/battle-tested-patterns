@@ -12,6 +12,9 @@ Game engines push patterns to their limits — every frame counts at 60fps.
 | [Arena Allocator](/patterns/arena-allocator/) | Frame allocators | Common pattern | Per-frame bump allocator — reset every frame, zero free cost |
 | [Flyweight](/patterns/flyweight/) | Godot | [`servers/rendering/`](https://github.com/godotengine/godot/tree/master/servers/rendering) | Shared mesh/texture resources referenced by multiple instances |
 | [Batch Processing](/patterns/batch-processing/) | Godot / Unity | Render batching | Batch draw calls to minimize GPU state changes |
+| [Tagged Union](/patterns/tagged-union/) | Godot | [`variant.h`](https://github.com/godotengine/godot/blob/master/core/variant/variant.h#L78-L120) | `Variant::Type` enum + union — every GDScript value is a `Variant` |
+| [Dirty Flag](/patterns/dirty-flag/) | Godot / Unity | Transform hierarchies | Dirty flag on parent transform invalidates child world matrices — recompute only when accessed |
+| [Event Loop](/patterns/event-loop/) | Godot | [`main_loop.h`](https://github.com/godotengine/godot/blob/master/core/os/main_loop.h) | Main game loop — process input, update, render in fixed-step cycle |
 
 ## Further Reading
 

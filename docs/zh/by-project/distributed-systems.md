@@ -15,3 +15,9 @@
 | [Actor 模型](/zh/patterns/actor-model/) | Akka | [`Actor.scala`](https://github.com/akka/akka-core/blob/main/akka-actor/src/main/scala/akka/actor/Actor.scala#L476-L547) | `trait Actor` — JVM 上的消息驱动并发 |
 | [Actor 模型](/zh/patterns/actor-model/) | Erlang/OTP | [`erl_process.h`](https://github.com/erlang/otp/blob/master/erts/emulator/beam/erl_process.h#L1043-L1205) | BEAM VM 进程结构体 — 带信箱的轻量级 Actor |
 | [限流器](/zh/patterns/rate-limiter/) | Nginx | [`ngx_http_limit_req_module.c`](https://github.com/nginx/nginx/blob/master/src/http/modules/ngx_http_limit_req_module.c#L405-L532) | HTTP 请求的漏桶限流 |
+| [逻辑时钟](/zh/patterns/logical-clock/) | etcd | [`mvcc/revision.go`](https://github.com/etcd-io/etcd/blob/main/server/storage/mvcc/revision.go) | 单调递增修订号，用于集群内事件排序 |
+| [逻辑时钟](/zh/patterns/logical-clock/) | LevelDB | [`db_impl.cc` 序列号](https://github.com/google/leveldb/blob/main/db/db_impl.cc#L1311-L1337) | 序列号排序所有写入，无需墙钟时间 |
+| [指数退避重试](/zh/patterns/retry-backoff/) | Kubernetes | [`backoff.go`](https://github.com/kubernetes/kubernetes/blob/master/staging/src/k8s.io/apimachinery/pkg/util/wait/backoff.go#L30-L50) | Pod 重启退避、API Server 指数延迟重试 |
+| [墓碑](/zh/patterns/tombstone/) | Cassandra | [Tombstone 标记](https://github.com/apache/cassandra) | 分布式删除传播中的删除标记 |
+| [LSM 树](/zh/patterns/lsm-tree/) | LevelDB | [`db_impl.cc`](https://github.com/google/leveldb/blob/main/db/db_impl.cc#L1241-L1368) | 内存缓冲写入，刷入有序文件，后台合并 |
+| [检查点](/zh/patterns/checkpointing/) | PostgreSQL | [`checkpointer.c`](https://github.com/postgres/postgres/blob/master/src/backend/postmaster/checkpointer.c#L218-L360) | 周期性快照，限制崩溃恢复时 WAL 回放时间 |

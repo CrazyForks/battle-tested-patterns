@@ -10,3 +10,6 @@
 | [Arena 分配器](/zh/patterns/arena-allocator/) | 帧分配器 | 通用模式 | 每帧 bump 分配器——每帧重置，零释放开销 |
 | [享元](/zh/patterns/flyweight/) | Godot | [`servers/rendering/`](https://github.com/godotengine/godot/tree/master/servers/rendering) | 多个实例共享的网格/纹理资源 |
 | [批处理](/zh/patterns/batch-processing/) | Godot / Unity | 渲染批处理 | 批量 draw call 减少 GPU 状态切换 |
+| [标签联合](/zh/patterns/tagged-union/) | Godot | [`variant.h`](https://github.com/godotengine/godot/blob/master/core/variant/variant.h#L78-L120) | `Variant::Type` 枚举 + 联合体——GDScript 中每个值都是 `Variant` |
+| [脏标记](/zh/patterns/dirty-flag/) | Godot / Unity | 变换层级 | 父变换脏标记使子节点世界矩阵失效——仅在访问时重算 |
+| [事件循环](/zh/patterns/event-loop/) | Godot | [`main_loop.h`](https://github.com/godotengine/godot/blob/master/core/os/main_loop.h) | 主游戏循环——按固定步长处理输入、更新、渲染 |

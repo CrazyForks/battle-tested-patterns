@@ -17,6 +17,12 @@ High-throughput messaging and trading systems push throughput patterns to the ex
 | [Actor Model](/patterns/actor-model/) | Akka | [`Actor.scala`](https://github.com/akka/akka-core/blob/main/akka-actor/src/main/scala/akka/actor/Actor.scala#L476-L547) | `trait Actor` — message-driven concurrency for JVM |
 | [Actor Model](/patterns/actor-model/) | Erlang/OTP | [`erl_process.h`](https://github.com/erlang/otp/blob/master/erts/emulator/beam/erl_process.h#L1043-L1205) | BEAM VM process struct — lightweight actor with mailbox |
 | [Rate Limiter](/patterns/rate-limiter/) | Nginx | [`ngx_http_limit_req_module.c`](https://github.com/nginx/nginx/blob/master/src/http/modules/ngx_http_limit_req_module.c#L405-L532) | Leaky bucket rate limiting for HTTP requests |
+| [Logical Clock](/patterns/logical-clock/) | etcd | [`mvcc/revision.go`](https://github.com/etcd-io/etcd/blob/main/server/storage/mvcc/revision.go) | Monotonic revision counter for event ordering across cluster |
+| [Logical Clock](/patterns/logical-clock/) | LevelDB | [`db_impl.cc` sequence number](https://github.com/google/leveldb/blob/main/db/db_impl.cc#L1311-L1337) | Sequence numbers order all writes without wall-clock time |
+| [Retry Backoff](/patterns/retry-backoff/) | Kubernetes | [`backoff.go`](https://github.com/kubernetes/kubernetes/blob/master/staging/src/k8s.io/apimachinery/pkg/util/wait/backoff.go#L30-L50) | Pod restart backoff, API server retries with exponential delay |
+| [Tombstone](/patterns/tombstone/) | Cassandra | [Tombstone markers](https://github.com/apache/cassandra) | Delete markers in distributed delete propagation |
+| [LSM Tree](/patterns/lsm-tree/) | LevelDB | [`db_impl.cc`](https://github.com/google/leveldb/blob/main/db/db_impl.cc#L1241-L1368) | Buffer writes in memory, flush to sorted files, compact in background |
+| [Checkpointing](/patterns/checkpointing/) | PostgreSQL | [`checkpointer.c`](https://github.com/postgres/postgres/blob/master/src/backend/postmaster/checkpointer.c#L218-L360) | Periodic state snapshot bounds WAL replay time on crash recovery |
 
 ## Further Reading
 

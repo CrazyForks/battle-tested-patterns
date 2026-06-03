@@ -13,6 +13,8 @@ Node.js, Redux, and XState demonstrate event-driven and state management pattern
 | [Dependency Graph](/patterns/dependency-graph/) | pnpm | [`graph-sequencer`](https://github.com/pnpm/pnpm/blob/main/deps/graph-sequencer/src/index.ts#L22-L125) | Topological sort of workspace packages for build order |
 | [Rate Limiter](/patterns/rate-limiter/) | Express | [`express-rate-limit`](https://github.com/express-rate-limit/express-rate-limit) | Token bucket middleware for API rate limiting |
 | [Circuit Breaker](/patterns/circuit-breaker/) | opossum | [`lib/circuit.js`](https://github.com/nodeshift/opossum/blob/main/lib/circuit.js) | Node.js circuit breaker for microservice resilience |
+| [Event Loop](/patterns/event-loop/) | Node.js (libuv) | [`deps/uv/src/unix/core.c`](https://github.com/nodejs/node/blob/main/deps/uv/src/unix/core.c) | `uv_run()` — single-threaded I/O multiplexing via epoll/kqueue |
+| [Middleware Chain](/patterns/middleware-chain/) | Koa.js | [`koa-compose`](https://github.com/koajs/compose/blob/master/index.js) | Compose middleware into an onion-model pipeline with `async/await` |
 
 ## Further Reading
 
