@@ -199,7 +199,7 @@ Then exercises at 2 difficulty levels — all with tests you can run.
 |---------|---------|
 | 46 patterns | Bitmask, LRU Cache, MVCC, Work Stealing, Actor Model, and 41 more |
 | 46 interactive visualizations | Hands-on SVG visualizations — click, drag, experiment to build intuition |
-| 93 exercises | Basic + intermediate for every pattern, 491 test cases across real-world scenarios |
+| 93 exercises | Basic + intermediate for every pattern, 553 test cases across real-world scenarios |
 | 184 challenge questions | "Guess what happens" scenario Q&A to test understanding |
 | 6 system case studies | How React, Redis, Go, Linux, PostgreSQL, Kafka compose patterns |
 | 4 languages | TypeScript, Go, Python, Rust — idiomatic implementations |

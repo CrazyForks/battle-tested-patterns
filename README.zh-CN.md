@@ -199,7 +199,7 @@ const perms = READ | WRITE;            perms = READ | WRITE
 |------|------|
 | 46 个模式 | Bitmask、LRU Cache、MVCC、Work Stealing、Actor Model 等 |
 | 46 个交互式可视化 | 可点击、可拖拽的 SVG 可视化，动手操作建立直觉 |
-| 93 个练习 | 每个模式 basic + intermediate，共 491 个测试用例，真实场景 |
+| 93 个练习 | 每个模式 basic + intermediate，共 553 个测试用例，真实场景 |
 | 184 个挑战题 | "你猜会怎样"场景问答，验证真正理解 |
 | 6 个系统案例 | React、Redis、Go、Linux、PostgreSQL、Kafka 如何组合模式 |
 | 4 种语言 | TypeScript、Go、Python、Rust 地道实现 |
