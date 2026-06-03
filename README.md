@@ -17,7 +17,7 @@ English | [简体中文](README.zh-CN.md)
 
 </div>
 
-## 46 Patterns at a Glance
+## 38 Patterns at a Glance
 
 <table>
 <tr>
@@ -154,6 +154,14 @@ This project: **code-level techniques from React, Linux, Go, Chromium — each w
 | [**Free List**](https://totoro-jam.github.io/battle-tested-patterns/patterns/free-list/) | O(1) alloc/free via linked freed slots | [Go mfixalloc](https://github.com/golang/go/blob/master/src/runtime/mfixalloc.go#L31-L109) · [Linux SLUB](https://github.com/torvalds/linux/blob/master/mm/slub.c#L530-L551)|
 | [**Dependency Graph**](https://totoro-jam.github.io/battle-tested-patterns/patterns/dependency-graph/) | DAG + toposort for execution order | [Cargo](https://github.com/rust-lang/cargo/blob/master/src/cargo/core/resolver/dep_cache.rs#L1-L50) · [pnpm](https://github.com/pnpm/pnpm/blob/main/pkg-manager/sort-packages/src/index.ts)|
 | [**Actor Model**](https://totoro-jam.github.io/battle-tested-patterns/patterns/actor-model/) | Private state + mailbox, no locks | [Akka](https://github.com/akka/akka/blob/main/akka-actor/src/main/scala/akka/actor/Actor.scala#L476-L547) · [Erlang/OTP](https://github.com/erlang/otp/blob/master/erts/emulator/beam/erl_process.h#L1043-L1205)|
+| [**Tagged Union**](https://totoro-jam.github.io/battle-tested-patterns/patterns/tagged-union/) | Type tag + union for safe dispatch | [Godot Variant](https://github.com/godotengine/godot/blob/master/core/variant/variant.h#L78-L120) · [PyTorch IValue](https://github.com/pytorch/pytorch/blob/main/aten/src/ATen/core/ivalue.h#L51-L96)|
+| [**Interning**](https://totoro-jam.github.io/battle-tested-patterns/patterns/interning/) | Deduplicate values, O(1) equality | [Rust Symbol](https://github.com/rust-lang/rust/blob/master/compiler/rustc_span/src/symbol.rs#L24-L79) · [CPython](https://github.com/python/cpython/blob/main/Objects/unicodeobject.c#L15575-L15631)|
+| [**Vtable**](https://totoro-jam.github.io/battle-tested-patterns/patterns/vtable/) | Function pointer struct for polymorphism | [Linux file_operations](https://github.com/torvalds/linux/blob/master/include/linux/fs.h#L2093-L2163) · [CPython PyTypeObject](https://github.com/python/cpython/blob/main/Include/cpython/object.h#L250-L340)|
+| [**Visitor**](https://totoro-jam.github.io/battle-tested-patterns/patterns/visitor/) | Dispatch callbacks on tree nodes | [LLVM InstVisitor](https://github.com/llvm/llvm-project/blob/main/llvm/include/llvm/IR/InstVisitor.h#L45-L107) · [Vue transforms](https://github.com/vuejs/core/blob/main/packages/compiler-core/src/transforms/vIf.ts#L35-L60)|
+| [**Merkle Tree**](https://totoro-jam.github.io/battle-tested-patterns/patterns/merkle-tree/) | Hash upward to root for integrity | [Git tree.c](https://github.com/git/git/blob/master/tree.c#L136-L171) · [ZFS blkptr](https://github.com/openzfs/zfs/blob/master/module/zfs/blkptr.c#L30-L77)|
+| [**Merge Iterator**](https://totoro-jam.github.io/battle-tested-patterns/patterns/merge-iterator/) | K-way merge of sorted streams | [LevelDB merger](https://github.com/google/leveldb/blob/main/table/merger.cc#L17-L100) · [RocksDB merge](https://github.com/facebook/rocksdb/blob/main/db/merge_helper.cc#L87-L156)|
+| [**LSM Tree**](https://totoro-jam.github.io/battle-tested-patterns/patterns/lsm-tree/) | Buffer writes, flush to sorted files | [LevelDB DBImpl](https://github.com/google/leveldb/blob/main/db/db_impl.cc#L1241-L1368) · [RocksDB MemTable](https://github.com/facebook/rocksdb/blob/main/db/memtable.cc#L458-L534)|
+| [**Checkpointing**](https://totoro-jam.github.io/battle-tested-patterns/patterns/checkpointing/) | Snapshot state, recover from checkpoint | [PostgreSQL](https://github.com/postgres/postgres/blob/master/src/backend/postmaster/checkpointer.c#L218-L360) · [Redis RDB](https://github.com/redis/redis/blob/unstable/src/rdb.c#L1414-L1529)|
 
 > Every "Proven In" link goes to the **exact lines** in the source code. Not a directory. Not a file. The lines.
 
@@ -189,7 +197,7 @@ Then exercises at 2 difficulty levels — all with tests you can run.
 
 | Feature | Details |
 |---------|---------|
-| 30 patterns | Bitmask, LRU Cache, MVCC, Work Stealing, Actor Model, and 25 more |
+| 38 patterns | Bitmask, LRU Cache, MVCC, Work Stealing, Actor Model, and 33 more |
 | 60 exercises | Basic + intermediate for every pattern, real-world scenarios |
 | 100+ challenge questions | "Guess what happens" scenario Q&A to test understanding |
 | 6 system case studies | How React, Redis, Go, Linux, PostgreSQL, Kafka compose patterns |

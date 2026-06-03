@@ -17,7 +17,7 @@
 
 </div>
 
-## 46 个模式速览
+## 38 个模式速览
 
 <table>
 <tr>
@@ -32,6 +32,9 @@
 - [Bloom Filter](https://totoro-jam.github.io/battle-tested-patterns/zh/patterns/bloom-filter/) — 集合判存
 - [LRU Cache](https://totoro-jam.github.io/battle-tested-patterns/zh/patterns/lru-cache/) — 淘汰策略
 - [B+ Tree](https://totoro-jam.github.io/battle-tested-patterns/zh/patterns/b-plus-tree/) — 磁盘优化索引
+- [Tagged Union](https://totoro-jam.github.io/battle-tested-patterns/zh/patterns/tagged-union/) — 类型安全分发
+- [Merkle Tree](https://totoro-jam.github.io/battle-tested-patterns/zh/patterns/merkle-tree/) — 完整性证明
+- [Merge Iterator](https://totoro-jam.github.io/battle-tested-patterns/zh/patterns/merge-iterator/) — K 路合并
 
 </td>
 <td width="33%">
@@ -61,6 +64,8 @@
 - [Middleware Chain](https://totoro-jam.github.io/battle-tested-patterns/zh/patterns/middleware-chain/) — 管道
 - [Registry](https://totoro-jam.github.io/battle-tested-patterns/zh/patterns/registry/) — 自注册
 - [Dirty Flag](https://totoro-jam.github.io/battle-tested-patterns/zh/patterns/dirty-flag/) — 延迟重算
+- [LSM Tree](https://totoro-jam.github.io/battle-tested-patterns/zh/patterns/lsm-tree/) — 写优化存储
+- [Checkpointing](https://totoro-jam.github.io/battle-tested-patterns/zh/patterns/checkpointing/) — 快照恢复
 
 </td>
 </tr>
@@ -75,6 +80,7 @@
 - [Copy-on-Write](https://totoro-jam.github.io/battle-tested-patterns/zh/patterns/copy-on-write/) — 延迟复制
 - [Reference Counting](https://totoro-jam.github.io/battle-tested-patterns/zh/patterns/reference-counting/) — 自动清理
 - [Tombstone](https://totoro-jam.github.io/battle-tested-patterns/zh/patterns/tombstone/) — 延迟删除
+- [Interning](https://totoro-jam.github.io/battle-tested-patterns/zh/patterns/interning/) — 去重驻留
 
 </td>
 <td>
@@ -84,6 +90,8 @@
 - [Observer](https://totoro-jam.github.io/battle-tested-patterns/zh/patterns/observer/) — 发布订阅
 - [Iterator](https://totoro-jam.github.io/battle-tested-patterns/zh/patterns/iterator/) — 惰性求值
 - [Diff / Patch](https://totoro-jam.github.io/battle-tested-patterns/zh/patterns/diff-patch/) — 最小编辑
+- [Vtable](https://totoro-jam.github.io/battle-tested-patterns/zh/patterns/vtable/) — 手动多态
+- [Visitor](https://totoro-jam.github.io/battle-tested-patterns/zh/patterns/visitor/) — 树遍历分发
 
 </td>
 <td>
@@ -93,8 +101,10 @@
 - Redis · PostgreSQL
 - Kafka · Chromium
 - Tokio · Erlang/OTP
-- LevelDB · etcd
+- LevelDB · RocksDB · etcd
 - Nginx · Akka
+- LLVM · Vue · Godot
+- PyTorch · CPython · ZFS
 
 </td>
 </tr>
@@ -144,6 +154,14 @@
 | [**空闲链表**](https://totoro-jam.github.io/battle-tested-patterns/zh/patterns/free-list/) | O(1) 分配/释放 | [Go mfixalloc](https://github.com/golang/go/blob/master/src/runtime/mfixalloc.go#L31-L109) · [Linux SLUB](https://github.com/torvalds/linux/blob/master/mm/slub.c#L530-L551)|
 | [**依赖图**](https://totoro-jam.github.io/battle-tested-patterns/zh/patterns/dependency-graph/) | DAG + 拓扑排序 | [Cargo](https://github.com/rust-lang/cargo/blob/master/src/cargo/core/resolver/dep_cache.rs#L1-L50) · [pnpm](https://github.com/pnpm/pnpm/blob/main/pkg-manager/sort-packages/src/index.ts)|
 | [**Actor 模型**](https://totoro-jam.github.io/battle-tested-patterns/zh/patterns/actor-model/) | 私有状态+信箱，无锁 | [Akka](https://github.com/akka/akka/blob/main/akka-actor/src/main/scala/akka/actor/Actor.scala#L476-L547) · [Erlang/OTP](https://github.com/erlang/otp/blob/master/erts/emulator/beam/erl_process.h#L1043-L1205)|
+| [**标签联合**](https://totoro-jam.github.io/battle-tested-patterns/zh/patterns/tagged-union/) | 类型标签 + 联合体安全分发 | [Godot Variant](https://github.com/godotengine/godot/blob/master/core/variant/variant.h#L78-L120) · [PyTorch IValue](https://github.com/pytorch/pytorch/blob/main/aten/src/ATen/core/ivalue.h#L51-L96)|
+| [**驻留**](https://totoro-jam.github.io/battle-tested-patterns/zh/patterns/interning/) | 去重不可变值，O(1) 等值判断 | [Rust Symbol](https://github.com/rust-lang/rust/blob/master/compiler/rustc_span/src/symbol.rs#L24-L79) · [CPython](https://github.com/python/cpython/blob/main/Objects/unicodeobject.c#L15575-L15631)|
+| [**虚函数表**](https://totoro-jam.github.io/battle-tested-patterns/zh/patterns/vtable/) | 函数指针结构体实现多态 | [Linux file_operations](https://github.com/torvalds/linux/blob/master/include/linux/fs.h#L2093-L2163) · [CPython PyTypeObject](https://github.com/python/cpython/blob/main/Include/cpython/object.h#L250-L340)|
+| [**访问者**](https://totoro-jam.github.io/battle-tested-patterns/zh/patterns/visitor/) | 对树节点分发类型特定回调 | [LLVM InstVisitor](https://github.com/llvm/llvm-project/blob/main/llvm/include/llvm/IR/InstVisitor.h#L45-L107) · [Vue transforms](https://github.com/vuejs/core/blob/main/packages/compiler-core/src/transforms/vIf.ts#L35-L60)|
+| [**默克尔树**](https://totoro-jam.github.io/battle-tested-patterns/zh/patterns/merkle-tree/) | 哈希逐层上推实现完整性证明 | [Git tree.c](https://github.com/git/git/blob/master/tree.c#L136-L171) · [ZFS blkptr](https://github.com/openzfs/zfs/blob/master/module/zfs/blkptr.c#L30-L77)|
+| [**归并迭代器**](https://totoro-jam.github.io/battle-tested-patterns/zh/patterns/merge-iterator/) | 最小堆实现 K 路有序流合并 | [LevelDB merger](https://github.com/google/leveldb/blob/main/table/merger.cc#L17-L100) · [RocksDB merge](https://github.com/facebook/rocksdb/blob/main/db/merge_helper.cc#L87-L156)|
+| [**LSM 树**](https://totoro-jam.github.io/battle-tested-patterns/zh/patterns/lsm-tree/) | 写入缓冲，刷入有序文件 | [LevelDB DBImpl](https://github.com/google/leveldb/blob/main/db/db_impl.cc#L1241-L1368) · [RocksDB MemTable](https://github.com/facebook/rocksdb/blob/main/db/memtable.cc#L458-L534)|
+| [**检查点**](https://totoro-jam.github.io/battle-tested-patterns/zh/patterns/checkpointing/) | 周期快照状态，从检查点恢复 | [PostgreSQL](https://github.com/postgres/postgres/blob/master/src/backend/postmaster/checkpointer.c#L218-L360) · [Redis RDB](https://github.com/redis/redis/blob/unstable/src/rdb.c#L1414-L1529)|
 
 > 每个"验证来源"链接都指向源代码的**精确行号**。不是目录，不是文件，是行。
 
@@ -179,7 +197,7 @@ const perms = READ | WRITE;            perms = READ | WRITE
 
 | 特性 | 详情 |
 |------|------|
-| 30 个模式 | Bitmask、LRU Cache、MVCC、Work Stealing、Actor Model 等 |
+| 38 个模式 | Bitmask、LRU Cache、MVCC、Work Stealing、Actor Model 等 |
 | 60 个练习 | 每个模式 basic + intermediate，真实场景 |
 | 100+ 挑战题 | "你猜会怎样"场景问答，验证真正理解 |
 | 6 个系统案例 | React、Redis、Go、Linux、PostgreSQL、Kafka 如何组合模式 |

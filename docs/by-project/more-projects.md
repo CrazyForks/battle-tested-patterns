@@ -16,6 +16,13 @@ Patterns from databases, JVM ecosystem, browsers, and other notable open-source 
 | [Bloom Filter](/patterns/bloom-filter/) | LevelDB | `bloom.cc` | Block-level bloom filter to skip unnecessary disk reads |
 | [Skip List](/patterns/skip-list/) | LevelDB | `skiplist.h` | Lock-free memtable with atomic next pointers |
 | [Arena Allocator](/patterns/arena-allocator/) | LevelDB | `arena.cc` | Block-based arena for memtable allocations |
+| [Merge Iterator](/patterns/merge-iterator/) | LevelDB | `merger.cc` | `MergingIterator` merges sorted iterators (memtable + SSTable levels) into single sorted view |
+| [LSM Tree](/patterns/lsm-tree/) | LevelDB | `db_impl.cc` | `DBImpl::Write` — batch writes to WAL, insert into memtable, flush to SST on threshold |
+| [Merge Iterator](/patterns/merge-iterator/) | RocksDB | `merge_helper.cc` | `TimedFullMerge` combines multiple versions of the same key during compaction |
+| [LSM Tree](/patterns/lsm-tree/) | RocksDB | `memtable.cc` | `MemTable::Add` — skip-list backed memtable, flush to L0 SST when full |
+| [Merkle Tree](/patterns/merkle-tree/) | ZFS (OpenZFS) | `blkptr.c` | Block pointer checksums form a Merkle tree from data blocks to uberblock for silent corruption detection |
+| [Checkpointing](/patterns/checkpointing/) | PostgreSQL | `checkpointer.c` | `CheckpointerMain` — flush dirty buffers, write checkpoint WAL record, update `pg_control` |
+| [Checkpointing](/patterns/checkpointing/) | Redis | `rdb.c` | `rdbSaveRio` — fork child process to write point-in-time RDB snapshot without blocking main thread |
 
 ## JVM Ecosystem
 
@@ -55,6 +62,18 @@ Patterns from databases, JVM ecosystem, browsers, and other notable open-source 
 | [Dependency Graph](/patterns/dependency-graph/) | Terraform | Resource graph | Parallel resource apply with DAG ordering |
 | [Dependency Graph](/patterns/dependency-graph/) | Bazel | Action graph | Topological execution of build targets |
 | [Consistent Hashing](/patterns/consistent-hashing/) | Nginx | `ngx_http_upstream_hash` | Upstream load balancing with ketama hashing |
+
+## Compilers & Language Runtimes
+
+| Pattern | Project | Where | What It Does |
+|---------|---------|-------|--------------|
+| [Visitor](/patterns/visitor/) | LLVM | `InstVisitor.h` | CRTP visitor dispatches on IR instruction opcode for optimization passes |
+| [Visitor](/patterns/visitor/) | Vue.js | `transforms/vIf.ts` | `transformIf` is a `NodeTransform` visitor that walks the template AST |
+| [Vtable](/patterns/vtable/) | CPython | `object.h` | `PyTypeObject` vtable — `tp_repr`, `tp_hash`, `tp_call`, protocol suites |
+| [Interning](/patterns/interning/) | CPython | `unicodeobject.c` | `PyUnicode_InternInPlace` — intern identifier strings for O(1) dict lookups |
+| [Interning](/patterns/interning/) | Rust (rustc) | `symbol.rs` | `Symbol` is a `u32` index into global interner — all identifiers interned |
+| [Tagged Union](/patterns/tagged-union/) | Godot Engine | `variant.h` | `Variant::Type` enum + union — every GDScript value is a `Variant` |
+| [Tagged Union](/patterns/tagged-union/) | PyTorch | `ivalue.h` | `IValue` holds a `Tag` enum + `Payload` union for TorchScript interpreter |
 
 ## Further Reading
 

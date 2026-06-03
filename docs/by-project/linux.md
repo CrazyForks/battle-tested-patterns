@@ -12,6 +12,7 @@ The Linux kernel has been refined over 30+ years. These patterns have survived d
 | [Backpressure](/patterns/backpressure/) | `net/ipv4/tcp_output.c` | TCP congestion window (`cwnd`) — flow control backpressure |
 | [Free List](/patterns/free-list/) | `mm/slub.c` | SLUB slab allocator — intrusive free list with XOR-hardened pointers |
 | [Trie](/patterns/trie/) | `net/ipv4/fib_trie.c` | IP routing table as a compressed trie (LC-trie) |
+| [Vtable](/patterns/vtable/) | `include/linux/fs.h` | `file_operations` struct — function pointer vtable for VFS dispatch (`.read`, `.write`, `.open`) |
 
 ## Further Reading
 

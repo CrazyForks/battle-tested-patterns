@@ -48,10 +48,13 @@ A Merkle tree is a binary tree of hashes. Each leaf node contains the hash of a 
 ::: code-group
 
 ```typescript [TypeScript]
-import { createHash } from 'crypto';
-
 function hash(data: string): string {
-  return createHash('sha256').update(data).digest('hex');
+  let h = 0x811c9dc5;
+  for (let i = 0; i < data.length; i++) {
+    h ^= data.charCodeAt(i);
+    h = Math.imul(h, 0x01000193);
+  }
+  return (h >>> 0).toString(16).padStart(8, '0');
 }
 
 class MerkleTree {

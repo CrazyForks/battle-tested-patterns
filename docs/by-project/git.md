@@ -10,6 +10,7 @@ Git's data model is built on copy-on-write immutable objects and efficient diffi
 | [Bloom Filter](/patterns/bloom-filter/) | `bloom.c` | Changed-path bloom filters for faster `git log -- <path>` |
 | [Trie](/patterns/trie/) | `read-cache.c` | Name hash table for fast directory-level path lookup |
 | [LRU Cache](/patterns/lru-cache/) | `pack-objects.c` | Delta base cache for reusing computed deltas during pack |
+| [Merkle Tree](/patterns/merkle-tree/) | `tree.c` | Content-addressed Merkle DAG — every commit, tree, blob is hashed; changing one byte changes all hashes up to root |
 
 ## Further Reading
 

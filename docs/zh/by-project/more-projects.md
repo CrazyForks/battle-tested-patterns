@@ -16,6 +16,13 @@
 | [布隆过滤器](/zh/patterns/bloom-filter/) | LevelDB | `bloom.cc` | 块级布隆过滤器跳过不必要的磁盘读取 |
 | [跳表](/zh/patterns/skip-list/) | LevelDB | `skiplist.h` | 无锁 memtable，原子 next 指针 |
 | [Arena 分配器](/zh/patterns/arena-allocator/) | LevelDB | `arena.cc` | 基于块的 arena 分配器用于 memtable |
+| [归并迭代器](/zh/patterns/merge-iterator/) | LevelDB | `merger.cc` | `MergingIterator` 合并有序迭代器（memtable + SSTable 各层）为单一有序视图 |
+| [LSM 树](/zh/patterns/lsm-tree/) | LevelDB | `db_impl.cc` | `DBImpl::Write`——批量写入 WAL，插入 memtable，阈值时刷入 SST |
+| [归并迭代器](/zh/patterns/merge-iterator/) | RocksDB | `merge_helper.cc` | `TimedFullMerge` 在 compaction 期间合并同键的多个版本 |
+| [LSM 树](/zh/patterns/lsm-tree/) | RocksDB | `memtable.cc` | `MemTable::Add`——跳表支撑的 memtable，写满后刷入 L0 SST |
+| [默克尔树](/zh/patterns/merkle-tree/) | ZFS (OpenZFS) | `blkptr.c` | 块指针校验和形成 Merkle 树，从数据块到 uberblock，检测静默数据损坏 |
+| [检查点](/zh/patterns/checkpointing/) | PostgreSQL | `checkpointer.c` | `CheckpointerMain`——刷新脏缓冲区，写检查点 WAL 记录，更新 `pg_control` |
+| [检查点](/zh/patterns/checkpointing/) | Redis | `rdb.c` | `rdbSaveRio`——fork 子进程写入时间点 RDB 快照，不阻塞主线程 |
 
 ## JVM 生态
 
@@ -55,6 +62,18 @@
 | [依赖图](/zh/patterns/dependency-graph/) | Terraform | 资源图 | DAG 顺序的并行资源 apply |
 | [依赖图](/zh/patterns/dependency-graph/) | Bazel | Action 图 | 构建目标的拓扑执行 |
 | [一致性哈希](/zh/patterns/consistent-hashing/) | Nginx | `ngx_http_upstream_hash` | 基于 ketama 哈希的上游负载均衡 |
+
+## 编译器与语言运行时
+
+| 模式 | 项目 | 位置 | 作用 |
+|------|------|------|------|
+| [访问者](/zh/patterns/visitor/) | LLVM | `InstVisitor.h` | CRTP 访问者按 IR 指令操作码分发，用于优化 pass |
+| [访问者](/zh/patterns/visitor/) | Vue.js | `transforms/vIf.ts` | `transformIf` 是 `NodeTransform` 访问者，遍历模板 AST |
+| [虚函数表](/zh/patterns/vtable/) | CPython | `object.h` | `PyTypeObject` 虚表——`tp_repr`、`tp_hash`、`tp_call`、协议套件 |
+| [驻留](/zh/patterns/interning/) | CPython | `unicodeobject.c` | `PyUnicode_InternInPlace`——驻留标识符字符串实现 O(1) 字典查找 |
+| [驻留](/zh/patterns/interning/) | Rust (rustc) | `symbol.rs` | `Symbol` 是全局驻留表的 `u32` 索引——所有标识符均驻留 |
+| [标签联合](/zh/patterns/tagged-union/) | Godot Engine | `variant.h` | `Variant::Type` 枚举 + 联合体——每个 GDScript 值都是 `Variant` |
+| [标签联合](/zh/patterns/tagged-union/) | PyTorch | `ivalue.h` | `IValue` 持有 `Tag` 枚举 + `Payload` 联合体，用于 TorchScript 解释器 |
 
 ## 延伸阅读
 
