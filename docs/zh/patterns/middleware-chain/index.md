@@ -94,15 +94,6 @@ func Chain(middlewares ...Middleware) Handler {
 		run(0)
 	}
 }
-
-// Usage:
-// logging := func(ctx map[string]any, next Handler) {
-//     fmt.Println("before")
-//     next(ctx)
-//     fmt.Println("after")
-// }
-// handler := Chain(logging, auth, serve)
-// handler(ctx)
 ```
 
 ```python [Python]

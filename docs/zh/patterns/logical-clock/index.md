@@ -69,8 +69,6 @@ class LamportClock {
 ```
 
 ```go [Go]
-import "sync"
-
 type LamportClock struct {
 	mu   sync.Mutex
 	time uint64
