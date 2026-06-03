@@ -177,9 +177,26 @@ After pushing, verify all pages are reachable:
   - `https://totoro-jam.github.io/battle-tested-patterns/zh/patterns/<name>/`
 - [ ] Check sidebar links navigate correctly in both languages
 
-### 11. Tag Release
+### 11. Pre-Tag Full Audit
 
-After each batch of new patterns is merged and CI passes:
+Before tagging a release, run a comprehensive multi-dimensional audit:
+
+- [ ] **Tests**: `pnpm test` — all exercises pass
+- [ ] **TypeScript**: `pnpm typecheck` — strict mode clean
+- [ ] **Code blocks**: `pnpm verify-code` — all 4 languages compile
+- [ ] **Lint**: `pnpm lint` — markdown clean
+- [ ] **Build**: `pnpm build` — VitePress builds, all pages in dist/
+- [ ] **ASCII alignment**: spot-check new pattern diagrams in monospace font
+- [ ] **ZH sync**: all new patterns have ZH docs with Chinese challenge questions
+- [ ] **by-project**: new patterns added to ALL relevant project pages (EN+ZH)
+- [ ] **pattern-connections**: summary table updated if pattern fits a system case study (EN+ZH)
+- [ ] **Homepage/README**: pattern tables and cheat sheet updated (EN+ZH)
+- [ ] **Source links**: `pnpm verify-links` or manual curl check on new links
+- [ ] **CI**: all workflows green on latest commit
+
+### 12. Tag Release
+
+After audit passes:
 
 - [ ] Tag with semantic version: `git tag -a v1.X.0 -m "vX.X.0: add N new patterns"`
 - [ ] Push tag: `git push origin v1.X.0`
