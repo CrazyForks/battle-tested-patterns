@@ -14,7 +14,7 @@ A skip list is a multi-level linked list where each level skips over more elemen
   Level 2:  HEAD ─────── 10 ──────────────────── 30 ─ NIL
               │           │                      │
   Level 1:  HEAD ── 5 ── 10 ──── 20 ──────────── 30 ─ NIL
-              │     │     │       │               │
+              │     │     │       │              │
   Level 0:  HEAD  3  5  7  10  15  20  25  30 ─ NIL
               │   │  │  │   │   │   │   │   │
               ▼   ▼  ▼  ▼   ▼   ▼   ▼   ▼   ▼
