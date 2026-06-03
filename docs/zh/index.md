@@ -4,7 +4,7 @@ layout: home
 hero:
   name: Battle-Tested Patterns
   text: 生产验证的编程模式
-  tagline: 源自 React、Linux、Go、Chromium 等顶级项目的实战经验。精确源码链接、多语言实现、交互式练习。
+  tagline: 源自 React、Linux、Go、Chromium 等顶级项目的实战经验。交互式可视化、精确源码链接、多语言实现。
   actions:
     - theme: brand
       text: 快速开始
@@ -14,12 +14,15 @@ hero:
       link: /zh/patterns/bitmask/
 
 features:
+  - icon: 🎮
+    title: 交互式可视化
+    details: 每个模式都配有动手操作的 SVG 可视化。点击、拖拽、实验——通过亲身操作建立直觉，而非只是阅读。
   - icon: 🔗
     title: 生产验证
     details: 每个模式附带精确到行号的 GitHub 源码链接，证明它在真实项目中被使用。
   - icon: 🌍
     title: 多语言实现
-    details: TypeScript、Rust、Go、C 的地道实现——不是机械翻译，而是每种语言的原生表达。
+    details: TypeScript、Rust、Go、Python 的地道实现——不是机械翻译，而是每种语言的原生表达。
   - icon: 🧪
     title: 可运行练习
     details: 渐进式练习（基础 → 进阶 → 高级），配套测试用例，本地即可运行。

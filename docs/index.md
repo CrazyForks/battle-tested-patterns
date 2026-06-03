@@ -4,7 +4,7 @@ layout: home
 hero:
   name: Battle-Tested Patterns
   text: Production-Proven Programming Patterns
-  tagline: Extracted from React, Linux, Go, Chromium and more. Precise source links, multi-language examples, runnable exercises.
+  tagline: Extracted from React, Linux, Go, Chromium and more. Interactive visualizations, precise source links, multi-language implementations.
   actions:
     - theme: brand
       text: Get Started
@@ -14,12 +14,15 @@ hero:
       link: /patterns/bitmask/
 
 features:
+  - icon: 🎮
+    title: Interactive Visualizations
+    details: Every pattern has a hands-on SVG visualization. Click, drag, and experiment to build intuition — not just read about it.
   - icon: 🔗
     title: Production Proof
     details: Every pattern comes with precise GitHub source links (down to line numbers) proving it's used in real-world projects.
   - icon: 🌍
     title: Multi-Language
-    details: Idiomatic implementations in TypeScript, Rust, Go, and C — not mechanical translations, but native expressions of each pattern.
+    details: Idiomatic implementations in TypeScript, Rust, Go, and Python — not mechanical translations, but native expressions of each pattern.
   - icon: 🧪
     title: Runnable Exercises
     details: Progressive exercises (basic → intermediate → advanced) with test suites you can run locally.
