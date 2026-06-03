@@ -43,6 +43,8 @@
 - [Cooperative Scheduling](https://totoro-jam.github.io/battle-tested-patterns/zh/patterns/cooperative-scheduling/) — 协作让出
 - [Double Buffering](https://totoro-jam.github.io/battle-tested-patterns/zh/patterns/double-buffering/) — 原子交换
 - [Backpressure](https://totoro-jam.github.io/battle-tested-patterns/zh/patterns/backpressure/) — 流量控制
+- [Event Loop](https://totoro-jam.github.io/battle-tested-patterns/zh/patterns/event-loop/) — I/O 多路复用
+- [Logical Clock](https://totoro-jam.github.io/battle-tested-patterns/zh/patterns/logical-clock/) — 事件排序
 
 </td>
 <td width="33%">
@@ -55,6 +57,7 @@
 - [Batch Processing](https://totoro-jam.github.io/battle-tested-patterns/zh/patterns/batch-processing/) — 吞吐
 - [Consistent Hashing](https://totoro-jam.github.io/battle-tested-patterns/zh/patterns/consistent-hashing/) — 分布
 - [Dependency Graph](https://totoro-jam.github.io/battle-tested-patterns/zh/patterns/dependency-graph/) — 排序
+- [Middleware Chain](https://totoro-jam.github.io/battle-tested-patterns/zh/patterns/middleware-chain/) — 管道
 
 </td>
 </tr>
@@ -67,6 +70,7 @@
 - [Arena Allocator](https://totoro-jam.github.io/battle-tested-patterns/zh/patterns/arena-allocator/) — bump 分配
 - [Free List](https://totoro-jam.github.io/battle-tested-patterns/zh/patterns/free-list/) — O(1) 分配释放
 - [Copy-on-Write](https://totoro-jam.github.io/battle-tested-patterns/zh/patterns/copy-on-write/) — 延迟复制
+- [Reference Counting](https://totoro-jam.github.io/battle-tested-patterns/zh/patterns/reference-counting/) — 自动清理
 
 </td>
 <td>

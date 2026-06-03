@@ -43,6 +43,8 @@ English | [简体中文](README.zh-CN.md)
 - [Cooperative Scheduling](https://totoro-jam.github.io/battle-tested-patterns/patterns/cooperative-scheduling/) — yield control
 - [Double Buffering](https://totoro-jam.github.io/battle-tested-patterns/patterns/double-buffering/) — atomic swap
 - [Backpressure](https://totoro-jam.github.io/battle-tested-patterns/patterns/backpressure/) — flow control
+- [Event Loop](https://totoro-jam.github.io/battle-tested-patterns/patterns/event-loop/) — I/O multiplexing
+- [Logical Clock](https://totoro-jam.github.io/battle-tested-patterns/patterns/logical-clock/) — event ordering
 
 </td>
 <td width="33%">
@@ -55,6 +57,7 @@ English | [简体中文](README.zh-CN.md)
 - [Batch Processing](https://totoro-jam.github.io/battle-tested-patterns/patterns/batch-processing/) — throughput
 - [Consistent Hashing](https://totoro-jam.github.io/battle-tested-patterns/patterns/consistent-hashing/) — distribution
 - [Dependency Graph](https://totoro-jam.github.io/battle-tested-patterns/patterns/dependency-graph/) — ordering
+- [Middleware Chain](https://totoro-jam.github.io/battle-tested-patterns/patterns/middleware-chain/) — pipeline
 
 </td>
 </tr>
@@ -67,6 +70,7 @@ English | [简体中文](README.zh-CN.md)
 - [Arena Allocator](https://totoro-jam.github.io/battle-tested-patterns/patterns/arena-allocator/) — bump alloc
 - [Free List](https://totoro-jam.github.io/battle-tested-patterns/patterns/free-list/) — O(1) alloc/free
 - [Copy-on-Write](https://totoro-jam.github.io/battle-tested-patterns/patterns/copy-on-write/) — defer copy
+- [Reference Counting](https://totoro-jam.github.io/battle-tested-patterns/patterns/reference-counting/) — auto-cleanup
 
 </td>
 <td>
