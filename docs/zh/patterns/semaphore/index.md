@@ -64,6 +64,53 @@ async def limited_work():
         await do_work()
 ```
 
+
+```go [Go]
+// Idiomatic Go: buffered channel as semaphore
+func process(s string) { /* work */ }
+
+func processWithLimit(items []string, maxConcurrent int) {
+	sem := make(chan struct{}, maxConcurrent)
+	var wg sync.WaitGroup
+
+	for _, item := range items {
+		wg.Add(1)
+		sem <- struct{}{} // acquire
+		go func(s string) {
+			defer wg.Done()
+			defer func() { <-sem }() // release
+			process(s)
+		}(item)
+	}
+	wg.Wait()
+}
+```
+
+```rust [Rust]
+use std::sync::{Arc, Mutex, Condvar};
+
+pub struct Semaphore {
+    count: Mutex<usize>,
+    cvar: Condvar,
+}
+
+impl Semaphore {
+    pub fn new(max: usize) -> Self {
+        Semaphore { count: Mutex::new(max), cvar: Condvar::new() }
+    }
+
+    pub fn acquire(&self) {
+        let mut count = self.count.lock().unwrap();
+        while *count == 0 { count = self.cvar.wait(count).unwrap(); }
+        *count -= 1;
+    }
+
+    pub fn release(&self) {
+        *self.count.lock().unwrap() += 1;
+        self.cvar.notify_one();
+    }
+}
+```
 :::
 
 ## 练习

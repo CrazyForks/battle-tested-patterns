@@ -83,6 +83,73 @@ light = StateMachine({
 light.send("TIMER")  # "yellow"
 ```
 
+
+```rust [Rust]
+use std::collections::HashMap;
+
+pub struct StateMachine {
+    current: String,
+    transitions: HashMap<(String, String), String>,
+}
+
+impl StateMachine {
+    pub fn new(initial: &str) -> Self {
+        StateMachine {
+            current: initial.to_string(),
+            transitions: HashMap::new(),
+        }
+    }
+
+    pub fn add_transition(&mut self, from: &str, event: &str, to: &str) {
+        self.transitions.insert(
+            (from.to_string(), event.to_string()),
+            to.to_string(),
+        );
+    }
+
+    pub fn send(&mut self, event: &str) -> &str {
+        let key = (self.current.clone(), event.to_string());
+        if let Some(next) = self.transitions.get(&key) {
+            self.current = next.clone();
+        }
+        &self.current
+    }
+
+    pub fn state(&self) -> &str {
+        &self.current
+    }
+}
+```
+
+```go [Go]
+type StateMachine struct {
+	current     string
+	transitions map[string]map[string]string // state -> event -> next
+}
+
+func New(initial string) *StateMachine {
+	return &StateMachine{
+		current:     initial,
+		transitions: make(map[string]map[string]string),
+	}
+}
+
+func (sm *StateMachine) AddTransition(from, event, to string) {
+	if sm.transitions[from] == nil {
+		sm.transitions[from] = make(map[string]string)
+	}
+	sm.transitions[from][event] = to
+}
+
+func (sm *StateMachine) Send(event string) string {
+	if next, ok := sm.transitions[sm.current][event]; ok {
+		sm.current = next
+	}
+	return sm.current
+}
+
+func (sm *StateMachine) State() string { return sm.current }
+```
 :::
 
 ## 练习

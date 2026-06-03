@@ -63,6 +63,60 @@ a = 256; b = 256
 print(a is b)  # True — 享元！
 ```
 
+
+```rust [Rust]
+use std::collections::HashMap;
+
+pub struct Interner {
+    pool: HashMap<String, usize>,
+    strings: Vec<String>,
+}
+
+impl Interner {
+    pub fn new() -> Self {
+        Interner { pool: HashMap::new(), strings: Vec::new() }
+    }
+
+    pub fn intern(&mut self, s: &str) -> usize {
+        if let Some(&id) = self.pool.get(s) {
+            return id;
+        }
+        let id = self.strings.len();
+        self.strings.push(s.to_string());
+        self.pool.insert(s.to_string(), id);
+        id
+    }
+
+    pub fn resolve(&self, id: usize) -> &str {
+        &self.strings[id]
+    }
+}
+```
+
+```go [Go]
+type Interner struct {
+	pool map[string]int
+	data []string
+}
+
+func NewInterner() *Interner {
+	return &Interner{pool: make(map[string]int)}
+}
+
+func (in *Interner) Intern(s string) int {
+	if id, ok := in.pool[s]; ok {
+		return id
+	}
+	id := len(in.data)
+	in.data = append(in.data, s)
+	in.pool[s] = id
+	return id
+}
+
+func (in *Interner) Resolve(id int) string {
+	return in.data[id]
+}
+```
 :::
 
 ## 练习

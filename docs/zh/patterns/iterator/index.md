@@ -61,6 +61,30 @@ evens = (x for x in fibonacci() if x % 2 == 0)
 first_10 = [next(evens) for _ in range(10)]
 ```
 
+
+```rust [Rust]
+// Rust's Iterator trait is built-in. Usage:
+fn example() {
+    let result: Vec<i32> = (1..=10)
+        .filter(|x| x % 2 == 0)
+        .map(|x| x * x)
+        .collect();
+    // [4, 16, 36, 64, 100] — no intermediate Vec allocated
+}
+```
+
+```go [Go]
+// Go uses range + channels for iteration patterns
+func Filter[T any](in []T, pred func(T) bool) []T {
+	out := make([]T, 0)
+	for _, v := range in {
+		if pred(v) {
+			out = append(out, v)
+		}
+	}
+	return out
+}
+```
 :::
 
 ## 练习

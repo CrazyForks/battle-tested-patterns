@@ -72,6 +72,59 @@ def retry_with_backoff(fn, max_retries=5, base=1.0, cap=30.0):
             time.sleep(delay)
 ```
 
+
+```rust [Rust]
+use std::time::Duration;
+
+pub struct Backoff {
+    pub max_retries: u32,
+    pub base_delay: Duration,
+    pub max_delay: Duration,
+}
+
+impl Backoff {
+    pub fn delay_for(&self, attempt: u32) -> Duration {
+        let exponential = self.base_delay.as_millis() as u64 * 2u64.pow(attempt);
+        let capped = exponential.min(self.max_delay.as_millis() as u64);
+        Duration::from_millis(capped)
+    }
+}
+```
+
+```go [Go]
+package backoff
+
+import (
+	"math"
+	"math/rand"
+	"time"
+)
+
+type Config struct {
+	MaxRetries int
+	BaseDelay  time.Duration
+	MaxDelay   time.Duration
+	Jitter     float64
+}
+
+func Retry(fn func() error, cfg Config) error {
+	var lastErr error
+	for attempt := 0; attempt <= cfg.MaxRetries; attempt++ {
+		lastErr = fn()
+		if lastErr == nil {
+			return nil
+		}
+		if attempt == cfg.MaxRetries {
+			break
+		}
+		exp := float64(cfg.BaseDelay) * math.Pow(2, float64(attempt))
+		jitter := exp * cfg.Jitter * rand.Float64()
+		delay := time.Duration(math.Min(exp+jitter, float64(cfg.MaxDelay)))
+		time.Sleep(delay)
+	}
+	return lastErr
+}
+```
 :::
 
 ## 练习
