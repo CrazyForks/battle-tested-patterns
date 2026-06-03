@@ -98,3 +98,29 @@ print(msgs)  # ["hello"]
 - [MobX](https://github.com/mobxjs/mobx)
 - DOM `addEventListener`
 - C# events
+
+## 挑战题
+
+::: details Q1: A React component subscribes to a store in `useEffect` but forgets to return a cleanup function. What happens when the component unmounts?
+**Answer:** The listener remains registered, causing a memory leak and phantom updates to an unmounted component.
+
+The store holds a reference to the listener callback, which closes over the component's state. The component is unmounted but never garbage collected because the store still references it. Worse, when the store emits, the stale listener runs and may call `setState` on an unmounted component. This is the classic observer memory leak — every `subscribe` must have a corresponding `unsubscribe`, and `useEffect`'s cleanup function is the mechanism React provides for this.
+:::
+
+::: details Q2: You have 3 observers: A logs to a file, B updates the UI, C sends a network request. Does the order they are notified matter?
+**Answer:** In most implementations, observers are called in registration order, but you should not rely on this — the pattern makes no ordering guarantees.
+
+If B's UI update depends on A's log completing first, you have an implicit coupling that the observer pattern is supposed to eliminate. Each observer should be independent. If ordering matters, you need a different pattern: a middleware chain, a pipeline, or explicit dependency declaration. Node.js's `EventEmitter` calls listeners in registration order, but Redux explicitly snapshots the listener array to avoid order-dependent bugs during subscribe/unsubscribe within a dispatch.
+:::
+
+::: details Q3: An `emit('data', payload)` call triggers 50 synchronous observers, one of which throws an exception. What happens to observers 2-50?
+**Answer:** In a naive implementation, observers 2-50 never execute — the exception propagates up and aborts the `emit` loop.
+
+This is why production implementations wrap each listener call in a try-catch. Node.js `EventEmitter` does NOT do this by default — one throwing listener kills the rest. You must handle errors yourself. RxJS uses an error boundary per subscriber. The design choice is: fail-fast (one bad observer stops everything) vs. fault-tolerant (isolate failures, continue notifying). For critical systems, always isolate observer failures.
+:::
+
+::: details Q4: Should observer notifications be synchronous or asynchronous? What breaks if you switch from sync to async?
+**Answer:** Synchronous notifications guarantee that all observers have processed the event before `emit()` returns; switching to async breaks any code that assumes state is updated immediately after emitting.
+
+With sync: `emit('change'); readState()` sees the updated state because observers ran inline. With async: `emit('change'); readState()` sees the OLD state because observers are queued. This breaks patterns like Redux where `dispatch()` is expected to have fully completed by the time it returns. Async notification is better for performance (non-blocking) but requires the system to handle the "eventually consistent" gap between emit and observer execution.
+:::

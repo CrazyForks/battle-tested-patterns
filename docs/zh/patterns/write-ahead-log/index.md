@@ -249,3 +249,29 @@ impl WriteAheadLog {
 - [RocksDB](https://github.com/facebook/rocksdb) — 基于 LSM 树存储的 WAL
 - [CockroachDB](https://github.com/cockroachdb/cockroach) — 分布式 SQL 的 Raft WAL
 - [Apache Kafka](https://github.com/apache/kafka) — 提交日志作为核心存储抽象
+
+## 挑战题
+
+::: details Q1: Your WAL implementation calls write() but not fsync(). The OS crashes (not just the process). Is your data safe?
+**Answer:** No. Without fsync, data may be in the OS page cache but not on disk. An OS crash or power loss loses the unflushed writes.
+
+`write()` transfers data to the kernel's page cache, which is volatile memory. Only `fsync()` (or `fdatasync()`) forces it to durable storage. This is why databases like PostgreSQL have `synchronous_commit` and etcd calls `sync()` after every WAL write. The trade-off: fsync on every write is slow (especially on spinning disks), so many systems batch writes and fsync periodically, accepting a small window of potential data loss.
+:::
+
+::: details Q2: Your WAL has been running for 6 months and contains 200 million log entries. Recovery after a crash takes 45 minutes. How do you fix this?
+**Answer:** Take periodic snapshots (checkpoints) of the current state and truncate the WAL up to that point. Recovery replays only entries after the last snapshot.
+
+This is log compaction or checkpointing. Instead of replaying the entire history, you serialize the current state to a snapshot file, record the WAL position, and delete older log entries. Recovery loads the snapshot and replays only the entries after it. etcd does this with its snapshot mechanism; PostgreSQL uses checkpoints. Without it, WAL-based systems become progressively slower to recover.
+:::
+
+::: details Q3: A teammate suggests using periodic full-state snapshots instead of a WAL. "Just snapshot every 5 seconds." What does the WAL give you that snapshots alone don't?
+**Answer:** The WAL gives you point-in-time recovery with zero data loss. A 5-second snapshot interval means you can lose up to 5 seconds of writes on crash.
+
+Snapshots capture state at discrete intervals, so any writes between the last snapshot and the crash are lost. The WAL records every individual mutation, so recovery replays up to the last successfully written entry -- typically losing at most one operation. Most production systems use both: the WAL for durability between snapshots, and snapshots to bound WAL size and speed up recovery.
+:::
+
+::: details Q4: Two operations in the WAL are: (1) SET balance=100, (2) SET balance=200. During recovery, the system replays both. Does the replay order matter, and why?
+**Answer:** Yes, order matters. Replaying (2) before (1) would set balance to 100, which is incorrect. WAL entries must be replayed in the exact order they were written.
+
+WAL correctness depends on sequential replay reproducing the exact same state transitions as the original execution. This is why the WAL is an ordered, append-only log -- not a set of unordered operations. If operations were commutative and idempotent (like "increment by 5"), order might not matter, but most real mutations (SET, DELETE) are order-dependent.
+:::

@@ -102,3 +102,29 @@ light.send("TIMER")  # "yellow"
 - HTTP/2 stream states ([RFC 7540](https://datatracker.ietf.org/doc/html/rfc7540))
 - [Kubernetes](https://github.com/kubernetes/kubernetes) — pod lifecycle
 - Game AI (behavior trees + FSM)
+
+## 挑战题
+
+::: details Q1: A form has 4 steps, each with a "valid" and "invalid" sub-state, plus a "submitting" and "submitted" state. That's 4*2 + 2 = 10 states. If you add a "dirty/clean" dimension, it doubles to 20. How do you avoid this state explosion?
+**Answer:** Use parallel (orthogonal) state machines — one for the form step, one for validation status, one for dirty tracking — instead of one flat machine with every combination.
+
+This is exactly what statecharts (Harel's extension of FSMs) solve. Each concern runs as an independent region: the step machine handles `NEXT`/`BACK`, the validation machine handles `VALIDATE`/`INVALIDATE`, the dirty machine handles `CHANGE`/`SAVE`. They compose without multiplying. XState supports this via `type: 'parallel'`. The total states are 4 + 2 + 2 = 8 instead of 4 × 2 × 2 = 16.
+:::
+
+::: details Q2: In the traffic light example, you want the light to stay red for 60s but yellow for only 5s. Where does this timing logic belong — in the state machine or outside it?
+**Answer:** The timing lives outside the machine as the event source; the machine only defines which transitions are valid.
+
+A state machine is not a scheduler — it defines *what* can happen, not *when*. An external timer fires a `TIMER` event after the appropriate delay. The machine receives the event and transitions. This separation is important: the same machine definition works whether timers are real (production), instant (tests), or manual (debugging). Putting delays inside transitions couples the machine to time, making it harder to test and reason about.
+:::
+
+::: details Q3: You add a guard condition: "only transition from `loading` to `success` if the response has status 200." What happens if no guard matches — is the event silently dropped?
+**Answer:** Yes, in most implementations the event is silently ignored and the machine stays in its current state.
+
+This is by design — an unhandled event is not an error in state machine semantics. If no transition matches (because no guard passes), the machine remains stable. This is safer than throwing an exception, because events often arrive asynchronously and may be irrelevant to the current state. If you need to handle "no transition matched" explicitly, model it as a catch-all transition to an error state, or use an `onEvent` hook to log unhandled events.
+:::
+
+::: details Q4: TCP has 11 states and ~25 transitions. Could you replace the state machine with a series of `if/else` checks on boolean flags like `isConnected`, `isSynSent`, `isFinWait`?
+**Answer:** Technically yes, but you lose the guarantee that impossible states are unrepresentable — boolean flags allow invalid combinations like `isConnected && isFinWait`.
+
+With 11 booleans you have 2^11 = 2048 possible combinations, of which only 11 are valid. Every `if/else` must guard against the 2037 invalid states. A state machine makes this impossible by construction: the entity is always in exactly one state, and only defined transitions can change it. The TCP spec itself is defined as a state diagram, not as boolean logic, because the state machine representation is provably correct while the boolean approach is provably fragile.
+:::

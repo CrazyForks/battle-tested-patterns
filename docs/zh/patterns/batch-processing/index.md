@@ -98,3 +98,29 @@ class BatchProcessor:
 - [DataLoader](https://github.com/graphql/dataloader) — GraphQL N+1
 - [Redis](https://github.com/redis/redis) — Pipeline
 - [Elasticsearch](https://github.com/elastic/elasticsearch) — Bulk API
+
+## 挑战题
+
+::: details Q1: Your batch processor uses maxSize=100 and maxWaitMs=50ms. Traffic drops to 1 request/second. What happens, and how do you fix it?
+**Answer:** Each request waits the full 50ms timeout before flushing a batch of 1, adding unnecessary latency.
+
+The timeout triggers with just a single item in the queue because the batch never reaches 100 items. The fix is to make the batch size and/or timeout adaptive -- for example, flush immediately when the queue has been idle, or use a shorter timeout when the queue depth is low. Kafka's `linger.ms` works this way: it only delays if there are more records expected.
+:::
+
+::: details Q2: A batch of 100 database inserts fails because row 57 violates a unique constraint. What should happen to the other 99 rows?
+**Answer:** It depends on whether you need atomicity. If the batch runs in a single transaction, all 100 rows roll back. If not, you need per-item error handling.
+
+The common production approach is to return a result array with per-item success/failure status (like Elasticsearch's Bulk API does). This lets callers retry only the failed items. If you wrap the entire batch in one transaction for atomicity, a single bad row kills the whole batch -- which is simpler but wastes work.
+:::
+
+::: details Q3: You have both a size trigger (maxSize=50) and a time trigger (maxWaitMs=100ms). A burst of 200 items arrives in 10ms. How many batches fire, and when?
+**Answer:** Four batches of 50 fire immediately, all within that 10ms burst. The time trigger never activates.
+
+The size trigger takes priority whenever the queue reaches maxSize. As items pour in, the queue hits 50, flushes, hits 50 again, flushes, and so on. The timer is only relevant when the queue has items but hasn't reached maxSize -- it's a "don't wait forever" safety net, not the primary trigger under load.
+:::
+
+::: details Q4: Why does Kafka batch per-partition rather than using a single global batch across all partitions?
+**Answer:** Because each partition is an independent append-only log on a specific broker. A single cross-partition batch would need to be split at send time anyway.
+
+Batching per-partition means each batch maps to exactly one network request to one broker, keeping the I/O path simple. It also preserves per-partition ordering guarantees. A global batch would require grouping by destination at flush time, adding complexity with no throughput benefit.
+:::

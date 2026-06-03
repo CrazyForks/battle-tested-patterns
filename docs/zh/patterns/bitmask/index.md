@@ -202,3 +202,29 @@ assert not has_flag(editor, DELETE)  # True
 - [Nginx](https://github.com/nginx/nginx) — event flags
 - Most ECS game engines — component membership masks
 - Unix `fcntl` flags
+
+## 挑战题
+
+::: details Q1: Your team defines 40 feature flags as a bitmask in a JavaScript config system. QA reports that flags 32-39 behave erratically — sometimes checking a flag returns false even though it was set. What went wrong?
+**Answer:** JavaScript bitwise operators only work on 32-bit integers, so flags at positions 32 and above are silently truncated.
+
+The `|`, `&`, `^`, and `~` operators internally convert operands to signed 32-bit integers. `1 << 32` wraps around to `1` (same as `1 << 0`), meaning flag 32 collides with flag 0. Beyond 32 flags, you need `BigInt` for bitwise operations or switch to a `Set<string>` approach.
+:::
+
+::: details Q2: You have `permissions = Read | Write | Execute`. A junior dev writes `if (permissions === Read)` to check if a user has read access. This works in unit tests but fails in production. Why?
+**Answer:** The `===` check tests for exact equality, so it only returns true when permissions is *exactly* `Read` and nothing else.
+
+In production, users typically have multiple permissions combined. `permissions === Read` would be false for `Read | Write` (value 3 vs value 1). The correct check is `(permissions & Read) !== 0` or `(permissions & Read) === Read`, which isolates and tests just the Read bit regardless of other flags.
+:::
+
+::: details Q3: React uses bitmask flags for fiber side-effects. Why would React choose a bitmask over an array of strings like `['placement', 'update', 'ref']` for tracking which effects a fiber needs?
+**Answer:** A bitmask lets React check, combine, and propagate multiple effect flags in a single integer operation instead of iterating arrays.
+
+During reconciliation, React "bubbles" child effects into parent fibers using `parent.subtreeFlags |= child.flags`. With arrays, this would require deduplication and concatenation. The bitmask approach also enables checking "does this subtree have any work?" with a single `subtreeFlags !== 0` comparison — critical when traversing thousands of fiber nodes per frame.
+:::
+
+::: details Q4: You're designing a permission system where roles are mutually exclusive — a user is exactly one of Admin, Editor, or Viewer. A colleague suggests using a bitmask. Is this the right pattern?
+**Answer:** No. Mutually exclusive states should use an enum, not a bitmask.
+
+Bitmasks shine when flags can be freely combined (`Read | Write | Execute`). For mutually exclusive roles, a bitmask lets you accidentally set `Admin | Viewer`, which is a nonsensical state. An enum enforces exactly one value at the type level, making invalid states unrepresentable. Bitmasks are for combinatorial flags; enums are for exclusive states.
+:::

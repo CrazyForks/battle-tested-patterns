@@ -114,3 +114,29 @@ pub fn diff<T: PartialEq + Clone>(old: &[T], new: &[T]) -> Vec<Op<T>> {
 - [VS Code](https://github.com/microsoft/vscode) — text buffer diff
 - [jsdiff](https://github.com/kpdecker/jsdiff)
 - [Vue 3](https://github.com/vuejs/core) — template diff
+
+## 挑战题
+
+::: details Q1: React's diff produces insert/delete/update ops but not "move." How does it handle a list that was merely reordered?
+**Answer:** React does not emit explicit "move" operations. Instead, it reuses existing DOM nodes and repositions them via `insertBefore`.
+
+Without keys, React compares children by position — reordering looks like every element changed. With keys, React builds a map of `key -> fiber`, matches old and new children by key, and reuses existing DOM nodes. It tracks a `lastPlacedIndex` and flags fibers that need repositioning — the browser moves the DOM node rather than destroying and recreating it. This is simpler than computing a minimum-edit-distance move sequence but produces near-optimal DOM mutations for typical UI lists.
+:::
+
+::: details Q2: The greedy diff algorithm in this pattern is O(n*m) worst case. What causes this, and how does Myers' algorithm improve it?
+**Answer:** The greedy algorithm's `some()` call scans the remaining new list for each old item, creating O(n*m) comparisons. Myers' algorithm runs in O((n+m) * d) where d is the edit distance.
+
+Myers' key insight is that it searches for the shortest edit script by exploring diagonals in an edit graph. When the two lists are similar (small d), it runs in nearly O(n+m). The greedy approach has no such optimization — it doesn't minimize the edit sequence and degrades badly when the lists have many differences scattered throughout.
+:::
+
+::: details Q3: Two developers independently edit the same file. Developer A deletes line 5; Developer B modifies line 5. How does a diff-based merge handle this conflict?
+**Answer:** This is a true conflict that cannot be auto-resolved — the merge tool must flag it for human review.
+
+Three-way merge computes two diffs: (base -> A) and (base -> B). If both diffs touch the same region, they conflict. A's diff says "delete line 5," B's diff says "replace line 5." These are mutually exclusive operations on the same hunk. The merge tool inserts conflict markers (`<<<<<<<`, `=======`, `>>>>>>>`) and the developer decides. Non-overlapping changes in different regions merge cleanly.
+:::
+
+::: details Q4: You need to sync state between a server and 10,000 connected clients. Should you diff the full state and send patches, or use a different approach?
+**Answer:** Diffing the full state per client does not scale. Use event sourcing or operational transforms to send individual mutations as they happen.
+
+Computing a diff requires holding both old and new state, and the diff cost is proportional to state size. With 10,000 clients, you'd compute 10,000 diffs per update. Instead, capture each mutation as a small operation (e.g., "set user.name = X") and broadcast it. Clients apply operations incrementally. Diff-patch is better suited for periodic reconciliation (like React's render cycle) or offline sync, not real-time high-fan-out distribution.
+:::

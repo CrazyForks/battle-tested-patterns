@@ -236,3 +236,29 @@ impl Trie {
 - [Go `net` 包](https://github.com/golang/go) — 域名匹配
 - [Apache Lucene](https://github.com/apache/lucene) — FST（有限状态转换器）用于词项索引
 - [iptables/nftables](https://github.com/torvalds/linux) — 使用 trie 的 IP 集合匹配
+
+## 挑战题
+
+::: details Q1: You build a trie to store 100,000 English words. Each node has a `Map<string, TrieNode>` with one entry per child character. A colleague points out this uses far more memory than a simple hash set of the same words. Is the trie's memory overhead justified?
+**Answer:** For pure exact-match lookups, no — a hash set is more memory-efficient and O(1). The trie's memory overhead is only justified when you need prefix operations.
+
+A naive trie with one node per character creates many small objects with map/pointer overhead. For 100k English words, a hash set stores 100k strings; a trie might create 500k+ nodes. The trie becomes worthwhile when your use case requires prefix search ("find all words starting with 'pre'"), autocomplete, or longest-prefix matching — operations a hash set cannot do efficiently. If you only need "is this exact word in the set?", use a hash set.
+:::
+
+::: details Q2: Redis uses a radix tree (compressed trie) instead of a standard trie. What does "compressed" mean, and why does it matter for memory?
+**Answer:** A compressed trie (radix tree) merges chains of single-child nodes into one node with a multi-character label, dramatically reducing node count.
+
+In a standard trie storing "application", you create 11 nodes — one per character. If no other word shares the prefix "applicat", the first 8 nodes each have exactly one child, wasting 8 nodes of overhead. A radix tree compresses this into a single node labeled "applicat" followed by branching at "i"→"on" and potentially other suffixes. Redis's `rax` implementation stores compressed prefixes inline in the node struct, reducing memory by 5-10x for typical string sets with long shared prefixes.
+:::
+
+::: details Q3: The Linux kernel uses a trie for IP routing table lookups. A hash map would give O(1) exact-match lookup. Why does the kernel use a trie instead?
+**Answer:** IP routing requires longest-prefix matching, not exact matching — a trie naturally supports this while a hash map does not.
+
+When the kernel routes a packet to `192.168.1.42`, it needs to find the most specific matching route. The routing table might contain `0.0.0.0/0` (default), `192.168.0.0/16`, and `192.168.1.0/24`. The correct match is the longest prefix: `192.168.1.0/24`. A hash map would require checking all possible prefix lengths (up to 32 for IPv4), needing 32 lookups per packet. A trie traverses from root to the deepest matching node in a single pass, naturally finding the longest prefix. This is why every major OS uses a trie variant for IP routing.
+:::
+
+::: details Q4: Your autocomplete system stores 10 million product names in a trie. Searching for prefix "ip" returns 50,000 results. Users only see the top 10. How would you avoid collecting all 50,000 results?
+**Answer:** Store a "top-k results" list at each trie node, precomputed during insertion, so prefix queries return ranked results in O(k) time without traversing the subtree.
+
+Naively, prefix search requires traversing the entire subtree below the prefix node, collecting all `isEnd` nodes — O(results) time that's wasteful when you only need 10. By maintaining a bounded priority queue of the top-k results at each node (updated on insertion), you can answer "top 10 for prefix 'ip'" by reading the list at the 'p' node under 'i'. This trades insertion time and memory for query speed. Google's search suggestions use a similar approach with frequency-weighted tries.
+:::

@@ -14,8 +14,8 @@ A ring buffer uses a fixed array with two pointers — `head` (next read positio
   ┌───┬───┬───┬───┬───┬───┬───┬───┐
   │   │   │ A │ B │ C │ D │   │   │
   └───┴───┴─▲─┴───┴───┴───┴─▲─┴───┘
-            │                │
-          head             tail
+            │               │
+          head            tail
 
   Write 'E' at tail (index 6), then tail = (6+1) % 8 = 7
   Read 'A' at head (index 2), then head = (2+1) % 8 = 3

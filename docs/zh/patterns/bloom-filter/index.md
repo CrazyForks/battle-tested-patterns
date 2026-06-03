@@ -205,3 +205,29 @@ class BloomFilter:
 - [Apache Cassandra](https://github.com/apache/cassandra) — SSTable 布隆过滤器避免磁盘读取
 - [bits-and-blooms/bloom](https://github.com/bits-and-blooms/bloom/blob/master/bloom.go#L77-L81) — 流行的 Go 布隆过滤器库（7k+ stars）
 - [Bitcoin](https://github.com/bitcoin/bitcoin) — 轻量客户端的 SPV 布隆过滤器
+
+## 挑战题
+
+::: details Q1: You deploy a bloom filter with m=1000 bits and k=3 hashes to check URL membership. After inserting 800 URLs, your false positive rate is unacceptably high. You expected around 1%. What went wrong?
+**Answer:** The bit array is oversaturated — 800 items in 1000 bits means most bits are set to 1, making almost any query return "maybe yes."
+
+The false positive rate formula `(1 - e^(-kn/m))^k` shows that with k=3, n=800, m=1000, approximately 91% of bits are set, giving a ~75% false positive rate. The fix is to increase m. For a 1% false positive rate with n=800 and k=3, you need roughly m=11,500 bits (about 1.4 KB). The rule of thumb is ~10 bits per element for a 1% false positive rate.
+:::
+
+::: details Q2: Your colleague proposes deleting items from a bloom filter by clearing the bits that were set during insertion. Why does this break the data structure?
+**Answer:** Clearing bits for one item can destroy membership evidence for other items whose hashes mapped to the same bit positions.
+
+In a bloom filter, multiple items share bits. If "apple" and "banana" both hash to bit position 5, clearing bit 5 when removing "apple" creates a false negative for "banana" — violating the bloom filter's fundamental guarantee of zero false negatives. Counting bloom filters solve this by storing counters instead of single bits, decrementing on delete and only clearing when the counter reaches zero.
+:::
+
+::: details Q3: Your system has two bloom filters — one built from server A's dataset and another from server B's dataset. A query needs to check "was this key seen by either server?" Can you answer this without querying both filters separately?
+**Answer:** Yes. Bitwise OR the two bit arrays together to create a union filter that answers "seen by A or B" in a single query.
+
+This works because a bloom filter's membership test is purely a function of which bits are set. ORing the arrays produces a filter where a bit is set if it was set in either A or B, which is exactly the union semantics. The resulting filter has a higher false positive rate (more bits are set), but zero false negatives are preserved. This property makes bloom filters uniquely composable — you cannot do this with hash sets without transferring all elements.
+:::
+
+::: details Q4: LevelDB uses bloom filters to skip disk reads for nonexistent keys. If the bloom filter says "maybe yes" for a key that doesn't actually exist, what is the cost? What if it said "no" for a key that does exist?
+**Answer:** A false positive costs one unnecessary disk read (wasted I/O but correct result). A false negative would return "key not found" for an existing key — silent data loss.
+
+This asymmetry is why bloom filters guarantee zero false negatives. A false positive just means "we checked the disk and the key wasn't there" — the system self-corrects at the cost of one extra I/O. But if a bloom filter could produce false negatives, the database would skip the disk read entirely and incorrectly report the key as missing. That's data corruption, not a performance issue. The entire value of bloom filters in databases depends on this one-sided error guarantee.
+:::

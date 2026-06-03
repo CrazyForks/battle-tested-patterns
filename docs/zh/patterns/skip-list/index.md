@@ -9,19 +9,17 @@
 跳表是多层链表，每层跳过更多元素。底层是普通有序链表。更高层作为"快车道"实现类二分搜索行为。每个节点以概率 p（通常 0.5）随机提升到更高层。
 
 ```text
-  Level 3:  HEAD ─────────────────────────────────────── 30 ── NIL
-              │                                          │
-  Level 2:  HEAD ──────────── 10 ─────────────────────── 30 ── NIL
-              │               │                          │
-  Level 1:  HEAD ──── 5 ──── 10 ──── 20 ──────────────── 30 ── NIL
-              │       │       │       │                   │
-  Level 0:  HEAD ─ 3 ─ 5 ─ 7 ─ 10 ─ 15 ─ 20 ─── 25 ─── 30 ── NIL
+  Level 3:  HEAD ─────────────────────────────── 30 ─ NIL
+              │                                  │
+  Level 2:  HEAD ─────── 10 ──────────────────── 30 ─ NIL
+              │           │                      │
+  Level 1:  HEAD ── 5 ── 10 ──── 20 ──────────── 30 ─ NIL
+              │     │     │       │               │
+  Level 0:  HEAD  3  5  7  10  15  20  25  30 ─ NIL
+              │   │  │  │   │   │   │   │   │
+              ▼   ▼  ▼  ▼   ▼   ▼   ▼   ▼   ▼
 
-  Search(15): start at L3 HEAD
-    L3: HEAD→30 (overshoot) ↓
-    L2: HEAD→10→30 (overshoot) ↓
-    L1: 10→20 (overshoot) ↓
-    L0: 10→15 ✓ found!
+  Search(15): L3→30(far)↓ L2→10→30(far)↓ L1→20(far)↓ L0→15 ✓
 ```
 
 | 属性 | 值 |
@@ -267,3 +265,23 @@ impl SkipList {
 - [CockroachDB](https://github.com/cockroachdb/cockroach) — Pebble 存储引擎的跳表 memtable
 - [Java ConcurrentSkipListMap](https://github.com/openjdk/jdk) — JDK 中的无锁有序 map
 - [FoundationDB](https://github.com/apple/foundationdb) — 内存有序数据的跳表
+
+## 挑战题
+
+::: details Q1: A skip list uses `Math.random()` to decide node promotion levels. Your colleague argues this makes skip list performance "unreliable" since a bad random sequence could produce O(n) search. Is this a real concern in production?
+**Answer:** In theory yes, but in practice the probability is astronomically low — comparable to a hash table degenerating to O(n) from collisions.
+
+With promotion probability p=0.5, the chance of a node reaching level k is (1/2)^k. The expected maximum level for n elements is O(log n). For a skip list to degrade to O(n), a large fraction of nodes would need to be at level 0 only — an event with probability so close to zero it's practically impossible. Redis chose skip lists over red-black trees for this reason: the average-case guarantees are strong enough, and the implementation is dramatically simpler. LevelDB uses skip lists for the same reasoning.
+:::
+
+::: details Q2: Redis uses a skip list (not a red-black tree or B-tree) for sorted sets. Both skip lists and balanced BSTs offer O(log n) operations. What makes skip lists preferable for Redis's use case?
+**Answer:** Skip lists are simpler to implement correctly, support efficient range queries by following forward pointers, and are easier to make lock-free for concurrent access.
+
+In a balanced BST, range queries require an in-order traversal that bounces between parent and child pointers. In a skip list, once you find the range start at level 0, you simply follow forward pointers — sequential and cache-friendly. Additionally, lock-free skip list algorithms (used in LevelDB and ConcurrentSkipListMap) are well-understood, while lock-free balanced tree algorithms are notoriously complex. Antirez (Redis creator) also cited implementation simplicity: skip list insert/delete code is straightforward compared to red-black tree rotations.
+:::
+
+::: details Q3: LevelDB's skip list supports concurrent reads without locks but requires external synchronization for writes. Why not make writes lock-free too?
+**Answer:** LevelDB only has one writer thread (the memtable writer), so lock-free writes add complexity without benefit — the design constraint is concurrent readers, not concurrent writers.
+
+LevelDB's LSM-tree architecture funnels all writes through a single write-ahead log and then into the memtable. Since there's only one writer, a mutex is trivial and adds no contention. The skip list uses atomic operations for the forward pointers so that the single writer and multiple reader threads can operate simultaneously without read locks. This is the SWMR (single-writer, multiple-reader) insight: optimize for the actual concurrency pattern, not the general case.
+:::

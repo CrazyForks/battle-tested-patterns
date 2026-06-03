@@ -172,3 +172,29 @@ impl<T> BoundedQueue<T> {
 - [Kafka](https://github.com/apache/kafka) — 生产者 `buffer.memory` 和 `max.block.ms` 用于流控
 - [Linux TCP](https://github.com/torvalds/linux/blob/master/net/ipv4/tcp_output.c) — 拥塞窗口（`cwnd`）作为背压
 - [gRPC](https://github.com/grpc/grpc) — HTTP/2 中的流控窗口
+
+## 挑战题
+
+::: details Q1: Your bounded queue is full. Should you block the producer or drop the newest item? How do you decide?
+**Answer:** It depends on whether data loss is acceptable. Block when every item matters (financial transactions, user actions). Drop when freshness matters more than completeness (metrics, sensor telemetry).
+
+Blocking preserves all data but propagates slowness upstream -- if the consumer is permanently slow, the producer stalls and the whole pipeline stops. Dropping loses data but keeps the producer responsive. A common hybrid is "drop oldest" for monitoring dashboards (you want the latest readings) and "block" for event sourcing (you can't lose events). The choice is a business decision, not a technical one.
+:::
+
+::: details Q2: You set Node.js stream highWaterMark to 1MB. Traffic spikes and memory usage jumps to 500MB with 500 concurrent streams. What went wrong?
+**Answer:** Each stream allocates its own highWaterMark-sized buffer, so 500 streams x 1MB = 500MB of buffer memory. The highWaterMark is per-stream, not global.
+
+highWaterMark is not a system-wide limit -- it's the threshold per individual stream at which `write()` returns `false`. With many concurrent streams, total memory is `concurrency x highWaterMark`. The fix is either to lower the highWaterMark (16KB-64KB is typical), limit concurrency, or use a global memory budget that dynamically adjusts per-stream thresholds.
+:::
+
+::: details Q3: How is backpressure different from rate limiting? A teammate says they're the same thing.
+**Answer:** Rate limiting caps throughput at a fixed rate regardless of consumer capacity. Backpressure dynamically adjusts based on the consumer's actual ability to keep up.
+
+Rate limiting says "max 100 requests/second" even if the consumer could handle 200. Backpressure says "send as fast as the consumer can process, whatever that speed is right now." Rate limiting is a policy; backpressure is a feedback mechanism. They can complement each other: rate limiting at the API gateway, backpressure inside the processing pipeline. But they solve different problems -- rate limiting protects against abuse, backpressure prevents resource exhaustion.
+:::
+
+::: details Q4: A Go developer says "I don't need backpressure, I just use buffered channels." Is that correct?
+**Answer:** Buffered channels ARE backpressure. A bounded channel blocks the sender when full, which is exactly the "block" backpressure strategy.
+
+The developer is already using backpressure -- they just don't recognize it by name. `ch := make(chan int, 10)` creates a bounded buffer of 10. When the buffer fills, `ch <- item` blocks the goroutine, slowing the producer to match the consumer. The key question is whether the buffer size is well-chosen: too small and you get unnecessary blocking on small bursts; too large and you delay the feedback signal, allowing memory to grow.
+:::

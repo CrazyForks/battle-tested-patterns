@@ -81,3 +81,29 @@ print(a is b)  # True — 享元！
 - Rust [string_cache](https://crates.io/crates/string_cache) crate
 - .NET string interning
 - CSS value deduplication in browsers
+
+## 挑战题
+
+::: details Q1: Someone interns a mutable object (say, a config map) and later modifies it. What breaks?
+**Answer:** Every consumer sharing that reference sees the mutation, causing unpredictable behavior across unrelated parts of the system.
+
+Flyweight's entire premise is that shared instances are identical and interchangeable. If one caller mutates the shared object, all other callers silently get the changed value. This is why interned/flyweight objects must be immutable. If you need mutation, clone-on-write or don't intern.
+:::
+
+::: details Q2: Python caches integers -5 to 256 as flyweights. Why not cache all integers?
+**Answer:** Because the memory cost of pre-allocating every possible integer far exceeds the savings from sharing. The cache only pays off for values that appear frequently.
+
+The range -5 to 256 was chosen empirically -- these cover loop counters, array indices, boolean-like values, and common constants. Caching `1_000_000` would waste memory since most large integers appear only once. The flyweight pattern only saves memory when duplicates are common.
+:::
+
+::: details Q3: You build a string interner for a compiler. After processing 10,000 source files, the interner holds 2 million strings and uses 500MB. What went wrong?
+**Answer:** The interner never evicts entries, so it accumulates every string ever seen -- including one-off identifiers and string literals that are never referenced again.
+
+A production interner needs a strategy for scope: either clear it per-compilation-unit, use weak references so unreferenced strings get collected, or limit interning to identifiers (which repeat frequently) and skip arbitrary string literals. Unbounded growth is the classic flyweight pitfall.
+:::
+
+::: details Q4: Two threads simultaneously call `intern("hello")` and both see it as missing from the pool. What can go wrong?
+**Answer:** Both threads create a new instance and insert it, resulting in two different objects for the same key -- breaking the "same reference for same value" guarantee.
+
+Without synchronization, you get a race: thread A checks the pool, finds nothing, creates the object; thread B does the same before A inserts. Now consumers on different threads hold different references for `"hello"`, defeating identity comparison (`===` / `is`). The fix is a lock around the check-and-insert, or a concurrent map with `putIfAbsent` semantics.
+:::

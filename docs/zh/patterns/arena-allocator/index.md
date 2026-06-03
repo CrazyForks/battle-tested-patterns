@@ -11,10 +11,10 @@ Arena（或 bump 分配器）预分配一块连续内存，通过推进指针分
 ```text
   Arena: [                 capacity                    ]
          ┌──────┬──────┬──────┬────────────────────────┐
-         │ obj1 │ obj2 │ obj3 │    free space           │
+         │ obj1 │ obj2 │ obj3 │    free space          │
          └──────┴──────┴──────┴────────────────────────┘
-                               ▲
-                               └── offset (bump 指针)
+                              ▲
+                              └── offset (bump 指针)
 
   alloc(16) → offset: 0→16   (返回区域 0..16)
   alloc(8)  → offset: 16→24  (返回区域 16..24)
@@ -168,3 +168,29 @@ class Arena:
 - [Go arena](https://github.com/golang/go/blob/master/src/arena/arena.go) — Go 标准库中的实验性 arena API
 - [Zig](https://github.com/ziglang/zig) — `std.mem.ArenaAllocator` 作为核心分配器模式
 - [ECS 游戏引擎](https://github.com/SanderMertens/flecs) — 使用 arena 风格分配的组件存储
+
+## 挑战题
+
+::: details Q1: An arena allocator never fragments memory. A general-purpose allocator does. Why?
+**Answer:** Because the arena allocates contiguously by bumping a pointer forward, and frees everything at once -- there are never gaps between live objects.
+
+Fragmentation happens when objects are allocated and freed individually, leaving holes between live objects that are too small to reuse. An arena avoids this because it never frees individual objects -- it only resets the pointer to zero, reclaiming everything in one shot. The trade-off is that you can't free a single object early; if one allocation in the arena is still needed, the entire arena must stay alive.
+:::
+
+::: details Q2: You use an arena for per-HTTP-request allocations. One request triggers a 50MB file upload parsed into the arena. What's the problem?
+**Answer:** The arena holds the entire 50MB until the request completes, even if the parsed data is consumed incrementally and could have been freed along the way.
+
+Arenas work best when all allocations have roughly the same lifetime. If you parse a large file into an arena but only need a small summary, the bulk of the data sits in memory until `reset()`. The fix is either to stream-process the file without loading it all into the arena, or use a separate short-lived arena for the parsing pass and copy only the summary to the request arena.
+:::
+
+::: details Q3: A colleague suggests replacing Go's garbage collector with arenas everywhere for better performance. What's the flaw in this reasoning?
+**Answer:** Arenas require that all objects within them share the same lifetime. Real programs have objects with widely varying lifetimes, which arenas cannot handle.
+
+If object A must outlive object B but they're in the same arena, you can't free B without also freeing A. You'd end up either leaking memory (keeping arenas alive too long) or creating dozens of micro-arenas to match different lifetimes -- which is just reinventing the allocator with more complexity. GC handles arbitrary lifetimes automatically. Arenas excel in specific scopes (per-request, per-frame, per-compilation-pass) where lifetime is uniform.
+:::
+
+::: details Q4: Two arenas exist: one for AST nodes during parsing, one for IR nodes during code generation. The IR pass needs to reference AST nodes. What's the danger?
+**Answer:** If the AST arena is reset before the IR pass finishes reading from it, the IR holds dangling references into freed memory.
+
+This is the lifetime scoping problem: arena B's objects reference arena A's objects, creating an implicit lifetime dependency. Arena A must not be reset until arena B is done. In Rust, the borrow checker enforces this statically. In C/Go/TypeScript, it's a discipline issue. The solution is either to copy needed data out of arena A before resetting it, or to enforce a strict ordering: reset A only after resetting B.
+:::

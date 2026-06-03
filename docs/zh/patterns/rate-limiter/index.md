@@ -186,3 +186,29 @@ impl TokenBucket {
 - [Guava RateLimiter](https://github.com/google/guava/blob/master/guava/src/com/google/common/util/concurrent/SmoothRateLimiter.java#L357-L369) — 带预热的平滑限流
 - [Envoy](https://github.com/envoyproxy/envoy) — 服务网格的本地/全局限流
 - [AWS API Gateway](https://github.com/aws/aws-sdk-js-v3) — API 端点的令牌桶节流
+
+## 挑战题
+
+::: details Q1: Your API allows 100 requests per minute using a fixed-window counter. At 11:00:59 a client sends 100 requests, and at 11:01:01 sends another 100 requests. Both windows allow it. What is the actual rate over that 2-second span, and how would a token bucket handle this differently?
+**Answer:** The client sent 200 requests in 2 seconds (6,000/min effective rate), far exceeding the 100/min limit. A token bucket would reject most of the second burst because it would only have ~3 tokens refilled.
+
+This is the "boundary burst" problem with fixed-window counters. The window resets at sharp boundaries, allowing a double-burst at the seam. A token bucket with capacity=100 and rate=100/min refills at ~1.67 tokens/second. After draining to 0 at 11:00:59, only ~3 tokens would be available at 11:01:01 — the remaining 97 requests would be rejected. Sliding window counters also solve this by interpolating between adjacent windows.
+:::
+
+::: details Q2: You run 8 API server instances, each with its own token bucket allowing 100 requests/second. A client discovers this and distributes requests across all 8 servers. What is the effective rate limit they experience?
+**Answer:** The client can achieve 800 requests/second — 8x the intended limit — because per-node token buckets don't enforce a global rate.
+
+Distributed rate limiting requires shared state. Common solutions: (1) a centralized store like Redis with atomic `INCR` and `EXPIRE`, (2) a dedicated rate-limiting service (Envoy, Kong), or (3) a "split budget" approach where each node gets 1/n of the total rate (100/8 = 12.5 req/s per node). Option 3 is simple but fragile — if traffic isn't evenly distributed, some nodes waste their budget while others reject valid requests.
+:::
+
+::: details Q3: Your token bucket has capacity=50 and refill rate=10/second. A legitimate batch job needs to send 50 requests at once, then wait 10 seconds, then send 50 more. Will the token bucket accommodate this pattern or should you use a different algorithm?
+**Answer:** The token bucket handles this perfectly — it's designed to allow bursts up to capacity while enforcing an average rate.
+
+At the start, the bucket is full with 50 tokens, allowing the entire batch. Over the next 10 seconds, 100 tokens are refilled but capped at 50 (the capacity). The second batch of 50 drains the bucket again. The average rate is 100 requests / 10 seconds = 10/sec, exactly matching the refill rate. This burst-friendly behavior is why token bucket is preferred over leaky bucket for bursty-but-bounded workloads. A leaky bucket would force the 50 requests to drain at 10/sec, taking 5 seconds — unsuitable for batch patterns.
+:::
+
+::: details Q4: Nginx uses a leaky bucket for `limit_req`. Go's `x/time/rate` uses a token bucket. Both limit request rates. When would you choose leaky bucket over token bucket?
+**Answer:** Choose a leaky bucket when you need to smooth traffic into a steady stream, preventing any bursts from reaching the downstream service.
+
+A token bucket allows bursts up to capacity — great for user-facing APIs where occasional burst traffic is normal. A leaky bucket forces a constant drain rate, which protects backends that can't handle any traffic spikes (e.g., a database that degrades under concurrent writes). Nginx uses leaky bucket because reverse proxies sit in front of backends that need predictable, steady-state load. The tradeoff: leaky bucket adds latency during bursts (requests queue), while token bucket rejects excess requests instantly.
+:::

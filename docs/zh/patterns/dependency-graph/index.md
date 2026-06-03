@@ -276,3 +276,29 @@ impl DependencyGraph {
 - [Bazel](https://github.com/bazelbuild/bazel) — action 图的拓扑执行阶段
 - [webpack](https://github.com/webpack/webpack) — `ModuleGraph` 用于代码分割和 tree shaking
 - [Terraform](https://github.com/hashicorp/terraform) — 资源依赖图实现并行 apply
+
+## 挑战题
+
+::: details Q1: Given a dependency graph where A->C, B->C, and A and B have no dependencies, how many tasks can run in parallel? How does topological sort reveal this?
+**Answer:** A and B can run in parallel (both have in-degree 0). C must wait for both. Maximum parallelism is 2.
+
+Topological sort using Kahn's algorithm naturally exposes parallelism: all nodes with in-degree 0 at any given step can execute simultaneously. In this example, the first "wave" is {A, B} (both in-degree 0), and the second wave is {C} (in-degree drops to 0 after both A and B complete). Build systems like Bazel and Make exploit this by processing each wave in parallel.
+:::
+
+::: details Q2: Package D depends on both B and C. B depends on A. C also depends on A. This is a "diamond dependency." Does topological sort handle it correctly?
+**Answer:** Yes. Topological sort handles diamonds correctly because it tracks in-degree, not paths. A runs first, then B and C (in parallel), then D.
+
+A diamond is not a cycle -- it's just two paths converging on the same node. Kahn's algorithm processes A (in-degree 0), decrements B and C's in-degrees to 0, processes both, then decrements D's in-degree to 0 and processes it. The potential problem is not in ordering but in version conflicts: if B needs A v1 and C needs A v2, you have a compatibility issue that the graph structure alone doesn't solve.
+:::
+
+::: details Q3: You change file `utils.ts` in a large project. An incremental build system only recompiles files that depend on `utils.ts`. How does the dependency graph enable this?
+**Answer:** The build system walks the dependency graph forward from `utils.ts`, collecting all transitive dependents. Only those files (plus `utils.ts` itself) need recompilation.
+
+This is the key advantage of maintaining a dependency graph over a flat file list. Without the graph, you'd have to recompile everything or maintain manual lists of dependencies. With the graph, you compute the affected subgraph in O(V+E) time. Tools like webpack's `ModuleGraph` and Bazel's action graph do exactly this -- they track which outputs depend on which inputs and invalidate only the affected subtree.
+:::
+
+::: details Q4: A developer adds a dependency from module A to module B, but B already transitively depends on A (B -> C -> A). What should the build system do?
+**Answer:** Reject the change. Adding A -> B creates a cycle (A -> B -> C -> A), which means there is no valid build order.
+
+Kahn's algorithm detects this: after processing all zero-in-degree nodes, some nodes remain with non-zero in-degree -- those nodes form the cycle. The build system should report the exact cycle path so the developer can redesign the dependency (e.g., extract shared code into a new module, use dependency inversion, or use lazy/dynamic imports to break the compile-time cycle).
+:::

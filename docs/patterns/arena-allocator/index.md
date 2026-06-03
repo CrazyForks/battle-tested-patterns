@@ -11,10 +11,10 @@ An arena (or bump allocator) pre-allocates a contiguous block of memory and hand
 ```text
   Arena: [                 capacity                    ]
          ┌──────┬──────┬──────┬────────────────────────┐
-         │ obj1 │ obj2 │ obj3 │    free space           │
+         │ obj1 │ obj2 │ obj3 │    free space          │
          └──────┴──────┴──────┴────────────────────────┘
-                               ▲
-                               └── offset (bump pointer)
+                              ▲
+                              └── offset (bump pointer)
 
   alloc(16) → offset: 0→16   (return region 0..16)
   alloc(8)  → offset: 16→24  (return region 16..24)

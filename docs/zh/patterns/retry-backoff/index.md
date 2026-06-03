@@ -91,3 +91,29 @@ def retry_with_backoff(fn, max_retries=5, base=1.0, cap=30.0):
 - [Google Cloud](https://github.com/googleapis/google-cloud-node)
 - [Envoy](https://github.com/envoyproxy/envoy) — proxy
 - [Celery](https://github.com/celery/celery) — Python task queue
+
+## 挑战题
+
+::: details Q1: You remove jitter from your retry logic to make delays "predictable." Under a thundering herd scenario, what happens?
+**Answer:** All clients that failed at the same time retry at exactly the same intervals, repeatedly overloading the recovering service in synchronized waves.
+
+Without jitter, 10,000 clients that got a 503 at t=0 all retry at t=1s, then t=2s, then t=4s -- creating periodic traffic spikes that prevent recovery. Jitter spreads retries across the delay window so the recovering service sees a smooth trickle instead of synchronized bursts. This is why every production retry library includes jitter.
+:::
+
+::: details Q2: Your service retries a POST /create-order endpoint that is NOT idempotent. The first attempt times out but actually succeeded on the server. What happens on retry?
+**Answer:** The retry creates a duplicate order. The customer gets charged twice.
+
+A timeout does not mean the request failed -- it means you don't know if it succeeded. Retrying a non-idempotent operation risks duplication. The fix is to make the operation idempotent using an idempotency key: the client generates a unique ID and the server deduplicates. Without idempotency, you should not retry write operations.
+:::
+
+::: details Q3: A downstream service returns HTTP 400 Bad Request. Should you retry with exponential backoff?
+**Answer:** No. A 400 is a client error indicating bad input. Retrying the same request will produce the same error every time.
+
+Retry with backoff is designed for transient failures -- 503 Service Unavailable, 429 Too Many Requests, network timeouts, connection resets. A 400 means "your request is malformed," which won't fix itself with time. Retrying it wastes resources and delays the real fix (correcting the input). Always classify errors before deciding to retry.
+:::
+
+::: details Q4: Your retry config uses baseDelay=1s, maxDelay=30s, maxRetries=10. A junior engineer asks: "Why not set maxRetries=1000 so we never lose a request?" What's wrong with that?
+**Answer:** With exponential backoff capped at 30s and 1000 retries, the client would spend up to 8+ hours retrying a single request, holding resources the entire time.
+
+High retry counts consume connection pool slots, memory, goroutines/threads, and often hold database transactions or locks open. If the downstream service is truly down, those retries won't help -- you need a circuit breaker to fail fast and shed load. In practice, 3-5 retries with backoff is enough to handle transient blips; anything longer should be handled by a persistent queue with dead-letter semantics.
+:::

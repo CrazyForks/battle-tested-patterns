@@ -229,3 +229,29 @@ impl WorkStealingScheduler {
 - [Rayon (Rust)](https://github.com/rayon-rs/rayon) — 数据并行库，内置工作窃取线程池
 - [Intel TBB](https://github.com/oneapi-src/oneTBB) — `task_arena` 工作窃取调度器
 - [Cilk](https://github.com/OpenCilk/opencilk-project) — fork-join 并行的工作窃取先驱
+
+## 挑战题
+
+::: details Q1: Workers pop from their own deque using LIFO (top), but steal from others using FIFO (bottom). Why not use FIFO for both?
+**Answer:** LIFO on your own deque gives cache locality -- the most recently pushed task is likely still in CPU cache. FIFO stealing takes the oldest (largest) task from the victim, giving the thief more work to do before needing to steal again.
+
+In divide-and-conquer workloads, the bottom of the deque holds the earliest-spawned (coarsest-grained) tasks. Stealing one large task is better than stealing many small ones because it amortizes the steal overhead and gives the thief a chunk of work it can subdivide locally. LIFO for local pops also naturally implements depth-first execution, which uses less stack space.
+:::
+
+::: details Q2: Go's runtime steals half the victim's run queue instead of just one task. Why is "steal half" better than "steal one"?
+**Answer:** Stealing one task means the thief may finish quickly and immediately need to steal again, causing repeated contention on the victim's deque. Stealing half amortizes the synchronization cost.
+
+Each steal operation requires atomic CAS on the victim's deque, which is expensive. If you steal only one task, a worker with an empty queue may steal dozens of times per millisecond. Stealing half the queue in one operation means the thief has enough local work to stay busy, reducing total steal attempts and contention. The Go runtime's `runqgrab` does exactly this with a single atomic operation.
+:::
+
+::: details Q3: What is the ABA problem in the context of a lock-free work-stealing deque, and why does it matter?
+**Answer:** The ABA problem occurs when a CAS succeeds because the value matches, but the underlying state has changed between the read and the CAS -- another thread modified and restored the original value.
+
+In a lock-free deque, a thief reads the bottom index as value A, gets preempted, the owner pops and pushes (bottom goes A -> B -> A), and the thief's CAS on the bottom index succeeds even though the deque content is different. This can cause a task to be executed twice or skipped. The fix is to use a tagged pointer or generation counter so CAS detects the intermediate changes. This is why Tokio and Go use epoch/version counters alongside deque indices.
+:::
+
+::: details Q4: You have 8 workers and 8 identical long-running tasks, one per worker. Is work stealing helping here?
+**Answer:** No. If every worker has exactly one task of equal duration, no worker finishes early, so no stealing ever occurs. Work stealing adds zero benefit and a small overhead from the idle-check logic.
+
+Work stealing shines when workloads are irregular -- some tasks finish quickly and the worker can help others. With perfectly balanced, uniform tasks, static partitioning (assign one task per worker) is simpler and equally effective. Work stealing's overhead (deque management, random victim selection, CAS operations) is wasted when there's nothing to steal.
+:::

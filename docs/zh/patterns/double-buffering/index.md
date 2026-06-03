@@ -130,3 +130,29 @@ func (db *DoubleBuffer[T]) Swap() {
 - [OpenGL](https://www.khronos.org/opengl/) / Vulkan — swap chains
 - [PostgreSQL](https://github.com/postgres/postgres) — MVCC snapshot isolation
 - Unreal Engine — frame rendering
+
+## 挑战题
+
+::: details Q1: If double buffering eliminates tearing, why do GPUs use triple buffering?
+**Answer:** Triple buffering decouples the swap timing from vsync, reducing input latency without reintroducing tearing.
+
+With double buffering and vsync enabled, if the GPU finishes a frame early, it must wait for the next vsync interval before swapping — the CPU/GPU pipeline stalls. A third buffer lets the GPU keep rendering into a spare back buffer while the front buffer waits for vsync. The display always gets the most recently completed frame, so latency drops while tearing stays eliminated.
+:::
+
+::: details Q2: A junior developer proposes calling `swap()` in the middle of writing to the back buffer to "publish partial progress." What goes wrong?
+**Answer:** This reintroduces the exact tearing problem double buffering is designed to prevent.
+
+The whole point of double buffering is that the swap happens only after the back buffer is fully written. If you swap mid-write, readers now see a half-updated buffer — some pixels from the old frame, some from the new. The invariant is: the back buffer is private to the writer until the swap makes it public atomically.
+:::
+
+::: details Q3: React's fiber tree uses double buffering, but it never actually swaps two screen buffers. What is being "swapped" and why does it still qualify?
+**Answer:** React swaps which fiber tree is "current" and which is "work-in-progress" by reassigning a single pointer (`root.current = finishedWork`).
+
+The pattern is structural, not visual. React maintains two fiber trees linked via `.alternate`. During rendering, it builds the work-in-progress tree without affecting what is displayed. On commit, it atomically designates the WIP tree as "current." The old current becomes the next WIP tree (recycled, not GC'd). This is the same principle as GPU buffer swapping: prepare privately, publish atomically, recycle the old version.
+:::
+
+::: details Q4: Double buffering uses 2x memory. Under what condition does this cost become zero effective overhead?
+**Answer:** When you would have needed a separate "scratch" buffer anyway to prepare the next state.
+
+If the alternative to double buffering is allocating a new buffer every frame and discarding the old one, double buffering actually saves memory by reusing two fixed buffers forever. The 2x cost only hurts when compared to an in-place update scenario — and in-place updates risk tearing. So the real cost comparison is: 2 persistent buffers vs. N short-lived allocations plus GC pressure.
+:::

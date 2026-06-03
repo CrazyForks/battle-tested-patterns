@@ -231,3 +231,23 @@ impl HashRing {
 - [Apache Cassandra](https://github.com/apache/cassandra) — 分区器使用一致性哈希的 token 环
 - [Amazon DynamoDB](https://www.allthingsdistributed.com/2007/10/amazons_dynamo.html) — 一致性哈希在生产中的原始论文
 - [Memcached](https://github.com/memcached/memcached) — 客户端一致性哈希（ketama 算法）
+
+## 挑战题
+
+::: details Q1: You have a hash ring with 3 physical nodes, each with 1 virtual node (no replicas). One node owns 60% of the key space while the others own 20% each. How do virtual nodes fix this, and why does groupcache default to a high replica count?
+**Answer:** Virtual nodes spread each physical node across multiple positions on the ring, making the distribution converge toward uniform as the number of virtual nodes increases.
+
+With only 1 position per node, the arc lengths between nodes are determined by hash values — essentially random, leading to high variance. With 100-200 virtual nodes per physical node, the law of large numbers kicks in and each physical node owns approximately 1/n of the ring. Groupcache defaults to a high replica count because statistical uniformity requires many samples. The tradeoff is memory: more virtual nodes means a larger sorted key array and ring map.
+:::
+
+::: details Q2: Node B crashes and is removed from a 5-node ring. Which node(s) absorb its traffic? Does every remaining node share the load equally?
+**Answer:** Only the node immediately clockwise from B on the ring absorbs all of B's keys — the other three nodes are completely unaffected.
+
+This is both the strength and weakness of consistent hashing. When B is removed, keys that mapped to B now "fall through" to the next clockwise node. Without virtual nodes, one node absorbs 100% of the redistributed load, potentially doubling its traffic. With virtual nodes, B's multiple ring positions are distributed, so its keys scatter across multiple successor nodes — closer to an even split. This is a key reason virtual nodes exist: they turn a "one neighbor absorbs all" failure into a "many neighbors share the load" failure.
+:::
+
+::: details Q3: Your cache cluster uses consistent hashing. A new product launch causes one specific key ("homepage_banner") to receive 100x the normal request rate. Consistent hashing maps it to Node C, which is now overloaded while other nodes are idle. Does consistent hashing solve hotspot problems?
+**Answer:** No. Consistent hashing distributes keys evenly across nodes, but it cannot distribute load evenly when individual keys have vastly different request rates.
+
+Consistent hashing solves the key *assignment* problem, not the key *popularity* problem. A single hot key always maps to one node. Solutions include: read replicas (cache the hot key on multiple nodes), request-level load balancing (route reads for hot keys randomly), or key splitting (split "homepage_banner" into "homepage_banner:1" through "homepage_banner:10" spread across nodes). The bounded-loads extension to consistent hashing addresses this by redirecting overflow traffic to the next node on the ring.
+:::

@@ -202,3 +202,29 @@ impl FreeList {
 - [jemalloc](https://github.com/jemalloc/jemalloc) — 小分配的线程缓存空闲链表
 - [mimalloc](https://github.com/microsoft/mimalloc) — 分片设计的段级空闲链表
 - [Vulkan Memory Allocator](https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator) — 带空闲链表的子分配池
+
+## 挑战题
+
+::: details Q1: A bug causes `free(slot)` to be called twice on the same slot. What happens with a naive free list, and how do production systems detect this?
+**Answer:** The slot appears twice in the free list. Two subsequent `alloc()` calls return the same slot, and two callers write to overlapping memory, causing data corruption.
+
+Double-free is one of the most dangerous memory bugs. Detection techniques include: a bitmap tracking which slots are allocated (check before freeing), poison values written into freed slots (detect if the value is already the poison), and the Linux SLUB allocator's approach of XOR-encoding free list pointers with a per-cache random value so corruption is detected on the next alloc. Some allocators abort immediately on double-free rather than silently corrupting.
+:::
+
+::: details Q2: An intrusive free list stores the "next" pointer inside the free slot itself. What's the advantage over a separate index array, and what's the risk?
+**Answer:** Intrusive lists use zero extra memory -- the next pointer occupies space that's unused anyway (the slot is free). The risk is that a use-after-free bug can overwrite the next pointer, corrupting the entire free list.
+
+With a non-intrusive design (separate array of indices), corrupting a freed slot's data doesn't break the free list structure. With intrusive design, if code accidentally writes to a freed slot, it overwrites the next pointer and the free list chain breaks -- subsequent allocs may return garbage addresses. This is why Linux's SLUB uses `CONFIG_SLAB_FREELIST_HARDENED` to XOR-encode the pointers.
+:::
+
+::: details Q3: Free lists return the most recently freed slot (LIFO). Why is this better for performance than returning the oldest freed slot (FIFO)?
+**Answer:** The most recently freed slot is likely still in CPU cache. Reusing it immediately gives better cache hit rates than returning a slot freed long ago.
+
+LIFO reuse is a deliberate cache optimization. When you free slot N and immediately alloc, you get slot N back -- which was just accessed and is likely still in L1/L2 cache. FIFO would return a slot freed many operations ago, which has probably been evicted from cache. For hot allocation paths (game engines doing thousands of alloc/free per frame), this cache locality difference is measurable.
+:::
+
+::: details Q4: You have a free list pool of 1,000 slots. Monitoring shows the pool is 95% allocated at steady state, and alloc() frequently returns null. Should you increase the pool size?
+**Answer:** Not necessarily. First check whether allocated slots are actually in use or are being leaked (allocated but never freed).
+
+A common bug is forgetting to call `free()` on slots that are no longer needed, causing the pool to slowly drain. Adding more slots just delays the inevitable exhaustion. Check the `allocated` count over time -- if it monotonically increases, you have a leak. If it fluctuates around 950 with occasional spikes to 1000, then the pool is genuinely too small and should be increased.
+:::

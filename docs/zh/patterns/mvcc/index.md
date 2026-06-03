@@ -208,3 +208,29 @@ impl MVCCStore {
 - [MySQL InnoDB](https://github.com/mysql/mysql-server) — undo log 实现 MVCC 行版本
 - [TiKV](https://github.com/tikv/tikv) — 基于 Percolator 的分布式 MVCC 事务
 - [FoundationDB](https://github.com/apple/foundationdb) — 多版本存储层
+
+## 挑战题
+
+::: details Q1: Your MVCC store keeps every version of every key forever. After a year of operation, storage usage is 50x the actual live dataset size. How do production databases like PostgreSQL handle this?
+**Answer:** They run garbage collection (called "vacuuming" in PostgreSQL) to remove versions that are no longer visible to any active transaction.
+
+PostgreSQL's `VACUUM` process identifies "dead" tuples — versions older than the oldest active transaction's snapshot. Since no transaction can ever see these versions, they're safe to reclaim. etcd uses `compaction` to discard revisions older than a threshold. The challenge is determining the "low-water mark": the oldest snapshot still in use. If a long-running transaction holds an old snapshot, it blocks garbage collection for all versions newer than that snapshot — a common source of PostgreSQL bloat.
+:::
+
+::: details Q2: Two transactions both read key "balance" (value=100) at the same snapshot timestamp, then both try to write "balance=90" (deducting 10). Under MVCC snapshot isolation, both reads succeed without blocking. What happens at commit time?
+**Answer:** One transaction commits successfully; the other detects a write-write conflict and aborts. The balance ends up at 90, not 80.
+
+This is the "lost update" anomaly under snapshot isolation. Both transactions read the same snapshot (balance=100) and independently compute balance=90. MVCC detects the conflict at commit time using a "first-writer-wins" rule: the first to commit writes version t=200 with value=90. The second transaction tries to commit but sees that "balance" was modified after its snapshot — it must abort and retry. On retry, it reads the new value (90) and writes 80. This is why MVCC provides snapshot isolation, not serializable: it prevents lost updates but requires application-level handling of write conflicts.
+:::
+
+::: details Q3: Your team uses MVCC with snapshot isolation for a banking system. A compliance audit asks: "Can two concurrent transfers between the same accounts produce an inconsistent total?" Your team says snapshot isolation prevents this. Are they correct?
+**Answer:** No. Snapshot isolation prevents lost updates but is vulnerable to write skew anomalies, where two transactions read overlapping data and make non-conflicting writes that together violate a constraint.
+
+Example: accounts A=50 and B=50 with a constraint "A+B >= 0." Transaction 1 reads both, sees total=100, writes A=-10. Transaction 2 reads both (same snapshot, A=50, B=50), writes B=-60. Both pass the constraint check independently, both commit (they write different keys, so no write-write conflict), and the result is A=-10, B=-60, total=-70 — violating the constraint. Full serializability (PostgreSQL's SSI, CockroachDB's serializable mode) is needed to prevent write skew.
+:::
+
+::: details Q4: etcd uses MVCC to power Kubernetes' configuration store. Why does a distributed key-value store benefit from keeping old versions, rather than just storing the latest value?
+**Answer:** Old versions enable watch/subscribe semantics — clients can ask "what changed since revision X?" without polling, and disconnected clients can catch up from their last-seen revision.
+
+Kubernetes controllers (like the replication controller) use etcd watches to react to state changes. If etcd only stored the latest value, a controller that disconnects for 5 seconds would miss intermediate changes and need a full resync. With MVCC, the controller reconnects and says "give me all changes since revision 12345," receiving a precise stream of what changed. This is also essential for etcd's consistency guarantees: linearizable reads can be served from a specific revision, and time-travel queries enable debugging ("what was the cluster state 10 minutes ago?").
+:::

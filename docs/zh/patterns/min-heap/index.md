@@ -161,3 +161,29 @@ func (h *MinHeap) Pop() (int, bool) {
 - Java `PriorityQueue`
 - Python [heapq](https://github.com/python/cpython/blob/main/Lib/heapq.py)
 - Dijkstra / Prim graph algorithms
+
+## 挑战题
+
+::: details Q1: How do you convert a min heap into a max heap without changing the data structure?
+**Answer:** Negate the sort keys on insert and negate them back on extract.
+
+Push `-priority` instead of `priority`. The min heap puts the most negative value (highest original priority) at the root. On pop, negate the key again to recover the original value. This works because a min heap over negated values is equivalent to a max heap over the original values. Python's `heapq` community uses this trick since the stdlib only provides a min heap.
+:::
+
+::: details Q2: Why does React use a min heap for scheduling instead of a sorted array?
+**Answer:** A sorted array has O(n) insertion (shifting elements), while a min heap has O(log n) insertion and O(1) peek.
+
+React's scheduler frequently inserts new tasks with varying expiration times and always needs the earliest-expiring task. A sorted array gives O(1) access to the minimum but costs O(n) to insert (binary search + shift). A min heap gives O(1) peek and O(log n) insert/remove — a better tradeoff for a dynamic queue where tasks are constantly added and removed. For a static, one-time sort, the sorted array wins.
+:::
+
+::: details Q3: A balanced BST (like a red-black tree) also gives O(log n) insert and O(log n) find-min. Why does Linux CFS use a red-black tree but React uses a min heap?
+**Answer:** CFS needs to remove arbitrary tasks (not just the minimum) when processes exit, which a BST handles in O(log n) but a heap handles in O(n).
+
+A min heap only efficiently removes the root. Deleting an arbitrary element requires O(n) search + O(log n) sift. A red-black tree supports O(log n) deletion of any node. CFS frequently removes processes that exit or change priority, so the BST is justified. React's scheduler almost exclusively pops the highest-priority task from the front, making the simpler min heap (with its smaller constant factors and cache-friendly array layout) the better choice.
+:::
+
+::: details Q4: You have 1 billion log entries and need the 10 most recent. Should you use a min heap or a max heap, and what size?
+**Answer:** Use a min heap of size 10. For each entry, if it's larger than the heap's minimum, pop the minimum and push the new entry.
+
+This is the "top-K" pattern. A min heap of size K keeps the K largest elements seen so far, with the smallest of those K at the root as a gatekeeper. Each new element is compared to the root in O(1) — if it's smaller, skip it; if larger, replace the root in O(log K). Total cost: O(n log K) with O(K) memory, not O(n log n) for a full sort.
+:::

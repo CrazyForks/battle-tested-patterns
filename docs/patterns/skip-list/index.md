@@ -9,19 +9,17 @@ A probabilistic sorted data structure with O(log n) search, insert, and delete �
 A skip list is a multi-level linked list where each level skips over more elements. The bottom level is a regular sorted linked list. Higher levels act as "express lanes" that allow binary-search-like behavior. Each node is randomly promoted to higher levels with probability p (typically 0.5).
 
 ```text
-  Level 3:  HEAD ─────────────────────────────────────── 30 ── NIL
-              │                                          │
-  Level 2:  HEAD ──────────── 10 ─────────────────────── 30 ── NIL
-              │               │                          │
-  Level 1:  HEAD ──── 5 ──── 10 ──── 20 ──────────────── 30 ── NIL
-              │       │       │       │                   │
-  Level 0:  HEAD ─ 3 ─ 5 ─ 7 ─ 10 ─ 15 ─ 20 ─── 25 ─── 30 ── NIL
+  Level 3:  HEAD ─────────────────────────────── 30 ─ NIL
+              │                                  │
+  Level 2:  HEAD ─────── 10 ──────────────────── 30 ─ NIL
+              │           │                      │
+  Level 1:  HEAD ── 5 ── 10 ──── 20 ──────────── 30 ─ NIL
+              │     │     │       │               │
+  Level 0:  HEAD  3  5  7  10  15  20  25  30 ─ NIL
+              │   │  │  │   │   │   │   │   │
+              ▼   ▼  ▼  ▼   ▼   ▼   ▼   ▼   ▼
 
-  Search(15): start at L3 HEAD
-    L3: HEAD→30 (overshoot) ↓
-    L2: HEAD→10→30 (overshoot) ↓
-    L1: 10→20 (overshoot) ↓
-    L0: 10→15 ✓ found!
+  Search(15): L3→30(far)↓ L2→10→30(far)↓ L1→20(far)↓ L0→15 ✓
 ```
 
 | Property | Value |
