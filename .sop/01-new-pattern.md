@@ -20,8 +20,8 @@ Adding a new pattern (e.g. `bloom-filter`) requires creating and modifying these
 ```text
 docs/patterns/bloom-filter/index.md          # English pattern document
 docs/zh/patterns/bloom-filter/index.md       # Chinese translation
-exercises/typescript/bloom-filter/01-basic.test.ts   # Exercise (required)
-exercises/typescript/bloom-filter/02-*.test.ts       # More exercises (optional)
+exercises/typescript/bloom-filter/01-basic.test.ts   # Basic exercise (required)
+exercises/typescript/bloom-filter/02-intermediate.test.ts  # Intermediate exercise (required)
 ```
 
 **Modify:**
@@ -64,13 +64,16 @@ Create `docs/patterns/<pattern-name>/index.md` following the template:
 
 ```markdown
 # Pattern: [Name]
-## One Liner          — ≤ 30 English words
+## One Liner          — ≤ 30 English words, capture WHY not just WHAT
 ## Core Idea          — concept + diagram (Mermaid, ASCII, or table — whichever fits best)
 ## Production Proof   — table with ≥ 2 projects, precise GitHub URLs to line numbers
+                        Description must be specific enough to learn WITHOUT clicking
 ## Implementation     — TypeScript (required) + ≥ 1 other (Rust / Go / Python / C)
-## Exercises          — table linking to exercise files
-## When to Use        — applicable scenarios
-## When NOT to Use    — limitations and alternatives
+## Exercises          — table linking to exercise files (basic + intermediate)
+## When to Use        — ≥ 3 concrete scenarios
+## When NOT to Use    — ≥ 2 concrete alternatives
+## More Production Uses — bullet list with repo links
+## Challenge Questions — 3-4 scenario-based Q&A using ::: details syntax
 ```
 
 ### 4. Write Multi-Language Implementations
@@ -86,10 +89,24 @@ Include implementations in the `:::code-group` block:
 
 Create files in `exercises/typescript/<pattern-name>/`:
 
-- [ ] ≥ 1 exercise file with difficulty label in filename (`01-basic`, `02-*`)
+- [ ] `01-basic.test.ts` — basic mechanics of the pattern (required)
+- [ ] `02-intermediate.test.ts` — real-world application scenario (required)
 - [ ] Use the TODO-stub format: functions with `// TODO: implement` comments containing the working solution (so CI passes), with a `// ─── Tests (do not modify) ───` separator
 - [ ] Learners are expected to delete the implementations and rewrite them to pass the tests
+- [ ] Each exercise: 4-5 meaningful test cases covering edge cases
 - [ ] Verify all tests pass locally: `pnpm test`
+- [ ] Verify TypeScript strict mode: `pnpm typecheck`
+
+### 5b. Write Challenge Questions
+
+Add `## Challenge Questions` section at the end of the pattern doc:
+
+- [ ] 3-4 scenario-based questions using VitePress `::: details` syntax
+- [ ] Questions test UNDERSTANDING through real-world scenarios, not memorization
+- [ ] Answers must be factually correct — verify claims about specific technologies
+- [ ] Escape `|` characters in markdown tables (use `\|` or rephrase)
+- [ ] Escape `*` in math expressions (use `×` instead)
+- [ ] Copy the same section to the ZH doc with header `## 挑战题` (content stays in English)
 
 ### 6. Create Chinese Translation
 
@@ -125,9 +142,16 @@ Create files in `exercises/typescript/<pattern-name>/`:
 - [ ] Production Proof: links precise to line numbers (`#L42-L80`), never `#L1`
 - [ ] More Production Uses: use bullet list with verified URLs, not comma-separated text
 - [ ] Chinese translation: section titles in Chinese (`## 更多生产案例` not `## More Production Uses`)
-- [ ] ASCII diagrams: strictly monospaced-aligned, use 4-char wide cells (`┌────┬────┐`), verify in a monospace font
+- [ ] ASCII diagrams: strictly monospaced-aligned, verify in a monospace font
+- [ ] ASCII in ZH docs: CJK chars = 2 display columns; compensate with fewer spaces
+- [ ] ASCII box borders: │ must be vertically aligned on EVERY line of the same box
+- [ ] Challenge questions: no unescaped `|` in table cells, no `*` for multiplication (use `×`)
+- [ ] Challenge answers: factually verified — don't claim Go is cooperative-only (async preemption since 1.14)
 - [ ] Sidebar: updated in BOTH English and Chinese sections of `config.ts`
 - [ ] README: updated in BOTH `README.md` and `README.zh-CN.md`
+- [ ] README cheat sheet: add to the categorized table in README
+- [ ] by-project pages: update `docs/by-project/more-projects.md` and ZH version
+- [ ] How Patterns Connect: update if the pattern relates to an existing system case study
 
 ### 9. Submit PR
 
