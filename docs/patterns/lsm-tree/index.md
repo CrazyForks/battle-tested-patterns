@@ -41,6 +41,10 @@ An LSM tree absorbs writes into an in-memory sorted structure (the memtable). Wh
 | Write throughput | Very high — sequential I/O only |
 | Space amplification | Temporary duplication during compaction |
 
+**Try it yourself** — write keys to the memtable, watch it flush to SSTables, and compact levels:
+
+<LSMTreeViz />
+
 ## Production Proof
 
 | Project | Source | Usage |

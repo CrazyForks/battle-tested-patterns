@@ -27,6 +27,10 @@ MVCC stores every write as a new version tagged with a timestamp or transaction 
 | Space overhead | Multiple versions per key (garbage collected via compaction) |
 | Isolation level | Snapshot isolation (stronger than read-committed, weaker than serializable) |
 
+**Try it yourself** — start transactions, read and write keys, and observe snapshot isolation:
+
+<MVCCViz />
+
 ## Production Proof
 
 | Project | Source | Usage |

@@ -33,6 +33,10 @@ Interning stores each unique value exactly once in a table and hands out lightwe
 | Memory | Deduplicated — each unique value stored once |
 | Tradeoff | Intern table grows monotonically (values never freed) |
 
+**Try it yourself** — intern strings and see how duplicates resolve to the same ID:
+
+<InterningViz />
+
 ## Production Proof
 
 | Project | Source | Usage |

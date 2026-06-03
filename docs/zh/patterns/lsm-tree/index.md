@@ -41,6 +41,10 @@ LSM 树将写入吸收到内存中的有序结构（memtable）中。当 memtabl
 | 写入吞吐 | 非常高——仅顺序 I/O |
 | 空间放大 | compaction 期间临时数据重复 |
 
+**动手试试** — 写入键到 memtable，观察刷写到 SSTable，并进行层级压缩：
+
+<LSMTreeViz />
+
 ## 生产验证
 
 | 项目 | 源码 | 用途 |

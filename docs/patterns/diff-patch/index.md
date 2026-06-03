@@ -22,6 +22,10 @@ flowchart LR
 
 React's reconciler uses this to determine which DOM nodes to create, update, or remove. Git uses it to show what changed between commits.
 
+**Try it yourself** — edit old and new text, then compute and apply the diff:
+
+<DiffPatchViz />
+
 ## Production Proof
 
 | Project | Source | Usage |

@@ -28,6 +28,10 @@ An arena (or bump allocator) pre-allocates a contiguous block of memory and hand
 | Individual free | **Not supported** (use free-list or GC for that) |
 | Fragmentation | **None** — contiguous allocation, no gaps |
 
+**Try it yourself** — allocate blocks in the arena and reset to free everything at once:
+
+<ArenaAllocatorViz />
+
 ## Production Proof
 
 | Project | Source | Usage |

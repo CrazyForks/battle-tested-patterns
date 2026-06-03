@@ -27,6 +27,10 @@ sequenceDiagram
 
 The pattern: run a loop, check a deadline after each unit of work, and `yield` if time is up.
 
+**Try it yourself** — start tasks and watch cooperative round-robin scheduling with yielding:
+
+<CooperativeSchedulingViz />
+
 ## Production Proof
 
 | Project | Source | Usage |

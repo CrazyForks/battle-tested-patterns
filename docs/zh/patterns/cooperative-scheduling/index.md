@@ -25,6 +25,10 @@ sequenceDiagram
 
 模式：运行循环，每个工作单元后检查截止时间，超时则 `yield`。
 
+**动手试试** — 启动任务，观察协作式轮询调度和让出控制权：
+
+<CooperativeSchedulingViz />
+
 ## 生产验证
 
 | 项目 | 源码 | 用途 |

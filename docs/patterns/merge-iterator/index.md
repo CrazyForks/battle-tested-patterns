@@ -35,6 +35,10 @@ A merge iterator maintains a min-heap of size K, where each entry tracks the cur
 | Stream requirement | Each input stream must be sorted |
 | Output guarantee | Globally sorted, stable within equal keys |
 
+**Try it yourself** — add sorted streams and merge them into one globally sorted output:
+
+<MergeIteratorViz />
+
 ## Production Proof
 
 | Project | Source | Usage |

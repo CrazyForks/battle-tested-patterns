@@ -30,6 +30,10 @@ Checkpointing captures a consistent snapshot of the current system state at a kn
 | WAL truncation | Safe to discard log entries before checkpoint |
 | Consistency | Checkpoint must capture a consistent snapshot |
 
+**Try it yourself** — increment state, take checkpoints, crash, and restore from a checkpoint:
+
+<CheckpointingViz />
+
 ## Production Proof
 
 | Project | Source | Usage |

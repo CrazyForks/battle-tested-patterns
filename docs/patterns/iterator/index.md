@@ -15,6 +15,10 @@ flowchart LR
 
 No intermediate arrays are created. Each element flows through the entire chain before the next one starts.
 
+**Try it yourself** — step through array and tree iterators, watching elements get visited one at a time:
+
+<IteratorViz />
+
 ## Production Proof
 
 | Project | Source | Usage |

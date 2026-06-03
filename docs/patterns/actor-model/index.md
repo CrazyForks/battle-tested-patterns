@@ -28,6 +28,10 @@ An actor is a lightweight process with private state and a mailbox (message queu
 | Failure isolation | Actor crash doesn't corrupt other actors |
 | Scalability | Millions of lightweight actors (Erlang: 2KB per process) |
 
+**Try it yourself** — send messages between actors and observe mailbox processing and state isolation:
+
+<ActorModelViz />
+
 ## Production Proof
 
 | Project | Source | Usage |

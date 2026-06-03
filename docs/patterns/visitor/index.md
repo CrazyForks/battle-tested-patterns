@@ -33,6 +33,10 @@ The visitor pattern separates "how to walk a tree" from "what to do at each node
 | Traversal | Controlled by visitor or by accept() methods |
 | Pattern family | Behavioral — related to Strategy and Iterator |
 
+**Try it yourself** — select a visitor type and traverse the AST, watching each node get visited:
+
+<VisitorViz />
+
 ## Production Proof
 
 | Project | Source | Usage |

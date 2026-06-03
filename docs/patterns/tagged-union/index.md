@@ -35,6 +35,10 @@ A tagged union (also called a variant, discriminated union, or sum type) pairs a
 | Extension | Add a new tag + handler (open to extension) |
 | Zero-cost? | In C/Rust: yes (enum tag + union). In JS/Python: object overhead |
 
+**Try it yourself** — switch between variant types and see tag-based dispatch in action:
+
+<TaggedUnionViz />
+
 ## Production Proof
 
 | Project | Source | Usage |

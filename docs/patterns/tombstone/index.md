@@ -38,6 +38,10 @@ Instead of immediately removing data, write a special "tombstone" record that sh
 | Read overhead | Must check for tombstones |
 | Consistency | Tombstone must propagate to all replicas before removal |
 
+**Try it yourself** — write entries, delete them with tombstones, and compact to reclaim space:
+
+<TombstoneViz />
+
 ## Production Proof
 
 | Project | Source | Usage |

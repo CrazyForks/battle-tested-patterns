@@ -35,6 +35,10 @@ A registry is a central map from names (strings) to implementations (functions, 
 | Coupling | Zero compile-time dependency between producer and consumer |
 | Extensibility | Add new implementations without modifying existing code |
 
+**Try it yourself** — register handlers by name and look them up at runtime:
+
+<RegistryViz />
+
 ## Production Proof
 
 | Project | Source | Usage |

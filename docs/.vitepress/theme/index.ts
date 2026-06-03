@@ -29,6 +29,23 @@ import WriteAheadLogViz from './components/WriteAheadLogViz.vue';
 import DirtyFlagViz from './components/DirtyFlagViz.vue';
 import LogicalClockViz from './components/LogicalClockViz.vue';
 import ReferenceCountingViz from './components/ReferenceCountingViz.vue';
+import ActorModelViz from './components/ActorModelViz.vue';
+import ArenaAllocatorViz from './components/ArenaAllocatorViz.vue';
+import BatchProcessingViz from './components/BatchProcessingViz.vue';
+import CheckpointingViz from './components/CheckpointingViz.vue';
+import CooperativeSchedulingViz from './components/CooperativeSchedulingViz.vue';
+import DiffPatchViz from './components/DiffPatchViz.vue';
+import FreeListViz from './components/FreeListViz.vue';
+import InterningViz from './components/InterningViz.vue';
+import MergeIteratorViz from './components/MergeIteratorViz.vue';
+import MVCCViz from './components/MVCCViz.vue';
+import VisitorViz from './components/VisitorViz.vue';
+import VTableViz from './components/VTableViz.vue';
+import IteratorViz from './components/IteratorViz.vue';
+import LSMTreeViz from './components/LSMTreeViz.vue';
+import RegistryViz from './components/RegistryViz.vue';
+import TaggedUnionViz from './components/TaggedUnionViz.vue';
+import TombstoneViz from './components/TombstoneViz.vue';
 import './custom.css';
 
 export default {
@@ -63,5 +80,22 @@ export default {
     app.component('DirtyFlagViz', DirtyFlagViz);
     app.component('LogicalClockViz', LogicalClockViz);
     app.component('ReferenceCountingViz', ReferenceCountingViz);
+    app.component('ActorModelViz', ActorModelViz);
+    app.component('ArenaAllocatorViz', ArenaAllocatorViz);
+    app.component('BatchProcessingViz', BatchProcessingViz);
+    app.component('CheckpointingViz', CheckpointingViz);
+    app.component('CooperativeSchedulingViz', CooperativeSchedulingViz);
+    app.component('DiffPatchViz', DiffPatchViz);
+    app.component('FreeListViz', FreeListViz);
+    app.component('InterningViz', InterningViz);
+    app.component('MergeIteratorViz', MergeIteratorViz);
+    app.component('MVCCViz', MVCCViz);
+    app.component('VisitorViz', VisitorViz);
+    app.component('VTableViz', VTableViz);
+    app.component('IteratorViz', IteratorViz);
+    app.component('LSMTreeViz', LSMTreeViz);
+    app.component('RegistryViz', RegistryViz);
+    app.component('TaggedUnionViz', TaggedUnionViz);
+    app.component('TombstoneViz', TombstoneViz);
   },
 } satisfies Theme;

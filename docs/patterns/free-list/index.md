@@ -27,6 +27,10 @@ A free list tracks available memory slots in a linked list threaded through the 
 | Fragmentation | None within pool (fixed-size slots) |
 | Overhead | One pointer per free slot (intrusive) or index array (non-intrusive) |
 
+**Try it yourself** — allocate and free blocks, observe how the free list links available slots:
+
+<FreeListViz />
+
 ## Production Proof
 
 | Project | Source | Usage |

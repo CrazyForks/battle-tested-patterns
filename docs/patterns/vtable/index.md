@@ -34,6 +34,10 @@ A vtable (virtual function table) is a struct of function pointers that defines 
 | Adding new operations | Must update ALL vtables (the expression problem) |
 | Memory | One vtable per type (shared across all instances) |
 
+**Try it yourself** — call methods on objects and watch vtable dispatch resolve the implementation:
+
+<VTableViz />
+
 ## Production Proof
 
 | Project | Source | Usage |

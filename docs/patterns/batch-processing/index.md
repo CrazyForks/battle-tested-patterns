@@ -23,6 +23,10 @@ flowchart LR
     end
 ```
 
+**Try it yourself** — add items and watch them batch up, then flush together:
+
+<BatchProcessingViz />
+
 ## Production Proof
 
 | Project | Source | Usage |

@@ -23,6 +23,10 @@ flowchart LR
     end
 ```
 
+**动手试试** — 添加项目并观察它们批量积累，然后一起刷写：
+
+<BatchProcessingViz />
+
 ## 生产验证
 
 | 项目 | 源码 | 用途 |
