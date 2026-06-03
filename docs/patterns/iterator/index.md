@@ -150,7 +150,7 @@ Infinite iterators are only safe with operations that consume a bounded number o
 ::: details Q2: You have `iter.filter(expensiveCheck).take(5).collect()`. Does `expensiveCheck` run on all elements or only until 5 pass?
 **Answer:** `expensiveCheck` runs only until 5 elements pass the filter — then `take` stops pulling from the source.
 
-This is the power of lazy evaluation: `take(5)` pulls from `filter`, which pulls from the source, one element at a time. Once `take` has accumulated 5 passing elements, it stops requesting more. If the source has 1 million elements but the first 10 pass the filter, `expensiveCheck` runs at most 10 times (5 passes + some that failed). This demand-driven execution is why lazy iterators excel at early termination — no wasted work.
+This is the power of lazy evaluation: `take(5)` pulls from `filter`, which pulls from the source, one element at a time. Once `take` has accumulated 5 passing elements, it stops requesting more. If only 1 in 10 elements passes the filter, `expensiveCheck` runs on roughly 50 elements (to find 5 that pass), not 1 million. This demand-driven execution is why lazy iterators excel at early termination — no wasted work.
 :::
 
 ::: details Q3: You try to iterate over the same iterator twice. The second loop produces no elements. Why, and how do you fix it?

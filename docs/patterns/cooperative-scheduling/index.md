@@ -248,7 +248,7 @@ Unlike preemptive scheduling, the scheduler cannot forcibly remove a misbehaving
 ::: details Q3: Why does React use `MessageChannel` instead of `setTimeout(fn, 0)` for yielding?
 **Answer:** `setTimeout(fn, 0)` has a minimum 4ms delay enforced by browsers after several nested calls, making it too slow for 5ms time slices.
 
-After about 5 nested `setTimeout` calls, browsers clamp the delay to at least 4ms (HTML spec). This means a 5ms time slice followed by a 4ms yield gap wastes nearly half the time. `MessageChannel` posts a message to a microtask-like queue with no artificial delay — the callback fires as soon as the browser finishes its current work (paint, input), typically in under 1ms. This keeps the scheduler responsive without wasting idle time.
+After about 5 nested `setTimeout` calls, browsers clamp the delay to at least 4ms (HTML spec). This means a 5ms time slice followed by a 4ms yield gap wastes nearly half the time. `MessageChannel` posts a macrotask without the 4ms clamping — the browser can interleave paint and input handling between macrotasks, then dispatch the callback typically in under 1ms. This keeps the scheduler responsive without wasting idle time on artificial delays.
 :::
 
 ::: details Q4: A colleague says "just use Web Workers instead of cooperative scheduling — they run in parallel." Why isn't this a replacement?

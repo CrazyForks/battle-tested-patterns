@@ -196,9 +196,9 @@ Run exercises: `pnpm test`
 ## Challenge Questions
 
 ::: details Q1: React's diff produces insert/delete/update ops but not "move." How does it handle a list that was merely reordered?
-**Answer:** React treats moves as a delete + insert pair, which is why the `key` prop is critical for performance.
+**Answer:** React does not emit explicit "move" operations. Instead, it reuses existing DOM nodes and repositions them via `insertBefore`.
 
-Without keys, React compares children by position — reordering looks like every element changed. With keys, React builds a map of `key -> fiber`, matches old and new children by key, and reuses existing DOM nodes. The algorithm still doesn't emit explicit "move" ops; instead, it tracks a `lastPlacedIndex` and flags fibers that need repositioning. This is simpler than computing a minimum-edit-distance move sequence but produces near-optimal DOM mutations for typical UI lists.
+Without keys, React compares children by position — reordering looks like every element changed. With keys, React builds a map of `key -> fiber`, matches old and new children by key, and reuses existing DOM nodes. It tracks a `lastPlacedIndex` and flags fibers that need repositioning — the browser moves the DOM node rather than destroying and recreating it. This is simpler than computing a minimum-edit-distance move sequence but produces near-optimal DOM mutations for typical UI lists.
 :::
 
 ::: details Q2: The greedy diff algorithm in this pattern is O(n*m) worst case. What causes this, and how does Myers' algorithm improve it?
