@@ -65,3 +65,7 @@ features:
 | [Free List](/patterns/free-list/) | Linked list of freed slots for O(1) alloc/free | Go runtime, Linux SLUB |
 | [Dependency Graph](/patterns/dependency-graph/) | DAG + topological sort for valid execution order | Cargo, pnpm |
 | [Actor Model](/patterns/actor-model/) | Private state + mailbox, no shared state, just messages | Akka, Erlang/OTP |
+| [Reference Counting](/patterns/reference-counting/) | Auto-cleanup at zero owners, deterministic lifetime | CPython, Rust Arc |
+| [Logical Clock](/patterns/logical-clock/) | Monotonic counter orders events without wall-clock time | etcd, LevelDB |
+| [Event Loop](/patterns/event-loop/) | Single-threaded I/O multiplexing via epoll/kqueue | libuv, Redis |
+| [Middleware Chain](/patterns/middleware-chain/) | Composable handlers: pre-process, call next, post-process | gRPC, Koa.js |

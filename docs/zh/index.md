@@ -65,3 +65,7 @@ features:
 | [空闲链表](/zh/patterns/free-list/) | 已释放槽位链表实现 O(1) 分配/释放 | Go runtime, Linux SLUB |
 | [依赖图](/zh/patterns/dependency-graph/) | DAG + 拓扑排序确定合法执行顺序 | Cargo, pnpm |
 | [Actor 模型](/zh/patterns/actor-model/) | 私有状态 + 信箱，无共享状态 | Akka, Erlang/OTP |
+| [引用计数](/zh/patterns/reference-counting/) | 零引用自动清理，确定性生命周期 | CPython, Rust Arc |
+| [逻辑时钟](/zh/patterns/logical-clock/) | 单调递增计数器排序事件，无需墙钟 | etcd, LevelDB |
+| [事件循环](/zh/patterns/event-loop/) | 单线程 I/O 多路复用 epoll/kqueue | libuv, Redis |
+| [中间件链](/zh/patterns/middleware-chain/) | 可组合处理器：预处理→下一个→后处理 | gRPC, Koa.js |
