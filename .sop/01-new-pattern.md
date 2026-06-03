@@ -159,3 +159,12 @@ Add `## Challenge Questions` section at the end of the pattern doc:
 - [ ] Use Conventional Commit: `feat: add <pattern-name> pattern`
 - [ ] Fill in the PR template checklist
 - [ ] Ensure CI is green
+
+### 10. Tag Release
+
+After each batch of new patterns is merged and CI passes:
+
+- [ ] Tag with semantic version: `git tag -a v1.X.0 -m "vX.X.0: add N new patterns"`
+- [ ] Push tag: `git push origin v1.X.0`
+- [ ] Verify Release workflow creates GitHub Release
+- [ ] Minor version bump for new patterns (feat:), patch for fixes (fix:)
