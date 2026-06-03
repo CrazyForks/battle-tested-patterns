@@ -4,6 +4,8 @@ description: "Node.js 生态模式：观察者（EventEmitter）、背压（Stre
 
 # Node.js 生态系统中的模式
 
+Node.js、Redux 和 XState 展示了大规模事件驱动与状态管理模式。
+
 | 模式 | 项目 | 位置 | 作用 |
 |------|------|------|------|
 | [观察者](/zh/patterns/observer/) | Node.js | [`lib/events.js`](https://github.com/nodejs/node/blob/main/lib/events.js#L456-L520) | `EventEmitter` — Node 事件驱动架构的基础 |
@@ -17,3 +19,8 @@ description: "Node.js 生态模式：观察者（EventEmitter）、背压（Stre
 | [熔断器](/zh/patterns/circuit-breaker/) | opossum | [`lib/circuit.js`](https://github.com/nodeshift/opossum/blob/main/lib/circuit.js) | Node.js 微服务弹性熔断器 |
 | [事件循环](/zh/patterns/event-loop/) | Node.js (libuv) | [`deps/uv/src/unix/core.c`](https://github.com/nodejs/node/blob/main/deps/uv/src/unix/core.c) | `uv_run()` — 通过 epoll/kqueue 实现单线程 I/O 多路复用 |
 | [中间件链](/zh/patterns/middleware-chain/) | Koa.js | [`koa-compose`](https://github.com/koajs/compose/blob/master/index.js) | 通过 `async/await` 将中间件组合为洋葱模型管道 |
+
+## 延伸阅读
+
+- [Node.js (GitHub)](https://github.com/nodejs/node) · [Redux (GitHub)](https://github.com/reduxjs/redux) · [XState (GitHub)](https://github.com/statelyai/xstate)
+- [pnpm (GitHub)](https://github.com/pnpm/pnpm)
