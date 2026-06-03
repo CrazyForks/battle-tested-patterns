@@ -39,7 +39,7 @@ Key insight: a single `&` operation can check any combination of flags simultane
 
 | Project | Source | Usage |
 |---------|--------|-------|
-| React | [ReactFiberFlags.js#L14-L36](https://github.com/facebook/react/blob/main/packages/react-reconciler/src/ReactFiberFlags.js#L14-L36) | Side-effect flags — `Placement = 0b0000010`, `Update = 0b0000100`. Tested with `fiber.flags & Update`, combined with `fiber.flags |= Placement | Update`. One integer replaces a dozen booleans for pending effects during reconciliation. |
+| React | [ReactFiberFlags.js#L14-L36](https://github.com/facebook/react/blob/main/packages/react-reconciler/src/ReactFiberFlags.js#L14-L36) | Side-effect flags — `Placement = 0b0000010`, `Update = 0b0000100`. Tested with `fiber.flags & Update`, combined with bitwise OR. One integer replaces a dozen booleans for pending effects during reconciliation. |
 | Linux Kernel | [stat.h#L25-L33](https://github.com/torvalds/linux/blob/master/include/uapi/linux/stat.h#L25-L33) | File permission bits — the classic `rwxrwxrwx` (read/write/execute for owner/group/other) encoded as a 9-bit mask |
 | Go stdlib | [types.go#L32-L46](https://github.com/golang/go/blob/master/src/os/types.go#L32-L46) | `os.FileMode` — Go's file mode bits mirror Unix permission flags using typed constants with iota bit-shifting |
 
