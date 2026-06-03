@@ -1,101 +1,62 @@
 import DefaultTheme from 'vitepress/theme';
 import type { Theme } from 'vitepress';
-import RingBufferViz from './components/RingBufferViz.vue';
-import LRUCacheViz from './components/LRUCacheViz.vue';
-import BloomFilterViz from './components/BloomFilterViz.vue';
-import CircuitBreakerViz from './components/CircuitBreakerViz.vue';
-import ConsistentHashViz from './components/ConsistentHashViz.vue';
-import MinHeapViz from './components/MinHeapViz.vue';
-import SkipListViz from './components/SkipListViz.vue';
-import TrieViz from './components/TrieViz.vue';
-import StateMachineViz from './components/StateMachineViz.vue';
-import EventLoopViz from './components/EventLoopViz.vue';
-import RateLimiterViz from './components/RateLimiterViz.vue';
-import MerkleTreeViz from './components/MerkleTreeViz.vue';
-import BPlusTreeViz from './components/BPlusTreeViz.vue';
-import DependencyGraphViz from './components/DependencyGraphViz.vue';
-import ObserverViz from './components/ObserverViz.vue';
-import BackpressureViz from './components/BackpressureViz.vue';
-import CopyOnWriteViz from './components/CopyOnWriteViz.vue';
-import SemaphoreViz from './components/SemaphoreViz.vue';
-import RetryBackoffViz from './components/RetryBackoffViz.vue';
-import DoubleBufferingViz from './components/DoubleBufferingViz.vue';
-import FlyweightViz from './components/FlyweightViz.vue';
-import ObjectPoolViz from './components/ObjectPoolViz.vue';
-import BitmaskViz from './components/BitmaskViz.vue';
-import MiddlewareChainViz from './components/MiddlewareChainViz.vue';
-import WorkStealingViz from './components/WorkStealingViz.vue';
-import WriteAheadLogViz from './components/WriteAheadLogViz.vue';
-import DirtyFlagViz from './components/DirtyFlagViz.vue';
-import LogicalClockViz from './components/LogicalClockViz.vue';
-import ReferenceCountingViz from './components/ReferenceCountingViz.vue';
-import ActorModelViz from './components/ActorModelViz.vue';
-import ArenaAllocatorViz from './components/ArenaAllocatorViz.vue';
-import BatchProcessingViz from './components/BatchProcessingViz.vue';
-import CheckpointingViz from './components/CheckpointingViz.vue';
-import CooperativeSchedulingViz from './components/CooperativeSchedulingViz.vue';
-import DiffPatchViz from './components/DiffPatchViz.vue';
-import FreeListViz from './components/FreeListViz.vue';
-import InterningViz from './components/InterningViz.vue';
-import MergeIteratorViz from './components/MergeIteratorViz.vue';
-import MVCCViz from './components/MVCCViz.vue';
-import VisitorViz from './components/VisitorViz.vue';
-import VTableViz from './components/VTableViz.vue';
-import IteratorViz from './components/IteratorViz.vue';
-import LSMTreeViz from './components/LSMTreeViz.vue';
-import RegistryViz from './components/RegistryViz.vue';
-import TaggedUnionViz from './components/TaggedUnionViz.vue';
-import TombstoneViz from './components/TombstoneViz.vue';
+import { defineAsyncComponent } from 'vue';
 import './custom.css';
+
+const vizComponents: Record<string, () => Promise<any>> = {
+  RingBufferViz: () => import('./components/RingBufferViz.vue'),
+  LRUCacheViz: () => import('./components/LRUCacheViz.vue'),
+  BloomFilterViz: () => import('./components/BloomFilterViz.vue'),
+  CircuitBreakerViz: () => import('./components/CircuitBreakerViz.vue'),
+  ConsistentHashViz: () => import('./components/ConsistentHashViz.vue'),
+  MinHeapViz: () => import('./components/MinHeapViz.vue'),
+  SkipListViz: () => import('./components/SkipListViz.vue'),
+  TrieViz: () => import('./components/TrieViz.vue'),
+  StateMachineViz: () => import('./components/StateMachineViz.vue'),
+  EventLoopViz: () => import('./components/EventLoopViz.vue'),
+  RateLimiterViz: () => import('./components/RateLimiterViz.vue'),
+  MerkleTreeViz: () => import('./components/MerkleTreeViz.vue'),
+  BPlusTreeViz: () => import('./components/BPlusTreeViz.vue'),
+  DependencyGraphViz: () => import('./components/DependencyGraphViz.vue'),
+  ObserverViz: () => import('./components/ObserverViz.vue'),
+  BackpressureViz: () => import('./components/BackpressureViz.vue'),
+  CopyOnWriteViz: () => import('./components/CopyOnWriteViz.vue'),
+  SemaphoreViz: () => import('./components/SemaphoreViz.vue'),
+  RetryBackoffViz: () => import('./components/RetryBackoffViz.vue'),
+  DoubleBufferingViz: () => import('./components/DoubleBufferingViz.vue'),
+  FlyweightViz: () => import('./components/FlyweightViz.vue'),
+  ObjectPoolViz: () => import('./components/ObjectPoolViz.vue'),
+  BitmaskViz: () => import('./components/BitmaskViz.vue'),
+  MiddlewareChainViz: () => import('./components/MiddlewareChainViz.vue'),
+  WorkStealingViz: () => import('./components/WorkStealingViz.vue'),
+  WriteAheadLogViz: () => import('./components/WriteAheadLogViz.vue'),
+  DirtyFlagViz: () => import('./components/DirtyFlagViz.vue'),
+  LogicalClockViz: () => import('./components/LogicalClockViz.vue'),
+  ReferenceCountingViz: () => import('./components/ReferenceCountingViz.vue'),
+  ActorModelViz: () => import('./components/ActorModelViz.vue'),
+  ArenaAllocatorViz: () => import('./components/ArenaAllocatorViz.vue'),
+  BatchProcessingViz: () => import('./components/BatchProcessingViz.vue'),
+  CheckpointingViz: () => import('./components/CheckpointingViz.vue'),
+  CooperativeSchedulingViz: () => import('./components/CooperativeSchedulingViz.vue'),
+  DiffPatchViz: () => import('./components/DiffPatchViz.vue'),
+  FreeListViz: () => import('./components/FreeListViz.vue'),
+  InterningViz: () => import('./components/InterningViz.vue'),
+  MergeIteratorViz: () => import('./components/MergeIteratorViz.vue'),
+  MVCCViz: () => import('./components/MVCCViz.vue'),
+  VisitorViz: () => import('./components/VisitorViz.vue'),
+  VTableViz: () => import('./components/VTableViz.vue'),
+  IteratorViz: () => import('./components/IteratorViz.vue'),
+  LSMTreeViz: () => import('./components/LSMTreeViz.vue'),
+  RegistryViz: () => import('./components/RegistryViz.vue'),
+  TaggedUnionViz: () => import('./components/TaggedUnionViz.vue'),
+  TombstoneViz: () => import('./components/TombstoneViz.vue'),
+};
 
 export default {
   extends: DefaultTheme,
   enhanceApp({ app }) {
-    app.component('RingBufferViz', RingBufferViz);
-    app.component('LRUCacheViz', LRUCacheViz);
-    app.component('BloomFilterViz', BloomFilterViz);
-    app.component('CircuitBreakerViz', CircuitBreakerViz);
-    app.component('ConsistentHashViz', ConsistentHashViz);
-    app.component('MinHeapViz', MinHeapViz);
-    app.component('SkipListViz', SkipListViz);
-    app.component('TrieViz', TrieViz);
-    app.component('StateMachineViz', StateMachineViz);
-    app.component('EventLoopViz', EventLoopViz);
-    app.component('RateLimiterViz', RateLimiterViz);
-    app.component('MerkleTreeViz', MerkleTreeViz);
-    app.component('BPlusTreeViz', BPlusTreeViz);
-    app.component('DependencyGraphViz', DependencyGraphViz);
-    app.component('ObserverViz', ObserverViz);
-    app.component('BackpressureViz', BackpressureViz);
-    app.component('CopyOnWriteViz', CopyOnWriteViz);
-    app.component('SemaphoreViz', SemaphoreViz);
-    app.component('RetryBackoffViz', RetryBackoffViz);
-    app.component('DoubleBufferingViz', DoubleBufferingViz);
-    app.component('FlyweightViz', FlyweightViz);
-    app.component('ObjectPoolViz', ObjectPoolViz);
-    app.component('BitmaskViz', BitmaskViz);
-    app.component('MiddlewareChainViz', MiddlewareChainViz);
-    app.component('WorkStealingViz', WorkStealingViz);
-    app.component('WriteAheadLogViz', WriteAheadLogViz);
-    app.component('DirtyFlagViz', DirtyFlagViz);
-    app.component('LogicalClockViz', LogicalClockViz);
-    app.component('ReferenceCountingViz', ReferenceCountingViz);
-    app.component('ActorModelViz', ActorModelViz);
-    app.component('ArenaAllocatorViz', ArenaAllocatorViz);
-    app.component('BatchProcessingViz', BatchProcessingViz);
-    app.component('CheckpointingViz', CheckpointingViz);
-    app.component('CooperativeSchedulingViz', CooperativeSchedulingViz);
-    app.component('DiffPatchViz', DiffPatchViz);
-    app.component('FreeListViz', FreeListViz);
-    app.component('InterningViz', InterningViz);
-    app.component('MergeIteratorViz', MergeIteratorViz);
-    app.component('MVCCViz', MVCCViz);
-    app.component('VisitorViz', VisitorViz);
-    app.component('VTableViz', VTableViz);
-    app.component('IteratorViz', IteratorViz);
-    app.component('LSMTreeViz', LSMTreeViz);
-    app.component('RegistryViz', RegistryViz);
-    app.component('TaggedUnionViz', TaggedUnionViz);
-    app.component('TombstoneViz', TombstoneViz);
+    for (const [name, loader] of Object.entries(vizComponents)) {
+      app.component(name, defineAsyncComponent(loader));
+    }
   },
 } satisfies Theme;
