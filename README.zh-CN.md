@@ -31,6 +31,7 @@
 - [Skip List](https://totoro-jam.github.io/battle-tested-patterns/zh/patterns/skip-list/) — 概率有序
 - [Bloom Filter](https://totoro-jam.github.io/battle-tested-patterns/zh/patterns/bloom-filter/) — 集合判存
 - [LRU Cache](https://totoro-jam.github.io/battle-tested-patterns/zh/patterns/lru-cache/) — 淘汰策略
+- [B+ Tree](https://totoro-jam.github.io/battle-tested-patterns/zh/patterns/b-plus-tree/) — 磁盘优化索引
 
 </td>
 <td width="33%">
@@ -58,6 +59,8 @@
 - [Consistent Hashing](https://totoro-jam.github.io/battle-tested-patterns/zh/patterns/consistent-hashing/) — 分布
 - [Dependency Graph](https://totoro-jam.github.io/battle-tested-patterns/zh/patterns/dependency-graph/) — 排序
 - [Middleware Chain](https://totoro-jam.github.io/battle-tested-patterns/zh/patterns/middleware-chain/) — 管道
+- [Registry](https://totoro-jam.github.io/battle-tested-patterns/zh/patterns/registry/) — 自注册
+- [Dirty Flag](https://totoro-jam.github.io/battle-tested-patterns/zh/patterns/dirty-flag/) — 延迟重算
 
 </td>
 </tr>
@@ -71,6 +74,7 @@
 - [Free List](https://totoro-jam.github.io/battle-tested-patterns/zh/patterns/free-list/) — O(1) 分配释放
 - [Copy-on-Write](https://totoro-jam.github.io/battle-tested-patterns/zh/patterns/copy-on-write/) — 延迟复制
 - [Reference Counting](https://totoro-jam.github.io/battle-tested-patterns/zh/patterns/reference-counting/) — 自动清理
+- [Tombstone](https://totoro-jam.github.io/battle-tested-patterns/zh/patterns/tombstone/) — 延迟删除
 
 </td>
 <td>

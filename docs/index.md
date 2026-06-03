@@ -69,3 +69,7 @@ features:
 | [Logical Clock](/patterns/logical-clock/) | Monotonic counter orders events without wall-clock time | etcd, LevelDB |
 | [Event Loop](/patterns/event-loop/) | Single-threaded I/O multiplexing via epoll/kqueue | libuv, Redis |
 | [Middleware Chain](/patterns/middleware-chain/) | Composable handlers: pre-process, call next, post-process | gRPC, Koa.js |
+| [B+ Tree](/patterns/b-plus-tree/) | High-branching balanced tree, leaf-linked for range scans | PostgreSQL, SQLite |
+| [Tombstone](/patterns/tombstone/) | Mark deleted, reclaim later — deferred deletion | LevelDB, Cassandra |
+| [Registry](/patterns/registry/) | Self-register by name, discover at runtime | TensorFlow, gRPC |
+| [Dirty Flag](/patterns/dirty-flag/) | Mark dirty on mutation, recompute only when needed | Chromium, React |

@@ -31,6 +31,7 @@ English | [简体中文](README.zh-CN.md)
 - [Skip List](https://totoro-jam.github.io/battle-tested-patterns/patterns/skip-list/) — probabilistic order
 - [Bloom Filter](https://totoro-jam.github.io/battle-tested-patterns/patterns/bloom-filter/) — set membership
 - [LRU Cache](https://totoro-jam.github.io/battle-tested-patterns/patterns/lru-cache/) — eviction policy
+- [B+ Tree](https://totoro-jam.github.io/battle-tested-patterns/patterns/b-plus-tree/) — disk-optimized index
 
 </td>
 <td width="33%">
@@ -58,6 +59,8 @@ English | [简体中文](README.zh-CN.md)
 - [Consistent Hashing](https://totoro-jam.github.io/battle-tested-patterns/patterns/consistent-hashing/) — distribution
 - [Dependency Graph](https://totoro-jam.github.io/battle-tested-patterns/patterns/dependency-graph/) — ordering
 - [Middleware Chain](https://totoro-jam.github.io/battle-tested-patterns/patterns/middleware-chain/) — pipeline
+- [Registry](https://totoro-jam.github.io/battle-tested-patterns/patterns/registry/) — self-register
+- [Dirty Flag](https://totoro-jam.github.io/battle-tested-patterns/patterns/dirty-flag/) — deferred recompute
 
 </td>
 </tr>
@@ -71,6 +74,7 @@ English | [简体中文](README.zh-CN.md)
 - [Free List](https://totoro-jam.github.io/battle-tested-patterns/patterns/free-list/) — O(1) alloc/free
 - [Copy-on-Write](https://totoro-jam.github.io/battle-tested-patterns/patterns/copy-on-write/) — defer copy
 - [Reference Counting](https://totoro-jam.github.io/battle-tested-patterns/patterns/reference-counting/) — auto-cleanup
+- [Tombstone](https://totoro-jam.github.io/battle-tested-patterns/patterns/tombstone/) — deferred deletion
 
 </td>
 <td>

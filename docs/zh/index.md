@@ -69,3 +69,7 @@ features:
 | [逻辑时钟](/zh/patterns/logical-clock/) | 单调递增计数器排序事件，无需墙钟 | etcd, LevelDB |
 | [事件循环](/zh/patterns/event-loop/) | 单线程 I/O 多路复用 epoll/kqueue | libuv, Redis |
 | [中间件链](/zh/patterns/middleware-chain/) | 可组合处理器：预处理→下一个→后处理 | gRPC, Koa.js |
+| [B+ 树](/zh/patterns/b-plus-tree/) | 高扇出平衡树，叶节点链表支持范围扫描 | PostgreSQL, SQLite |
+| [墓碑删除](/zh/patterns/tombstone/) | 标记删除，后台回收——延迟删除 | LevelDB, Cassandra |
+| [注册表](/zh/patterns/registry/) | 按名注册，运行时发现 | TensorFlow, gRPC |
+| [脏标记](/zh/patterns/dirty-flag/) | 变更时标脏，按需重算 | Chromium, React |
