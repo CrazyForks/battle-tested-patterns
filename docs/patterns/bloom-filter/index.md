@@ -29,6 +29,10 @@ A bloom filter is a space-efficient probabilistic data structure. It uses a bit 
 | False positive rate | ≈ `(1 - e^(-kn/m))^k` where `n` = elements inserted |
 | Deletion | **Not supported** — clearing bits may affect other elements |
 
+**Try it yourself** — add items and test membership to see false positives in action:
+
+<BloomFilterViz />
+
 ## Production Proof
 
 | Project | Source | Usage |

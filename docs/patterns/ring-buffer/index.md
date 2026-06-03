@@ -23,6 +23,10 @@ A ring buffer uses a fixed array with two pointers — `head` (next read positio
 
 The wrap-around `index % capacity` is what makes it "ring" — it never runs out of space in the array, it just overwrites old data (or blocks, depending on the implementation).
 
+**Try it yourself** — enqueue and dequeue items to see how head/tail pointers wrap around:
+
+<RingBufferViz />
+
 ## Production Proof
 
 | Project | Source | Usage |

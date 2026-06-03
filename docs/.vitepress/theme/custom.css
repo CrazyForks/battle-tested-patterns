@@ -1,0 +1,108 @@
+/* Interactive visualizer shared styles */
+.viz-container {
+  --viz-bg: #f8f9fa;
+  --viz-border: #e2e8f0;
+  --viz-primary: #3b82f6;
+  --viz-success: #10b981;
+  --viz-warning: #f59e0b;
+  --viz-danger: #ef4444;
+  --viz-text: #1e293b;
+  --viz-muted: #94a3b8;
+  --viz-cell-empty: #e2e8f0;
+  --viz-cell-filled: #3b82f6;
+  --viz-radius: 8px;
+
+  margin: 1.5rem 0;
+  padding: 1.25rem;
+  border: 1px solid var(--viz-border);
+  border-radius: var(--viz-radius);
+  background: var(--viz-bg);
+  font-family: var(--vp-font-family-base);
+}
+
+.dark .viz-container {
+  --viz-bg: #1e293b;
+  --viz-border: #334155;
+  --viz-text: #e2e8f0;
+  --viz-muted: #64748b;
+  --viz-cell-empty: #334155;
+}
+
+.viz-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--viz-muted);
+  margin-bottom: 1rem;
+}
+
+.viz-controls {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+}
+
+.viz-btn {
+  padding: 0.375rem 0.75rem;
+  border: 1px solid var(--viz-border);
+  border-radius: 6px;
+  background: var(--vp-c-bg);
+  color: var(--viz-text);
+  font-size: 0.8125rem;
+  font-family: var(--vp-font-family-base);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.viz-btn:hover {
+  border-color: var(--viz-primary);
+  color: var(--viz-primary);
+}
+
+.viz-btn:active {
+  transform: scale(0.97);
+}
+
+.viz-btn--primary {
+  background: var(--viz-primary);
+  border-color: var(--viz-primary);
+  color: #fff;
+}
+
+.viz-btn--primary:hover {
+  opacity: 0.9;
+  color: #fff;
+}
+
+.viz-btn--danger {
+  background: var(--viz-danger);
+  border-color: var(--viz-danger);
+  color: #fff;
+}
+
+.viz-btn--danger:hover {
+  opacity: 0.9;
+  color: #fff;
+}
+
+.viz-label {
+  font-size: 0.75rem;
+  color: var(--viz-muted);
+}
+
+.viz-status {
+  margin-top: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.8125rem;
+  font-family: var(--vp-font-family-mono);
+  background: var(--vp-c-bg);
+  color: var(--viz-text);
+  border: 1px solid var(--viz-border);
+  min-height: 2rem;
+  display: flex;
+  align-items: center;
+}

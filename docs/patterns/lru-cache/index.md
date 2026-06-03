@@ -29,6 +29,10 @@ An LRU cache combines a hash map (for O(1) key lookup) with a doubly linked list
 | Eviction policy | Least Recently Used (tail of list) |
 | Space | O(capacity) |
 
+**Try it yourself** — put and get keys to see how the LRU eviction works:
+
+<LRUCacheViz />
+
 ## Production Proof
 
 | Project | Source | Usage |
