@@ -1,59 +1,299 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0%" stop-color="#0f172a"/>
-      <stop offset="100%" stop-color="#1e293b"/>
+      <stop offset="55%" stop-color="#1e293b"/>
+      <stop offset="100%" stop-color="#2d1b4e"/>
     </linearGradient>
   </defs>
   <rect width="1200" height="630" fill="url(#bg)"/>
 
-  <!-- Scattered project names as translucent background — "extracted from these" -->
-  <g font-family="monospace" fill="#334155">
-    <!-- Large -->
-    <text x="650" y="85" font-size="42" opacity="0.15" transform="rotate(-8, 650, 85)">Linux</text>
-    <text x="850" y="520" font-size="38" opacity="0.12" transform="rotate(5, 850, 520)">React</text>
-    <text x="380" y="600" font-size="44" opacity="0.10" transform="rotate(-3, 380, 600)">PostgreSQL</text>
-    <!-- Medium -->
-    <text x="750" y="200" font-size="30" opacity="0.13" transform="rotate(4, 750, 200)">Redis</text>
-    <text x="950" y="350" font-size="28" opacity="0.11" transform="rotate(-6, 950, 350)">Kafka</text>
-    <text x="550" y="530" font-size="32" opacity="0.12" transform="rotate(3, 550, 530)">Nginx</text>
-    <text x="1020" y="150" font-size="26" opacity="0.10" transform="rotate(-4, 1020, 150)">Go</text>
-    <text x="700" y="420" font-size="28" opacity="0.11" transform="rotate(7, 700, 420)">Chromium</text>
-    <!-- Small -->
-    <text x="820" y="290" font-size="20" opacity="0.09" transform="rotate(-5, 820, 290)">Tokio</text>
-    <text x="650" y="330" font-size="22" opacity="0.10" transform="rotate(6, 650, 330)">LevelDB</text>
-    <text x="1050" y="450" font-size="18" opacity="0.08" transform="rotate(-3, 1050, 450)">etcd</text>
-    <text x="900" y="580" font-size="20" opacity="0.09" transform="rotate(4, 900, 580)">Erlang</text>
-    <text x="480" y="120" font-size="22" opacity="0.10" transform="rotate(-2, 480, 120)">Godot</text>
-    <text x="1100" y="250" font-size="18" opacity="0.08" transform="rotate(5, 1100, 250)">V8</text>
-    <text x="750" y="480" font-size="20" opacity="0.09" transform="rotate(-4, 750, 480)">Akka</text>
-    <text x="950" y="80" font-size="19" opacity="0.08" transform="rotate(3, 950, 80)">gRPC</text>
-    <text x="620" y="170" font-size="17" opacity="0.07" transform="rotate(-6, 620, 170)">SQLite</text>
-    <text x="1080" y="560" font-size="19" opacity="0.08" transform="rotate(2, 1080, 560)">K8s</text>
-    <text x="830" y="130" font-size="16" opacity="0.07" transform="rotate(-3, 830, 130)">LLVM</text>
-    <text x="700" y="560" font-size="18" opacity="0.08" transform="rotate(5, 700, 560)">Rust</text>
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!-- PROJECT GALAXY — 40 icon+name groups scattered across canvas  -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <g font-family="monospace" font-weight="bold" fill="#94a3b8">
+
+    <!-- ——— TOP BAND (y 50-160) — smallest, most translucent ——————— -->
+
+    <!-- TensorFlow -->
+    <g transform="translate(150, 100) scale(0.65) rotate(-4)" opacity="0.07">
+      <polygon points="12,2 22,12 12,22 2,12"/>
+      <text x="28" y="16" font-size="9">TensorFlow</text>
+    </g>
+
+    <!-- FoundationDB -->
+    <g transform="translate(400, 85) scale(0.6) rotate(7)" opacity="0.06">
+      <circle cx="12" cy="12" r="9"/>
+      <text x="28" y="16" font-size="9">FoundationDB</text>
+    </g>
+
+    <!-- Consul -->
+    <g transform="translate(650, 120) scale(0.65) rotate(-3)" opacity="0.07">
+      <polygon points="12,2 21,7 21,17 12,22 3,17 3,7"/>
+      <text x="28" y="16" font-size="9">Consul</text>
+    </g>
+
+    <!-- Bevy -->
+    <g transform="translate(870, 90) scale(0.6) rotate(4)" opacity="0.06">
+      <polygon points="12,2 22,12 12,22 2,12"/>
+      <text x="28" y="16" font-size="9">Bevy</text>
+    </g>
+
+    <!-- XState -->
+    <g transform="translate(1020, 145) scale(0.6) rotate(-5)" opacity="0.06">
+      <polygon points="12,2 22,12 12,22 2,12"/>
+      <text x="28" y="16" font-size="9">XState</text>
+    </g>
+
+    <!-- ——— UPPER-MID BAND (y 160-300) ————————————————————————————— -->
+
+    <!-- LLVM -->
+    <g transform="translate(85, 215) scale(0.75) rotate(5)" opacity="0.08">
+      <rect x="3" y="3" width="18" height="18" rx="3"/>
+      <text x="28" y="16" font-size="9">LLVM</text>
+    </g>
+
+    <!-- RabbitMQ -->
+    <g transform="translate(250, 195) scale(0.7) rotate(-8)" opacity="0.08">
+      <polygon points="12,3 22,20 2,20"/>
+      <text x="28" y="16" font-size="9">RabbitMQ</text>
+    </g>
+
+    <!-- SQLite -->
+    <g transform="translate(420, 235) scale(0.7) rotate(4)" opacity="0.08">
+      <circle cx="12" cy="12" r="9"/>
+      <text x="28" y="16" font-size="9">SQLite</text>
+    </g>
+
+    <!-- Godot -->
+    <g transform="translate(580, 205) scale(0.65) rotate(-6)" opacity="0.07">
+      <polygon points="12,2 22,12 12,22 2,12"/>
+      <text x="28" y="16" font-size="9">Godot</text>
+    </g>
+
+    <!-- NATS -->
+    <g transform="translate(740, 245) scale(0.7) rotate(8)" opacity="0.08">
+      <polygon points="12,3 22,20 2,20"/>
+      <text x="28" y="16" font-size="9">NATS</text>
+    </g>
+
+    <!-- Elasticsearch -->
+    <g transform="translate(920, 215) scale(0.65) rotate(-5)" opacity="0.07">
+      <circle cx="12" cy="12" r="9" fill="none" stroke="#94a3b8" stroke-width="2"/>
+      <line x1="4" y1="12" x2="20" y2="12" stroke="#94a3b8" stroke-width="3"/>
+      <text x="28" y="16" font-size="9">Elasticsearch</text>
+    </g>
+
+    <!-- ——— MID BAND (y 300-440) ——————————————————————————————————— -->
+
+    <!-- Vue -->
+    <g transform="translate(40, 355) scale(0.9) rotate(-8)" opacity="0.11">
+      <path d="M24,1.61H14.06L12,5.16,9.94,1.61H0L12,22.39ZM12,14.08,5.16,2.23H9.59L12,6.41l2.41-4.18h4.43Z"/>
+      <text x="28" y="16" font-size="9">Vue</text>
+    </g>
+
+    <!-- Terraform -->
+    <g transform="translate(175, 335) scale(0.85) rotate(10)" opacity="0.10">
+      <path d="M1.44 0v7.575l6.561 3.79V3.787zm21.12 4.227l-6.561 3.791v7.574l6.56-3.787zM8.72 4.23v7.575l6.561 3.787V8.018zm0 8.405v7.575L15.28 24v-7.578z"/>
+      <text x="28" y="16" font-size="9">Terraform</text>
+    </g>
+
+    <!-- V8 -->
+    <g transform="translate(315, 375) scale(0.8) rotate(-5)" opacity="0.10">
+      <rect x="3" y="3" width="18" height="18" rx="3"/>
+      <text x="28" y="16" font-size="9">V8</text>
+    </g>
+
+    <!-- LevelDB -->
+    <g transform="translate(445, 345) scale(0.85) rotate(7)" opacity="0.11">
+      <circle cx="12" cy="12" r="9"/>
+      <text x="28" y="16" font-size="9">LevelDB</text>
+    </g>
+
+    <!-- Cassandra -->
+    <g transform="translate(570, 385) scale(0.8) rotate(-11)" opacity="0.10">
+      <circle cx="12" cy="12" r="9"/>
+      <text x="28" y="16" font-size="9">Cassandra</text>
+    </g>
+
+    <!-- CockroachDB -->
+    <g transform="translate(695, 355) scale(0.75) rotate(6)" opacity="0.09">
+      <circle cx="12" cy="12" r="9"/>
+      <text x="28" y="16" font-size="9">CockroachDB</text>
+    </g>
+
+    <!-- Erlang -->
+    <g transform="translate(830, 385) scale(0.8) rotate(-3)" opacity="0.10">
+      <rect x="3" y="3" width="18" height="18" rx="3"/>
+      <text x="28" y="16" font-size="9">Erlang</text>
+    </g>
+
+    <!-- Akka -->
+    <g transform="translate(950, 365) scale(0.75) rotate(8)" opacity="0.09">
+      <polygon points="12,2 22,12 12,22 2,12"/>
+      <text x="28" y="16" font-size="9">Akka</text>
+    </g>
+
+    <!-- HAProxy -->
+    <g transform="translate(1060, 395) scale(0.8) rotate(-7)" opacity="0.10">
+      <polygon points="12,2 21,7 21,17 12,22 3,17 3,7"/>
+      <text x="28" y="16" font-size="9">HAProxy</text>
+    </g>
+
+    <!-- Spark -->
+    <g transform="translate(1145, 355) scale(0.7) rotate(5)" opacity="0.09">
+      <polygon points="12,2 22,12 12,22 2,12"/>
+      <text x="28" y="16" font-size="9">Spark</text>
+    </g>
+
+    <!-- ——— LOWER-MID BAND (y 440-540) ————————————————————————————— -->
+
+    <!-- Python -->
+    <g transform="translate(50, 485) scale(1.2) rotate(14)" opacity="0.15">
+      <path d="M8 2Q16 2 16 10Q16 18 8 18" fill="none" stroke="#94a3b8" stroke-width="2.5"/>
+      <path d="M16 6Q8 6 8 14Q8 22 16 22" fill="none" stroke="#94a3b8" stroke-width="2.5"/>
+      <circle cx="10" cy="5" r="1.5"/>
+      <circle cx="14" cy="19" r="1.5"/>
+      <text x="22" y="14" font-size="9">Python</text>
+    </g>
+
+    <!-- Kubernetes -->
+    <g transform="translate(180, 465) scale(1.1) rotate(-6)" opacity="0.14">
+      <polygon points="12,2 21,7 21,17 12,22 3,17 3,7"/>
+      <text x="28" y="16" font-size="9">Kubernetes</text>
+    </g>
+
+    <!-- Rust -->
+    <g transform="translate(320, 505) scale(1.0) rotate(8)" opacity="0.13">
+      <rect x="3" y="3" width="18" height="18" rx="3"/>
+      <text x="28" y="16" font-size="9">Rust</text>
+    </g>
+
+    <!-- TypeScript -->
+    <g transform="translate(445, 475) scale(1.1) rotate(-9)" opacity="0.14">
+      <path d="M1.125 0C.502 0 0 .502 0 1.125v21.75C0 23.498.502 24 1.125 24h21.75c.623 0 1.125-.502 1.125-1.125V1.125C24 .502 23.498 0 22.875 0z"/>
+      <text x="28" y="16" font-size="9">TypeScript</text>
+    </g>
+
+    <!-- Chromium -->
+    <g transform="translate(570, 515) scale(1.0) rotate(5)" opacity="0.13">
+      <circle cx="12" cy="12" r="10" fill="none" stroke="#94a3b8" stroke-width="2"/>
+      <circle cx="12" cy="12" r="4"/>
+      <text x="28" y="16" font-size="9">Chromium</text>
+    </g>
+
+    <!-- MongoDB -->
+    <g transform="translate(695, 470) scale(1.1) rotate(-7)" opacity="0.14">
+      <path d="M17.193 9.555c-1.264-5.58-4.252-7.414-4.573-8.115-.28-.394-.53-.954-.735-1.44-.036.495-.055.685-.523 1.184-.723.566-4.438 3.682-4.74 10.02-.282 5.912 4.27 9.435 4.888 9.884l.07.05A73.49 73.49 0 0111.91 24h.481c.114-1.032.284-2.056.51-3.07.417-.296.604-.463.85-.693a11.342 11.342 0 003.639-8.464c.01-.814-.103-1.662-.197-2.218z"/>
+      <text x="28" y="16" font-size="9">MongoDB</text>
+    </g>
+
+    <!-- Tokio -->
+    <g transform="translate(830, 505) scale(0.9) rotate(11)" opacity="0.12">
+      <polygon points="12,2 22,12 12,22 2,12"/>
+      <text x="28" y="16" font-size="9">Tokio</text>
+    </g>
+
+    <!-- etcd -->
+    <g transform="translate(940, 485) scale(1.0) rotate(-4)" opacity="0.13">
+      <circle cx="12" cy="12" r="9"/>
+      <text x="28" y="16" font-size="9">etcd</text>
+    </g>
+
+    <!-- Envoy -->
+    <g transform="translate(1055, 515) scale(0.9) rotate(9)" opacity="0.12">
+      <polygon points="12,2 21,7 21,17 12,22 3,17 3,7"/>
+      <text x="28" y="16" font-size="9">Envoy</text>
+    </g>
+
+    <!-- RocksDB -->
+    <g transform="translate(1130, 475) scale(1.0) rotate(-6)" opacity="0.13">
+      <circle cx="12" cy="12" r="9"/>
+      <text x="28" y="16" font-size="9">RocksDB</text>
+    </g>
+
+    <!-- ——— BOTTOM BAND (y 540-620) — largest, most opaque ————————— -->
+
+    <!-- Linux penguin -->
+    <g transform="translate(70, 575) scale(2.0) rotate(-8)" opacity="0.20">
+      <ellipse cx="12" cy="15" rx="8" ry="10"/>
+      <ellipse cx="12" cy="6" rx="6" ry="6"/>
+      <circle cx="9" cy="5" r="1.5" fill="#0f172a"/>
+      <circle cx="15" cy="5" r="1.5" fill="#0f172a"/>
+      <text x="24" y="14" font-size="9">Linux</text>
+    </g>
+
+    <!-- React atom -->
+    <g transform="translate(220, 555) scale(1.7) rotate(12)" opacity="0.19">
+      <path d="M14.23 12a2.24 2.24 0 1 1-4.47 0 2.24 2.24 0 0 1 4.47 0zm2.65-10.69c-1.35 0-3.11.96-4.89 2.62C10.22.28 8.46-.67 7.11-.67c-.41 0-.78.09-1.1.28C4.63.4 4.32 2.87 5.03 5.97 1.98 6.92 0 8.42 0 10c0 1.59 1.99 3.1 5.04 4.03-.7 3.11-.39 5.59.99 6.38.32.19.69.28 1.1.28 1.35 0 3.11-.96 4.89-2.62 1.78 1.65 3.54 2.6 4.89 2.6.41 0 .78-.09 1.1-.27 1.38-.8 1.69-3.27.97-6.37C22.02 13.1 24 11.59 24 10c0-1.59-1.99-3.1-5.04-4.03.7-3.11.39-5.59-.99-6.38-.32-.18-.69-.28-1.09-.28z"/>
+      <text x="28" y="14" font-size="9">React</text>
+    </g>
+
+    <!-- Go -->
+    <g transform="translate(370, 595) scale(1.5) rotate(-5)" opacity="0.17">
+      <rect x="3" y="3" width="18" height="18" rx="3"/>
+      <text x="28" y="16" font-size="9">Go</text>
+    </g>
+
+    <!-- Docker containers -->
+    <g transform="translate(500, 560) scale(1.6) rotate(10)" opacity="0.18">
+      <rect x="1" y="0" width="6" height="5" rx="1"/>
+      <rect x="9" y="0" width="6" height="5" rx="1"/>
+      <rect x="1" y="7" width="6" height="5" rx="1"/>
+      <rect x="9" y="7" width="6" height="5" rx="1"/>
+      <rect x="17" y="7" width="6" height="5" rx="1"/>
+      <text x="28" y="12" font-size="9">Docker</text>
+    </g>
+
+    <!-- Kafka -->
+    <g transform="translate(630, 600) scale(1.4) rotate(-12)" opacity="0.16">
+      <polygon points="12,3 22,20 2,20"/>
+      <text x="28" y="16" font-size="9">Kafka</text>
+    </g>
+
+    <!-- Git branch -->
+    <g transform="translate(740, 550) scale(1.9) rotate(7)" opacity="0.21">
+      <path d="M13.09 23.55a1.54 1.54 0 0 1-2.18 0L.45 13.09a1.54 1.54 0 0 1 0-2.18l7.19-7.19 2.73 2.73a1.85 1.85 0 0 0 .97 2.33v6.66a1.85 1.85 0 1 0 1.54 0V8.96l2.51 2.51a1.85 1.85 0 1 0 1.09-1.09l-2.63-2.63a1.85 1.85 0 0 0-2.38-2.38L8.73 2.63 10.91.45a1.54 1.54 0 0 1 2.18 0l10.46 10.46a1.54 1.54 0 0 1 0 2.18z"/>
+      <text x="28" y="16" font-size="9">Git</text>
+    </g>
+
+    <!-- Redis -->
+    <g transform="translate(880, 580) scale(1.5) rotate(-10)" opacity="0.18">
+      <circle cx="12" cy="12" r="9"/>
+      <text x="28" y="16" font-size="9">Redis</text>
+    </g>
+
+    <!-- Nginx -->
+    <g transform="translate(985, 555) scale(1.4) rotate(6)" opacity="0.17">
+      <path d="M12 0L1.6 6v12L12 24l10.4-6V6L12 0zm6 16.59c0 .7-.65 1.29-1.53 1.29-.63 0-1.35-.26-1.8-.81l-6-7.14v6.66c0 .72-.57 1.29-1.27 1.29H7.32c-.72 0-1.29-.6-1.29-1.29V7.41c0-.7.63-1.29 1.5-1.29.65 0 1.38.26 1.83.81l5.97 7.14V7.41c0-.72.6-1.29 1.29-1.29h.08c.72 0 1.29.6 1.29 1.29v9.18H18z"/>
+      <text x="28" y="16" font-size="9">Nginx</text>
+    </g>
+
+    <!-- PostgreSQL -->
+    <g transform="translate(1080, 590) scale(1.3) rotate(-7)" opacity="0.16">
+      <circle cx="12" cy="12" r="9"/>
+      <text x="28" y="16" font-size="9">PostgreSQL</text>
+    </g>
   </g>
 
-  <!-- Favicon icon — top right -->
-  <g transform="translate(940, 120) scale(0.18)" opacity="0.9">
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!-- FAVICON — top right, FULLY OPAQUE                             -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <g transform="translate(1050, 30) scale(0.12)">
     <path d="M180.1728 395.2128l410.112 410.112a31.9488 31.9488 0 0 0 45.2096 0L793.6 647.3216a32 32 0 0 0 0-45.2608l-53.6064-53.6064a222.3104 222.3104 0 0 1-305.4592-305.4592l-51.2-51.2a31.9488 31.9488 0 0 0-45.2096 0l-157.952 158.208a31.9488 31.9488 0 0 0 0 45.2096z" fill="#FFC0A1"/>
-    <path d="M827.3408 855.6032A54.4768 54.4768 0 0 1 788.48 839.68l-74.8032-74.752a15.36 15.36 0 0 1 0-21.7088l55.9616-55.9616a15.36 15.36 0 0 1 21.76 0l74.752 74.752a54.9376 54.9376 0 0 1-38.8608 93.7472z m-80.9984-101.6832l63.8976 63.8976a24.2176 24.2176 0 0 0 34.2528-34.2528l-63.9488-63.8976zM269.2608 313.9072a15.36 15.36 0 0 1-10.8544-4.5056l-74.8032-74.752A54.9376 54.9376 0 0 1 261.12 156.9792l74.752 74.752a15.36 15.36 0 0 1 0 21.7088L280.1152 309.4016a15.36 15.36 0 0 1-10.8544 4.5056z m-46.7968-142.2848a24.2688 24.2688 0 0 0-17.152 41.3184l63.9488 63.8976 34.2528-34.2528L239.5648 178.688a24.1152 24.1152 0 0 0-17.1008-7.0656zM368.64 883.0976a207.4112 207.4112 0 0 1-29.5424-2.048c-48.1792-6.8608-87.04-30.72-111.9744-69.2736-20.48-31.5904-15.872-65.8432-12.032-93.3888 2.304-16.5888 4.4544-32.256-1.28-35.84-32.768-21.0944-53.8624-41.4208-62.6688-60.3648-24.7808-53.3504 2.4064-119.0912 67.6864-163.84a15.36 15.36 0 0 1 17.3056 25.6c-43.5712 29.7472-78.1824 80.0256-57.1392 125.2864 6.144 13.2096 24.4224 30.0544 51.2 47.5136 22.2208 14.2848 18.5856 40.6016 15.0528 65.9968s-7.0144 50.3808 7.3216 72.3456c20.48 31.2832 50.8928 50.0224 90.624 55.6544 62.4128 8.8576 142.2848-17.8176 198.7584-66.56a15.36 15.36 0 1 1 20.0192 23.296C506.88 855.04 433.664 883.0976 368.64 883.0976z" fill="#8E5178"/>
-    <path d="M658.4832 822.1184a47.2064 47.2064 0 0 1-33.4848-13.824L215.04 398.1824a47.36 47.36 0 0 1 0-66.9696l157.9008-158.0544a47.2576 47.2576 0 0 1 66.9184 0l51.2 51.2a15.36 15.36 0 0 1 2.2528 18.8416 206.8992 206.8992 0 0 0 284.2112 284.16 15.36 15.36 0 0 1 18.8416 2.2528L849.92 583.2704a47.36 47.36 0 0 1 0 66.9696l-158.0032 158.0544a47.36 47.36 0 0 1-33.4336 13.824zM406.4256 190.0032a16.5888 16.5888 0 0 0-11.776 5.12L236.5952 352.9216a16.6912 16.6912 0 0 0 0 23.552l410.112 410.112a16.6912 16.6912 0 0 0 23.5008 0l158.0544-158.0544a16.64 16.64 0 0 0 4.864-11.776 16.4352 16.4352 0 0 0-4.864-11.7248l-45.312-45.312A237.6704 237.6704 0 0 1 460.8 237.6704l-42.752-42.8032a16.5376 16.5376 0 0 0-11.6224-4.864z" fill="#8E5178"/>
-    <path d="M669.952 588.4416a237.824 237.824 0 0 1-202.9568-361.3184 15.36 15.36 0 0 1 23.9616-2.8672l305.408 305.408a15.36 15.36 0 0 1-2.8672 24.0128 237.312 237.312 0 0 1-123.5456 34.7648zM483.7376 260.4544a206.9504 206.9504 0 0 0 276.48 276.48z" fill="#8E5178"/>
+    <path d="M658.4832 822.1184a47.2064 47.2064 0 0 1-33.4848-13.824L215.04 398.1824a47.36 47.36 0 0 1 0-66.9696l157.9008-158.0544a47.2576 47.2576 0 0 1 66.9184 0l51.2 51.2a15.36 15.36 0 0 1 2.2528 18.8416 206.8992 206.8992 0 0 0 284.2112 284.16 15.36 15.36 0 0 1 18.8416 2.2528L849.92 583.2704a47.36 47.36 0 0 1 0 66.9696l-158.0032 158.0544a47.36 47.36 0 0 1-33.4336 13.824z" fill="#8E5178"/>
+    <path d="M669.952 588.4416a237.824 237.824 0 0 1-202.9568-361.3184 15.36 15.36 0 0 1 23.9616-2.8672l305.408 305.408a15.36 15.36 0 0 1-2.8672 24.0128 237.312 237.312 0 0 1-123.5456 34.7648z" fill="#8E5178"/>
   </g>
 
-  <!-- Title -->
-  <text x="100" y="180" font-family="system-ui, -apple-system, sans-serif" font-size="72" font-weight="bold" fill="#e2e8f0">Battle-Tested</text>
-  <text x="100" y="260" font-family="system-ui, -apple-system, sans-serif" font-size="72" font-weight="bold" fill="#818cf8">Patterns</text>
-  <!-- Subtitle -->
-  <text x="100" y="340" font-family="system-ui, -apple-system, sans-serif" font-size="28" fill="#94a3b8">Production-proven code patterns from top open-source projects</text>
-  <!-- Divider -->
-  <line x1="100" y1="380" x2="500" y2="380" stroke="#6366f1" stroke-width="3"/>
-  <!-- Stats -->
-  <text x="100" y="430" font-family="monospace" font-size="22" fill="#fbbf24">30+ patterns  |  4 languages  |  60 exercises  |  100+ challenges</text>
-  <!-- CTA -->
-  <rect x="100" y="490" width="260" height="48" rx="24" fill="#6366f1"/>
-  <text x="230" y="520" text-anchor="middle" font-family="system-ui, sans-serif" font-size="20" font-weight="bold" fill="#ffffff">Star on GitHub</text>
-  <!-- URL -->
-  <text x="400" y="520" font-family="monospace" font-size="16" fill="#64748b">github.com/Totoro-jam/battle-tested-patterns</text>
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!-- FOREGROUND — title, subtitle, stats, CTA                      -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <text x="80" y="140" font-family="system-ui, -apple-system, sans-serif" font-size="64" font-weight="bold" fill="#e2e8f0">Battle-Tested</text>
+  <text x="80" y="215" font-family="system-ui, -apple-system, sans-serif" font-size="64" font-weight="bold" fill="#818cf8">Patterns</text>
+  <text x="80" y="275" font-family="system-ui, -apple-system, sans-serif" font-size="21" fill="#94a3b8">Production-proven code patterns extracted from top open-source projects</text>
+  <line x1="80" y1="300" x2="380" y2="300" stroke="#6366f1" stroke-width="3"/>
+  <text x="80" y="340" font-family="monospace" font-size="16" fill="#fbbf24">30+ patterns | 4 languages | 60 exercises | 100+ challenges</text>
+  <rect x="80" y="365" width="200" height="36" rx="18" fill="#6366f1"/>
+  <text x="180" y="388" text-anchor="middle" font-family="system-ui, sans-serif" font-size="14" font-weight="bold" fill="#fff">Star on GitHub</text>
+  <text x="300" y="388" font-family="monospace" font-size="11" fill="#64748b">github.com/Totoro-jam/battle-tested-patterns</text>
 </svg>
