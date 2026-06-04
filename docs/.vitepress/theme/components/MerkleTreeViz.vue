@@ -81,24 +81,29 @@ async function verifyLeaf(leafIdx: number) {
   // Highlight the leaf
   highlightPath.value = new Set([treeIdx]);
   await delay(400);
+  if (aborted) return;
 
   // Highlight sibling
   const sibling = treeIdx % 2 === 0 ? treeIdx - 1 : treeIdx + 1;
   highlightPath.value = new Set([treeIdx, sibling]);
   await delay(400);
+  if (aborted) return;
 
   // Highlight parent
   const parent = treeIdx <= 4 ? 1 : 2;
   highlightPath.value = new Set([treeIdx, sibling, parent]);
   await delay(400);
+  if (aborted) return;
 
   // Highlight uncle and root
   const uncle = parent === 1 ? 2 : 1;
   highlightPath.value = new Set([treeIdx, sibling, parent, uncle, 0]);
   await delay(400);
+  if (aborted) return;
 
   message.value = t(`Verified: root hash matches — Data ${leaves.value[leafIdx]} is intact`, `验证通过：根哈希匹配 - 数据 ${leaves.value[leafIdx]} 完整`);
   await delay(1200);
+  if (aborted) return;
   highlightPath.value = new Set();
 }
 

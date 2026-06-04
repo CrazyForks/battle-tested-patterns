@@ -41,10 +41,12 @@ async function emitEvent() {
     sub.messages = [...sub.messages, event];
     if (sub.messages.length > 5) sub.messages = sub.messages.slice(-5);
     await delay(200);
+    if (aborted) return;
   }
 
   message.value = t(`"${event}" delivered to all subscribers`, `"${event}" 已送达所有订阅者`);
   await delay(400);
+  if (aborted) return;
   lastEvent.value = '';
   broadcasting.value = false;
 }

@@ -64,6 +64,7 @@ async function insert() {
   highlightPath.value = [{ nodeIdx: insertIdx === -1 ? nodes.value.length - 1 : insertIdx, level: 0 }];
   message.value = t(`Inserted ${val} with ${levels} level${levels > 1 ? 's' : ''}`, `已插入 ${val}，${levels} 层`);
   await delay(500);
+  if (aborted) return;
   highlightPath.value = [];
 }
 
@@ -87,10 +88,12 @@ async function search() {
         if (nodes.value[nextIdx].val <= target) {
           highlightPath.value = [...highlightPath.value, { nodeIdx: nextIdx, level: currentLevel }];
           await delay(300);
+          if (aborted) return;
           if (nodes.value[nextIdx].val === target) {
             message.value = t(`Found ${target} at index ${nextIdx}!`, `找到 ${target}，索引 ${nextIdx}！`);
             searchTarget.value = null;
             await delay(800);
+            if (aborted) return;
             highlightPath.value = [];
             return;
           }
@@ -108,6 +111,7 @@ async function search() {
   message.value = t(`${target} not found`, `未找到 ${target}`);
   searchTarget.value = null;
   await delay(800);
+  if (aborted) return;
   highlightPath.value = [];
 }
 

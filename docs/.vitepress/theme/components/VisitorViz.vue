@@ -67,6 +67,7 @@ const visitedCount = computed(() => allNodes.value.filter(n => n.visited).length
 async function visitNode(node: AstNode, depth: number) {
   currentNodeId.value = node.id;
   await delay(420);
+  if (aborted) return;
 
   if (visitorType.value === 'print') {
     const indent = '  '.repeat(depth);

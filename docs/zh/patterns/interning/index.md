@@ -16,15 +16,15 @@ description: "通过规范化查找表去重不可变值——用 O(1) 的指针
   intern("hello") → 0     intern("world") → 1     intern("hello") → 0
                                                      (reuse!)
 
-  ┌──────────────────────┐
+  ┌───────────────────────┐
   │    Symbol Table       │
-  ├────┬─────────────────┤
-  │ ID │     Value        │
-  ├────┼─────────────────┤
+  ├────┬──────────────────┤
+  │ ID │  Value           │
+  ├────┼──────────────────┤
   │  0 │  "hello"         │
   │  1 │  "world"         │
   │  2 │  "foo"           │
-  └────┴─────────────────┘
+  └────┴──────────────────┘
 
   Equality: symbol_a == symbol_b  (integer compare, O(1))
   Instead:  strcmp(str_a, str_b)   (character scan, O(n))

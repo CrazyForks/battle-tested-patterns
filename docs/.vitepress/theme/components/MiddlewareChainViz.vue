@@ -123,6 +123,7 @@ async function sendRequest() {
       `>> ${m.name}: 正在处理请求...`
     );
     await delay(450);
+    if (aborted) return;
 
     // Check if this middleware rejects
     if (m.behavior === 'reject') {
@@ -137,6 +138,7 @@ async function sendRequest() {
         `X ${m.name}: 拒绝了请求`
       );
       await delay(500);
+      if (aborted) return;
       break;
     }
 
@@ -163,6 +165,7 @@ async function sendRequest() {
     );
     message.value = t('Response flowing back through chain...', '响应正在沿链路返回...');
     await delay(300);
+    if (aborted) return;
   }
 
   const startFrom = rejected.value ? rejectAt.value : middlewares.length - 1;
@@ -186,6 +189,7 @@ async function sendRequest() {
       `<< ${m.name}: ${rejected.value ? '转发错误' : '添加响应头'}...`
     );
     await delay(350);
+    if (aborted) return;
   }
 
   // Done

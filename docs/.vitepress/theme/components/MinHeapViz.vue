@@ -52,6 +52,7 @@ async function insert() {
   message.value = t(`Inserted ${val} at index ${i}`, `已插入 ${val}，索引 ${i}`);
 
   await delay(300);
+  if (aborted) return;
 
   while (i > 0) {
     const parent = Math.floor((i - 1) / 2);
@@ -59,6 +60,7 @@ async function insert() {
       highlightIndices.value = [i, parent];
       message.value = t(`Bubble up: swap ${heap.value[i]} ↔ ${heap.value[parent]}`, `上浮：交换 ${heap.value[i]} ↔ ${heap.value[parent]}`);
       await delay(400);
+      if (aborted) return;
       [heap.value[i], heap.value[parent]] = [heap.value[parent], heap.value[i]];
       i = parent;
     } else {
@@ -69,6 +71,7 @@ async function insert() {
   highlightIndices.value = [i];
   message.value = t(`${val} settled at index ${i} — heap property restored`, `${val} 落在索引 ${i} — 堆性质已恢复`);
   await delay(300);
+  if (aborted) return;
   highlightIndices.value = [];
   animType.value = '';
 }
@@ -84,6 +87,7 @@ async function extractMin() {
   highlightIndices.value = [0];
   message.value = t(`Extracting min = ${min}`, `正在提取最小值 = ${min}`);
   await delay(300);
+  if (aborted) return;
 
   if (heap.value.length === 1) {
     heap.value.pop();
@@ -108,6 +112,7 @@ async function extractMin() {
       highlightIndices.value = [i, smallest];
       message.value = t(`Sift down: swap ${heap.value[i]} ↔ ${heap.value[smallest]}`, `下沉：交换 ${heap.value[i]} ↔ ${heap.value[smallest]}`);
       await delay(400);
+      if (aborted) return;
       [heap.value[i], heap.value[smallest]] = [heap.value[smallest], heap.value[i]];
       i = smallest;
     } else {

@@ -73,6 +73,7 @@ async function write() {
   // Auto-flush when memtable is full
   if (memtable.value.length >= MEMTABLE_CAPACITY) {
     await delay(400);
+    if (aborted) return;
     await flush();
   }
 }
@@ -82,6 +83,7 @@ async function flush() {
   flushing.value = true;
   message.value = t('Flushing memtable to Level 0 SSTable...', '正在将 Memtable 刷盘到 Level 0 SSTable...');
   await delay(500);
+  if (aborted) return;
 
   const sst: SSTable = {
     id: nextSstId++,
@@ -98,6 +100,7 @@ async function compact() {
   compacting.value = true;
   message.value = t('Compacting: merging Level 0 SSTables into Level 1...', '压缩中：将 Level 0 SSTable 合并到 Level 1...');
   await delay(600);
+  if (aborted) return;
 
   // Merge all L0 SSTables with existing L1 SSTables
   const allEntries: Map<string, string> = new Map();
@@ -149,6 +152,7 @@ async function read() {
   searchPath.value = ['memtable'];
   message.value = t(`Searching memtable for "${k}"...`, `正在 Memtable 中搜索 "${k}"...`);
   await delay(400);
+  if (aborted) return;
 
   const memEntry = memtable.value.find(e => e.key === k);
   if (memEntry) {
@@ -164,6 +168,7 @@ async function read() {
     searchPath.value = [...searchPath.value, `l0-${sst.id}`];
     message.value = t(`Searching L0 SSTable #${sst.id} for "${k}"...`, `正在 L0 SSTable #${sst.id} 中搜索 "${k}"...`);
     await delay(400);
+    if (aborted) return;
 
     const entry = sst.entries.find(e => e.key === k);
     if (entry) {
@@ -179,6 +184,7 @@ async function read() {
     searchPath.value = [...searchPath.value, `l1-${sst.id}`];
     message.value = t(`Searching L1 SSTable #${sst.id} for "${k}"...`, `正在 L1 SSTable #${sst.id} 中搜索 "${k}"...`);
     await delay(400);
+    if (aborted) return;
 
     const entry = sst.entries.find(e => e.key === k);
     if (entry) {

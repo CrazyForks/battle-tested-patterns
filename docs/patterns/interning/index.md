@@ -16,15 +16,15 @@ Interning stores each unique value exactly once in a table and hands out lightwe
   intern("hello") → 0     intern("world") → 1     intern("hello") → 0
                                                      (reuse!)
 
-  ┌──────────────────────┐
+  ┌───────────────────────┐
   │    Symbol Table       │
-  ├────┬─────────────────┤
-  │ ID │     Value        │
-  ├────┼─────────────────┤
+  ├────┬──────────────────┤
+  │ ID │  Value           │
+  ├────┼──────────────────┤
   │  0 │  "hello"         │
   │  1 │  "world"         │
   │  2 │  "foo"           │
-  └────┴─────────────────┘
+  └────┴──────────────────┘
 
   Equality: symbol_a == symbol_b  (integer comparison, O(1))
   Instead of: strcmp(str_a, str_b) (character scan, O(n))

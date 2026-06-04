@@ -68,11 +68,13 @@ async function pullNext() {
     activeValue.value = val;
     message.value = t(`Source: pulling element ${val}`, `Source：拉取元素 ${val}`);
     await delay(400);
+    if (aborted) return;
 
     // Stage 2: Filter - keep only odd numbers
     activeStage.value = 'filter';
     message.value = t(`Filter(isOdd): checking ${val}...`, `Filter(isOdd)：检查 ${val}...`);
     await delay(400);
+    if (aborted) return;
 
     if (val % 2 === 0) {
       // Rejected by filter
@@ -80,6 +82,7 @@ async function pullNext() {
       activeStage.value = 'filter-reject';
       message.value = t(`Filter: ${val} is even -> rejected. Pulling next from source...`, `Filter：${val} 是偶数 -> 已过滤。从 Source 拉取下一个...`);
       await delay(300);
+      if (aborted) return;
       continue; // Pull next from source
     }
 
@@ -87,6 +90,7 @@ async function pullNext() {
     state.filterPassed = [...state.filterPassed, val];
     message.value = t(`Filter: ${val} is odd -> passed!`, `Filter：${val} 是奇数 -> 通过！`);
     await delay(300);
+    if (aborted) return;
 
     // Stage 3: Map - multiply by 10
     activeStage.value = 'map';
@@ -94,12 +98,14 @@ async function pullNext() {
     message.value = t(`Map(*10): ${val} -> ${mapped}`, `Map(*10)：${val} -> ${mapped}`);
     activeValue.value = mapped;
     await delay(400);
+    if (aborted) return;
     state.mapResults = [...state.mapResults, mapped];
 
     // Stage 4: Take
     activeStage.value = 'take';
     message.value = t(`Take(${TAKE_COUNT}): collected ${state.taken.length + 1} of ${TAKE_COUNT}`, `Take(${TAKE_COUNT})：已收集 ${state.taken.length + 1}/${TAKE_COUNT}`);
     await delay(300);
+    if (aborted) return;
     state.taken = [...state.taken, mapped];
 
     // Stage 5: Collect
@@ -107,6 +113,7 @@ async function pullNext() {
     state.collected = [...state.collected, mapped];
     message.value = t(`Collected: [${state.collected.join(', ')}]`, `已收集：[${state.collected.join(', ')}]`);
     await delay(300);
+    if (aborted) return;
 
     break; // One element pulled through successfully
   }
