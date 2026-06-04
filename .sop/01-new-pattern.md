@@ -178,6 +178,11 @@ Add `## Challenge Questions` section at the end of the pattern doc:
 - [ ] ASCII box borders: │ must be vertically aligned on EVERY line of the same box
 - [ ] Challenge questions: no unescaped `|` in table cells, no `*` for multiplication (use `×`)
 - [ ] Challenge answers: factually verified — don't claim Go is cooperative-only (async preemption since 1.14)
+- [ ] Challenge answers: verify version-specific claims (e.g. goroutine stack is 2KB since Go 1.4, not "2-4KB")
+- [ ] Challenge answers: verify architecture claims (e.g. x86 TSO means Release and Relaxed RMW compile identically)
+- [ ] Challenge answers: don't conflate similar systems (Redis Cluster uses hash slots, NOT consistent hashing)
+- [ ] Challenge answers: check for outdated claims (React 18 auto-batches; Redis 6.0 has I/O threads)
+- [ ] Challenge answers: distinguish Go runtime concepts correctly (P = logical processor, M = OS thread)
 - [ ] Sidebar: updated in BOTH English and Chinese sections of `config.ts`
 - [ ] README: updated in BOTH `README.md` and `README.zh-CN.md`
 - [ ] README cheat sheet: add to the categorized table in README

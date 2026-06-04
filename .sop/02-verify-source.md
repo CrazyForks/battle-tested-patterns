@@ -31,8 +31,11 @@ Production Proof links must include line numbers:
 ```text
 ✅ https://github.com/org/repo/blob/main/path/file.ext#L42-L80
 ❌ https://github.com/org/repo/blob/main/path/file.ext#L1  (file-level)
-❌ https://github.com/org/repo/tree/main/path/  (directory)
+❌ https://github.com/org/repo/blob/main/path/file.ext     (no line number)
+❌ https://github.com/org/repo/tree/main/path/              (directory)
 ```
+
+This applies to ALL GitHub links in the Production Proof table — including supplementary references in the Usage column. If a Usage cell references another file (e.g. `object.h`), that link also needs `#L` line numbers.
 
 ### 3. Verify Content
 
