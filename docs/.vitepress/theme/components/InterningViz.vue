@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import { ref, computed, reactive, onUnmounted } from 'vue';
+import { ref, computed, reactive } from 'vue';
 import { useI18n } from '../composables/useI18n';
+import { useVizTimers } from '../composables/useVizTimers';
 
 const { t } = useI18n();
+const { safeTimeout, safeInterval, delay, clearAll, speed, isAborted } = useVizTimers();
 
 /* ── Data model ──────────────────────────────── */
 interface InternEntry {
@@ -19,8 +21,8 @@ interface VarRef {
 const pool = ref<InternEntry[]>([]);
 const variables = ref<VarRef[]>([]);
 const message = ref(t(
-  'Type a string and click "Intern" to add it to the pool',
-  '输入字符串并点击 "Intern" 将其添加到池中',
+  'Type a string and click "Intern" to add it to the pool — used by Java JVM, Python, and V8 for string deduplication',
+  '输入字符串并点击 "Intern" 将其添加到池中 — Java JVM、Python 和 V8 用此进行字符串去重',
 ));
 const highlightValue = ref('');
 const highlightAction = ref<'new' | 'reuse' | 'remove' | 'gc' | ''>('');
@@ -28,12 +30,7 @@ const inputText = ref('');
 let entryIdCounter = 0;
 let varIdCounter = 0;
 let varNameCounter = 0;
-const pendingTimers = new Set<ReturnType<typeof setTimeout | typeof setInterval>>();
-
-onUnmounted(() => {
-  for (const id of pendingTimers) clearTimeout(id);
-  pendingTimers.clear();
-});
+let presetRunning = false;
 
 const varNames = 'abcdefghijklmnopqrstuvwxyz'.split('');
 
@@ -49,14 +46,12 @@ const isComparing = ref(false);
 const uniqueCount = computed(() => pool.value.length);
 const totalRefs = computed(() => variables.value.length);
 
-/** Approximate bytes saved: each duplicate ref avoids storing the string again */
 const memorySaved = computed(() => {
   let saved = 0;
   for (const entry of pool.value) {
     const refCount = refsForEntry(entry.value).length;
     if (refCount > 1) {
-      // Each extra reference saves the full string bytes
-      saved += (refCount - 1) * entry.value.length * 2; // 2 bytes per char (UTF-16)
+      saved += (refCount - 1) * entry.value.length * 2;
     }
   }
   return saved;
@@ -101,8 +96,8 @@ function intern(str?: string) {
     highlightValue.value = val;
     highlightAction.value = 'reuse';
     message.value = t(
-      `intern("${val}") -> reused existing pool entry, assigned to ${varName}`,
-      `intern("${val}") -> 复用已有池条目，赋值给 ${varName}`,
+      `intern("${val}") -> reused existing pool entry, assigned to ${varName}. O(1) pointer equality now possible.`,
+      `intern("${val}") -> 复用已有池条目，赋值给 ${varName}。现在可以使用 O(1) 指针相等性。`,
     );
   } else {
     pool.value.push({ value: val, id: ++entryIdCounter });
@@ -119,10 +114,7 @@ function intern(str?: string) {
     );
   }
   inputText.value = '';
-  {
-    const tid = setTimeout(() => { pendingTimers.delete(tid); highlightValue.value = ''; highlightAction.value = ''; }, 700);
-    pendingTimers.add(tid);
-  }
+  safeTimeout(() => { highlightValue.value = ''; highlightAction.value = ''; }, 700);
 }
 
 function removeVariable(v: VarRef) {
@@ -134,19 +126,17 @@ function removeVariable(v: VarRef) {
   highlightValue.value = v.targetValue;
   highlightAction.value = 'remove';
 
-  // Clear compare slots if removed var was selected
   if (compareA.value?.id === v.id) compareA.value = null;
   if (compareB.value?.id === v.id) compareB.value = null;
 
   if (remaining === 0) {
-    // GC: remove from pool
     const poolIdx = pool.value.findIndex(e => e.value === v.targetValue);
     if (poolIdx !== -1) {
       pool.value.splice(poolIdx, 1);
       highlightAction.value = 'gc';
       message.value = t(
-        `Removed ${v.name}. refcount("${v.targetValue}") = 0 -> GC'd from pool`,
-        `已移除 ${v.name}。refcount("${v.targetValue}") = 0 -> 已从池中回收`,
+        `Removed ${v.name}. refcount("${v.targetValue}") = 0 -> GC'd from pool. This is how weak interning works in Go's sync.Pool.`,
+        `已移除 ${v.name}。refcount("${v.targetValue}") = 0 -> 已从池中回收。Go 的 sync.Pool 弱驻留就是这样工作的。`,
       );
     }
   } else {
@@ -155,13 +145,11 @@ function removeVariable(v: VarRef) {
       `已移除 ${v.name}。refcount("${v.targetValue}") = ${remaining}`,
     );
   }
-  {
-    const tid = setTimeout(() => { pendingTimers.delete(tid); highlightValue.value = ''; highlightAction.value = ''; }, 700);
-    pendingTimers.add(tid);
-  }
+  safeTimeout(() => { highlightValue.value = ''; highlightAction.value = ''; }, 700);
 }
 
 function reset() {
+  clearAll();
   pool.value = [];
   variables.value = [];
   message.value = t('Pool cleared', '池已清空');
@@ -175,6 +163,7 @@ function reset() {
   compareSteps.length = 0;
   comparingCharIdx.value = -1;
   isComparing.value = false;
+  presetRunning = false;
 }
 
 function refsForEntry(value: string): VarRef[] {
@@ -193,7 +182,6 @@ function selectForCompare(v: VarRef) {
       `已选择 ${v.name} 作为第一操作数。点击另一个变量作为第二操作数。`,
     );
   } else if (compareA.value.id === v.id) {
-    // Deselect
     compareA.value = null;
     compareResult.value = '';
     message.value = t('Comparison cancelled', '比较已取消');
@@ -215,18 +203,16 @@ function runComparison() {
 
   const sameInterned = a.targetValue === b.targetValue;
 
-  // Step 1: pointer comparison (instant)
   compareSteps.push(t(
     `Step 1: Pointer check — do ${a.name} and ${b.name} reference the same pool entry?`,
     `步骤 1：指针检查 — ${a.name} 和 ${b.name} 是否引用同一池条目？`,
   ));
 
-  const outerTid = setTimeout(() => {
-    pendingTimers.delete(outerTid);
+  safeTimeout(() => {
     if (sameInterned) {
       compareSteps.push(t(
-        `-> YES! Both point to "${a.targetValue}" in pool. O(1) — done!`,
-        `-> 是！两者均指向池中的 "${a.targetValue}"。O(1) — 完成！`,
+        `-> YES! Both point to "${a.targetValue}" in pool. O(1) — done! Java's == operator on interned strings does exactly this.`,
+        `-> 是！两者均指向池中的 "${a.targetValue}"。O(1) — 完成！Java 对 interned 字符串的 == 运算符就是这样做的。`,
       ));
       compareResult.value = t(
         `${a.name} === ${b.name} is TRUE (same interned reference, O(1))`,
@@ -243,12 +229,10 @@ function runComparison() {
         `步骤 2：若无 interning，需逐字符比较 O(n)：`,
       ));
 
-      // Animate character-by-character comparison
       const maxLen = Math.max(a.targetValue.length, b.targetValue.length);
       let charIdx = 0;
-      const charInterval = setInterval(() => {
+      safeInterval(function charStep(intervalId?: ReturnType<typeof setInterval>) {
         if (charIdx >= maxLen) {
-          clearInterval(charInterval); pendingTimers.delete(charInterval);
           comparingCharIdx.value = -1;
           compareResult.value = t(
             `${a.name} !== ${b.name} (different values, needed ${maxLen} char comparisons without interning)`,
@@ -265,7 +249,6 @@ function runComparison() {
             `  [${charIdx}] '${chA}' != '${chB}' -> mismatch found after ${charIdx + 1} comparison(s)`,
             `  [${charIdx}] '${chA}' != '${chB}' -> 在 ${charIdx + 1} 次比较后发现不匹配`,
           ));
-          clearInterval(charInterval); pendingTimers.delete(charInterval);
           comparingCharIdx.value = -1;
           compareResult.value = t(
             `${a.name} !== ${b.name} (mismatch at index ${charIdx}, O(n) without interning)`,
@@ -280,10 +263,8 @@ function runComparison() {
         ));
         charIdx++;
       }, 350);
-      pendingTimers.add(charInterval);
     }
   }, 500);
-  pendingTimers.add(outerTid);
 }
 
 function clearCompare() {
@@ -293,6 +274,93 @@ function clearCompare() {
   compareSteps.length = 0;
   comparingCharIdx.value = -1;
   isComparing.value = false;
+}
+
+async function presetDeduplication() {
+  if (presetRunning) return;
+  reset();
+  presetRunning = true;
+  message.value = t(
+    'String deduplication: intern "hello" twice. Second call reuses the pool entry — no new allocation. Java -XX:+UseStringDeduplication does this at GC time.',
+    '字符串去重：两次 intern "hello"。第二次调用复用池条目 — 无新分配。Java -XX:+UseStringDeduplication 在 GC 时做此操作。'
+  );
+  await delay(800);
+  if (!presetRunning || isAborted()) return;
+  intern('hello');
+  await delay(600);
+  if (!presetRunning || isAborted()) return;
+  intern('hello');
+  await delay(600);
+  if (!presetRunning || isAborted()) return;
+  intern('world');
+  await delay(600);
+  if (!presetRunning || isAborted()) return;
+  intern('hello');
+  await delay(600);
+  if (!presetRunning || isAborted()) return;
+  message.value = t(
+    '3 references to "hello" share 1 pool entry. Memory saved: 2 copies avoided. V8 interns all identifiers in JavaScript source code the same way.',
+    '3 个 "hello" 引用共享 1 个池条目。内存节省：避免了 2 份副本。V8 对 JavaScript 源代码中的所有标识符做同样的处理。'
+  );
+  presetRunning = false;
+}
+
+async function presetGarbageCollection() {
+  if (presetRunning) return;
+  reset();
+  presetRunning = true;
+  message.value = t(
+    'GC demo: intern strings, then remove all references. When refcount hits 0, the pool entry is garbage collected — like weak references in Java\'s WeakHashMap.',
+    'GC 演示：驻留字符串，然后移除所有引用。当引用计数为 0 时，池条目被垃圾回收 — 类似 Java WeakHashMap 中的弱引用。'
+  );
+  await delay(800);
+  if (!presetRunning || isAborted()) return;
+  intern('temp');
+  await delay(500);
+  if (!presetRunning || isAborted()) return;
+  intern('keep');
+  await delay(500);
+  if (!presetRunning || isAborted()) return;
+  intern('keep');
+  await delay(500);
+  if (!presetRunning || isAborted()) return;
+  const tempVar = variables.value.find(v => v.targetValue === 'temp');
+  if (tempVar) {
+    removeVariable(tempVar);
+    await delay(800);
+  }
+  if (!presetRunning || isAborted()) return;
+  message.value = t(
+    '"temp" removed from pool (refcount=0). "keep" stays (refcount=2). This prevents intern tables from growing unbounded — a real concern in long-running servers.',
+    '"temp" 从池中移除（refcount=0）。"keep" 保留（refcount=2）。这防止 intern 表无限增长 — 长时间运行的服务器的真实问题。'
+  );
+  presetRunning = false;
+}
+
+async function presetComparisonDemo() {
+  if (presetRunning) return;
+  reset();
+  presetRunning = true;
+  message.value = t(
+    'O(1) vs O(n) comparison: intern two identical strings, then compare. With interning: pointer equality O(1). Without: char-by-char O(n). Click == buttons after setup.',
+    'O(1) vs O(n) 比较：驻留两个相同字符串，然后比较。有 interning：指针相等 O(1)。没有：逐字符 O(n)。设置后点击 == 按钮。'
+  );
+  await delay(800);
+  if (!presetRunning || isAborted()) return;
+  intern('longstring');
+  await delay(500);
+  if (!presetRunning || isAborted()) return;
+  intern('longstring');
+  await delay(500);
+  if (!presetRunning || isAborted()) return;
+  intern('different');
+  await delay(500);
+  if (!presetRunning || isAborted()) return;
+  message.value = t(
+    'Setup complete. Click == on any variable to start comparison. Try comparing same strings (O(1)) vs different strings (O(n) fallback).',
+    '设置完成。点击任意变量上的 == 开始比较。试试比较相同字符串（O(1)）和不同字符串（O(n) 回退）。'
+  );
+  presetRunning = false;
 }
 </script>
 
@@ -328,7 +396,7 @@ function clearCompare() {
       <button class="viz-btn viz-btn--danger" @click="reset">{{ t('Reset', '重置') }}</button>
     </div>
 
-    <div class="in-presets">
+    <div class="in-presets-quick">
       <span class="viz-label">{{ t('Quick add:', '快速添加：') }}&nbsp;</span>
       <button
         v-for="ps in presetStrings"
@@ -470,6 +538,20 @@ function clearCompare() {
       </div>
     </div>
 
+    <div class="viz-controls">
+      <div class="viz-speed">
+        <input type="range" min="0.5" max="3" step="0.5" v-model.number="speed" />
+        <span class="viz-speed-val">{{ speed }}x</span>
+      </div>
+    </div>
+
+    <div class="viz-presets">
+      <span class="viz-label">{{ t('Scenarios:', '场景：') }}</span>
+      <button class="viz-btn" @click="presetDeduplication">{{ t('Deduplication', '去重') }}</button>
+      <button class="viz-btn" @click="presetGarbageCollection">{{ t('GC Cleanup', 'GC 清理') }}</button>
+      <button class="viz-btn" @click="presetComparisonDemo">{{ t('O(1) Compare', 'O(1) 比较') }}</button>
+    </div>
+
     <!-- Status message -->
     <div class="viz-status" :class="{
       'in-status--new': highlightAction === 'new',
@@ -534,8 +616,8 @@ function clearCompare() {
   border-color: var(--viz-primary);
 }
 
-/* ── Presets ─────────────────────────────── */
-.in-presets {
+/* ── Quick add presets ─────────────────────────────── */
+.in-presets-quick {
   display: flex;
   align-items: center;
   gap: 0.375rem;
@@ -608,12 +690,12 @@ function clearCompare() {
 
 .in-var--highlight-new {
   background: rgba(59, 130, 246, 0.12);
-  animation: in-pulse 0.5s ease;
+  animation: viz-pulse 0.5s ease;
 }
 
 .in-var--highlight-reuse {
   background: rgba(16, 185, 129, 0.12);
-  animation: in-pulse 0.5s ease;
+  animation: viz-pulse 0.5s ease;
 }
 
 .in-var--highlight-remove {
@@ -714,13 +796,13 @@ function clearCompare() {
 .in-entry--highlight-new {
   border-color: var(--viz-primary);
   background: rgba(59, 130, 246, 0.08);
-  animation: in-pulse 0.5s ease;
+  animation: viz-pulse 0.5s ease;
 }
 
 .in-entry--highlight-reuse {
   border-color: var(--viz-success);
   background: rgba(16, 185, 129, 0.08);
-  animation: in-pulse 0.5s ease;
+  animation: viz-pulse 0.5s ease;
 }
 
 .in-entry--highlight-remove {
@@ -923,13 +1005,6 @@ function clearCompare() {
 .in-status--reuse { border-left: 3px solid var(--viz-success); }
 .in-status--remove { border-left: 3px solid var(--viz-warning); }
 .in-status--gc { border-left: 3px solid var(--viz-danger); }
-
-/* ── Animations ──────────────────────────── */
-@keyframes in-pulse {
-  0% { transform: scale(1); }
-  40% { transform: scale(1.03); }
-  100% { transform: scale(1); }
-}
 
 /* ── Mobile ──────────────────────────────── */
 @media (max-width: 640px) {

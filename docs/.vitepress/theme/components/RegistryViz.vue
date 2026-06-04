@@ -1,11 +1,10 @@
 <script setup lang="ts">
-import { ref, computed, onUnmounted } from 'vue';
+import { ref, computed } from 'vue';
 import { useI18n } from '../composables/useI18n';
+import { useVizTimers } from '../composables/useVizTimers';
 
 const { t } = useI18n();
-
-const pendingTimers = new Set<ReturnType<typeof setTimeout>>();
-onUnmounted(() => { for (const tid of pendingTimers) clearTimeout(tid); });
+const { safeTimeout, delay, clearAll, speed, isAborted } = useVizTimers();
 
 interface Handler {
   name: string;
@@ -16,6 +15,7 @@ interface Handler {
 
 let nextId = 0;
 let order = 0;
+let presetRunning = false;
 
 const availablePlugins = ref([
   { name: 'JSONHandler', description: 'Parse & serialize JSON', registered: false },
@@ -49,8 +49,7 @@ function registerHandler(pluginName: string) {
   lookupResult.value = null;
   lookupNotFound.value = false;
   message.value = t(`Registered "${plugin.name}" (order #${handler.registeredAt}). Registry now has ${registry.value.length} handler(s).`, `已注册 "${plugin.name}"（顺序 #${handler.registeredAt}）。注册表现有 ${registry.value.length} 个处理器。`);
-  const tid = setTimeout(() => { pendingTimers.delete(tid); flashId.value = -1; }, 600);
-  pendingTimers.add(tid);
+  safeTimeout(() => { flashId.value = -1; }, 600);
 }
 
 function unregisterHandler(handler: Handler) {
@@ -75,24 +74,20 @@ function doLookup() {
   const found = registry.value.find(
     (h) => h.name.toLowerCase() === q.toLowerCase(),
   );
-  const tid1 = setTimeout(() => {
-    pendingTimers.delete(tid1);
+  safeTimeout(() => {
     if (found) {
       lookupResult.value = found;
       lookupNotFound.value = false;
       flashId.value = found.id;
       message.value = t(`FOUND: "${found.name}" -> ${found.description}`, `已找到："${found.name}" -> ${found.description}`);
-      const tid2 = setTimeout(() => { pendingTimers.delete(tid2); flashId.value = -1; }, 600);
-      pendingTimers.add(tid2);
+      safeTimeout(() => { flashId.value = -1; }, 600);
     } else {
       lookupResult.value = null;
       lookupNotFound.value = true;
       message.value = t(`NOT FOUND: No handler registered for "${q}".`, `未找到：没有为 "${q}" 注册的处理器。`);
     }
-    const tid3 = setTimeout(() => { pendingTimers.delete(tid3); dispatchTarget.value = null; }, 800);
-    pendingTimers.add(tid3);
+    safeTimeout(() => { dispatchTarget.value = null; }, 800);
   }, 300);
-  pendingTimers.add(tid1);
   lookupQuery.value = '';
 }
 
@@ -103,6 +98,8 @@ function registerAll() {
 }
 
 function reset() {
+  clearAll();
+  presetRunning = false;
   nextId = 0;
   order = 0;
   registry.value = [];
@@ -116,7 +113,139 @@ function reset() {
 }
 
 const registeredCount = computed(() => registry.value.length);
-const availableCount = computed(() => availablePlugins.value.filter((p) => !p.registered).length);
+
+/* ---------- Preset scenarios ---------- */
+
+async function presetRegisterAndLookup() {
+  if (presetRunning) return;
+  reset();
+  presetRunning = true;
+  message.value = t(
+    'Preset: registering all plugins, then resolving each by name...',
+    '预设：注册所有插件，然后按名称逐一解析...'
+  );
+
+  // Register all plugins one by one
+  for (const plugin of availablePlugins.value) {
+    await delay(500);
+    if (!presetRunning || isAborted()) return;
+    registerHandler(plugin.name);
+  }
+
+  await delay(600);
+  if (!presetRunning || isAborted()) return;
+
+  // Lookup each one
+  for (const plugin of availablePlugins.value) {
+    await delay(500);
+    if (!presetRunning || isAborted()) return;
+    lookupQuery.value = plugin.name;
+    doLookup();
+  }
+
+  await delay(800);
+  if (!presetRunning || isAborted()) return;
+  message.value = t(
+    'Register-then-resolve is the service locator pattern — Java ServiceLoader, Spring @Component scanning, and VSCode extension host all use a registry to decouple providers from consumers. Lookup is O(1) by name.',
+    '先注册再解析是服务定位器模式 — Java ServiceLoader、Spring @Component 扫描和 VSCode 扩展主机都使用注册表来解耦提供者和消费者。按名称查找是 O(1)。'
+  );
+  presetRunning = false;
+}
+
+async function presetLateBind() {
+  if (presetRunning) return;
+  reset();
+  presetRunning = true;
+  message.value = t(
+    'Preset: demonstrating late binding — register some, lookup, then register more...',
+    '预设：演示延迟绑定 — 先注册一些，查找，然后注册更多...'
+  );
+
+  // Register first 2
+  await delay(500);
+  if (!presetRunning || isAborted()) return;
+  registerHandler('JSONHandler');
+
+  await delay(500);
+  if (!presetRunning || isAborted()) return;
+  registerHandler('XMLHandler');
+
+  // Lookup one of them
+  await delay(600);
+  if (!presetRunning || isAborted()) return;
+  lookupQuery.value = 'JSONHandler';
+  doLookup();
+
+  await delay(800);
+  if (!presetRunning || isAborted()) return;
+  message.value = t(
+    'Two handlers registered. Now registering more at runtime...',
+    '已注册两个处理器。现在在运行时注册更多...'
+  );
+
+  // Register 2 more
+  await delay(500);
+  if (!presetRunning || isAborted()) return;
+  registerHandler('CSVHandler');
+
+  await delay(500);
+  if (!presetRunning || isAborted()) return;
+  registerHandler('YAMLHandler');
+
+  // Lookup one of the new ones
+  await delay(600);
+  if (!presetRunning || isAborted()) return;
+  lookupQuery.value = 'YAMLHandler';
+  doLookup();
+
+  await delay(800);
+  if (!presetRunning || isAborted()) return;
+  message.value = t(
+    'Late binding: plugins registered at runtime, not compile time. This is how Express middleware (app.use), Webpack loaders (module.rules), and browser custom elements (customElements.define) work — register anytime, resolve on demand.',
+    '延迟绑定：插件在运行时注册，而非编译时。Express 中间件（app.use）、Webpack 加载器（module.rules）和浏览器自定义元素（customElements.define）都是这样工作的 — 随时注册，按需解析。'
+  );
+  presetRunning = false;
+}
+
+async function presetMissAndFallback() {
+  if (presetRunning) return;
+  reset();
+  presetRunning = true;
+  message.value = t(
+    'Preset: register 2 handlers, then look up a name that doesn\'t exist...',
+    '预设：注册 2 个处理器，然后查找一个不存在的名称...'
+  );
+
+  // Register 2 handlers
+  await delay(500);
+  if (!presetRunning || isAborted()) return;
+  registerHandler('JSONHandler');
+
+  await delay(500);
+  if (!presetRunning || isAborted()) return;
+  registerHandler('XMLHandler');
+
+  await delay(600);
+  if (!presetRunning || isAborted()) return;
+  message.value = t(
+    'Two handlers registered. Now looking up "ProtobufHandler" which was never registered...',
+    '已注册两个处理器。现在查找从未注册的 "ProtobufHandler"...'
+  );
+
+  // Lookup a name that doesn't exist
+  await delay(600);
+  if (!presetRunning || isAborted()) return;
+  lookupQuery.value = 'ProtobufHandler';
+  doLookup();
+
+  await delay(1000);
+  if (!presetRunning || isAborted()) return;
+  message.value = t(
+    'Key not found — the registry has no fallback. In production: HTTP returns 404, MIME sniffing kicks in, or a default handler catches unregistered types. Kubernetes uses admission webhooks as a registry with deny-by-default.',
+    '键未找到 — 注册表没有回退机制。在生产环境中：HTTP 返回 404，MIME 嗅探介入，或默认处理器捕获未注册的类型。Kubernetes 使用准入 webhook 作为默认拒绝的注册表。'
+  );
+  presetRunning = false;
+}
 </script>
 
 <template>
@@ -242,6 +371,17 @@ const availableCount = computed(() => availablePlugins.value.filter((p) => !p.re
     <div class="viz-controls">
       <button class="viz-btn" @click="registerAll">{{ t('Register All', '全部注册') }}</button>
       <button class="viz-btn viz-btn--danger" @click="reset">{{ t('Reset', '重置') }}</button>
+      <div class="viz-speed">
+        <input type="range" min="0.5" max="3" step="0.5" v-model.number="speed" />
+        <span class="viz-speed-val">{{ speed }}x</span>
+      </div>
+    </div>
+
+    <div class="viz-presets">
+      <span class="viz-label">{{ t('Scenarios:', '场景：') }}</span>
+      <button class="viz-btn" @click="presetRegisterAndLookup">{{ t('Register & Lookup', '注册查找') }}</button>
+      <button class="viz-btn" @click="presetLateBind">{{ t('Late Binding', '延迟绑定') }}</button>
+      <button class="viz-btn" @click="presetMissAndFallback">{{ t('Key Miss', '键未命中') }}</button>
     </div>
 
     <div class="viz-status">{{ message }}</div>
@@ -340,7 +480,7 @@ const availableCount = computed(() => availablePlugins.value.filter((p) => !p.re
   font-family: var(--vp-font-family-mono);
   color: var(--viz-warning);
   padding: 0.25rem 0;
-  animation: rg-pulse 0.6s ease infinite;
+  animation: viz-pulse 0.6s ease infinite;
 }
 
 .rg-dispatch-arrow {
@@ -525,11 +665,6 @@ const availableCount = computed(() => availablePlugins.value.filter((p) => !p.re
 @keyframes rg-flash {
   0% { background: color-mix(in srgb, var(--viz-primary) 30%, transparent); }
   100% { background: color-mix(in srgb, var(--viz-primary) 15%, transparent); }
-}
-
-@keyframes rg-pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
 }
 
 @keyframes rg-fade-in {

@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { useI18n } from '../composables/useI18n';
+import { useVizTimers } from '../composables/useVizTimers';
+
 const { t } = useI18n();
+const { delay, clearAll: clearTimers, speed, isAborted } = useVizTimers();
 
 interface DataVersion {
   id: number;
@@ -46,9 +49,10 @@ const selectedIndex = ref(0);
 const newValue = ref('');
 const history = ref<HistoryEntry[]>([]);
 const message = ref(t(
-  'All readers share v1. Select an element, type a new value, and click "Write".',
-  '所有读取者共享 v1。选择一个元素，输入新值，然后点击"写入"。',
+  'All readers share v1. Write creates a copy, swap makes it current, refresh updates readers. Linux fork() and Java CopyOnWriteArrayList use this exact pattern.',
+  '所有读取者共享 v1。写入创建副本，交换使其成为当前版本，刷新更新读取者。Linux fork() 和 Java CopyOnWriteArrayList 使用完全相同的模式。',
 ));
+let presetRunning = false;
 
 const currentVersion = computed(() =>
   versions.value.find(v => v.status === 'current'),
@@ -62,7 +66,6 @@ function readersForVersion(vId: number): Reader[] {
   return readers.value.filter(r => r.versionId === vId);
 }
 
-/** Versions grouped with their readers, sorted by version number */
 const versionGroups = computed(() => {
   return [...versions.value]
     .sort((a, b) => a.version - b.version)
@@ -122,8 +125,8 @@ function doWrite() {
   });
 
   message.value = t(
-    `Copied v${current.version} -> v${copy.version}, changed [${selectedIndex.value}] to "${val}". Click "Swap" for atomic reference update.`,
-    `已复制 v${current.version} -> v${copy.version}，将 [${selectedIndex.value}] 改为 "${val}"。点击"交换"进行原子引用更新。`,
+    `Copied v${current.version} -> v${copy.version}, changed [${selectedIndex.value}] to "${val}". Readers still see v${current.version} — zero reader disruption. Click "Swap" for atomic pointer update.`,
+    `已复制 v${current.version} -> v${copy.version}，将 [${selectedIndex.value}] 改为 "${val}"。读取者仍然看到 v${current.version} — 零读取中断。点击"交换"进行原子指针更新。`,
   );
 }
 
@@ -150,8 +153,8 @@ function doSwap() {
   });
 
   message.value = t(
-    `Swapped! v${draft.version} is now current. Readers still see v${current.version} -- click "Refresh Readers" to update them.`,
-    `已交换！v${draft.version} 现在是当前版本。读取者仍然看到 v${current.version} — 点击"刷新读取者"来更新。`,
+    `Swapped! v${draft.version} is now current. Old readers still see v${current.version} safely — this is the RCU (Read-Copy-Update) grace period used in Linux kernel.`,
+    `已交换！v${draft.version} 现在是当前版本。旧读取者仍然安全地看到 v${current.version} — 这是 Linux 内核中使用的 RCU（读-复制-更新）宽限期。`,
   );
 }
 
@@ -166,7 +169,6 @@ function refreshReaders() {
     r.versionId = current.id;
   }
 
-  // GC: remove old versions with no readers (keep drafts)
   const before = versions.value.length;
   versions.value = versions.value.filter(v =>
     v.status === 'current' || v.status === 'draft' || readersForVersion(v.id).length > 0,
@@ -200,12 +202,13 @@ function refreshReaders() {
   }
 
   message.value = t(
-    `All readers now see v${current.version}. Unreferenced old versions garbage collected.`,
-    `所有读取者现在看到 v${current.version}。未被引用的旧版本已被垃圾回收。`,
+    `All readers now see v${current.version}. ${gcCount > 0 ? `${gcCount} old version(s) garbage collected — no readers referenced them.` : ''} In Linux RCU, this is synchronize_rcu() — wait for all readers to exit the critical section.`,
+    `所有读取者现在看到 v${current.version}。${gcCount > 0 ? `${gcCount} 个旧版本已垃圾回收 — 没有读取者引用它们。` : ''}在 Linux RCU 中，这是 synchronize_rcu() — 等待所有读取者退出临界区。`,
   );
 }
 
 function reset() {
+  clearTimers();
   nextId = 0;
   nextVersion = 1;
   versions.value = [
@@ -220,10 +223,110 @@ function reset() {
   selectedIndex.value = 0;
   newValue.value = '';
   history.value = [];
+  presetRunning = false;
   message.value = t(
     'Reset. All readers share v1 again.',
     '已重置。所有读取者再次共享 v1。',
   );
+}
+
+async function presetFullCycle() {
+  if (presetRunning) return;
+  reset();
+  presetRunning = true;
+  message.value = t(
+    'Full CoW cycle: write → copy → swap → refresh → GC. This is exactly how Linux fork() works — the child gets a CoW copy of the parent\'s page tables.',
+    '完整 CoW 周期：写入 → 复制 → 交换 → 刷新 → GC。这正是 Linux fork() 的工作方式 — 子进程获得父进程页表的 CoW 副本。'
+  );
+  await delay(800);
+  if (!presetRunning || isAborted()) return;
+
+  newValue.value = 'X';
+  selectedIndex.value = 1;
+  doWrite();
+  await delay(1000);
+  if (!presetRunning || isAborted()) return;
+
+  doSwap();
+  await delay(1000);
+  if (!presetRunning || isAborted()) return;
+
+  refreshReaders();
+  await delay(800);
+  if (!presetRunning || isAborted()) return;
+
+  message.value = t(
+    'Complete cycle done. Key insight: readers were never blocked. This is why CoW enables lock-free reads — the foundation of MVCC in databases (PostgreSQL, CockroachDB).',
+    '完整周期完成。核心洞察：读取者从未被阻塞。这就是 CoW 实现无锁读取的原因 — 数据库 MVCC 的基础（PostgreSQL、CockroachDB）。'
+  );
+  presetRunning = false;
+}
+
+async function presetMultipleWrites() {
+  if (presetRunning) return;
+  reset();
+  presetRunning = true;
+  message.value = t(
+    'Multiple writes without refresh — old versions accumulate. This is the memory pressure problem in MVCC: PostgreSQL needs VACUUM to clean up old tuple versions.',
+    '多次写入不刷新 — 旧版本积累。这是 MVCC 中的内存压力问题：PostgreSQL 需要 VACUUM 来清理旧的元组版本。'
+  );
+  await delay(800);
+
+  const writes = [
+    { idx: 0, val: 'X' },
+    { idx: 2, val: 'Y' },
+    { idx: 3, val: 'Z' },
+  ];
+
+  for (const w of writes) {
+    if (!presetRunning || isAborted()) return;
+    newValue.value = w.val;
+    selectedIndex.value = w.idx;
+    doWrite();
+    await delay(600);
+    if (!presetRunning || isAborted()) return;
+    doSwap();
+    await delay(600);
+    if (!presetRunning || isAborted()) return;
+  }
+
+  message.value = t(
+    `${versions.value.length} versions exist — readers still on v1 prevent GC. Click "Refresh Readers" to release old versions. This is why long-running queries in PostgreSQL block VACUUM.`,
+    `${versions.value.length} 个版本存在 — 读取者仍在 v1 上阻止 GC。点击"刷新读取者"释放旧版本。这就是 PostgreSQL 中长时间查询阻止 VACUUM 的原因。`
+  );
+  presetRunning = false;
+}
+
+async function presetConcurrentRead() {
+  if (presetRunning) return;
+  reset();
+  presetRunning = true;
+  message.value = t(
+    'Concurrent read demo: a write happens while readers are active. Readers continue seeing the old version — zero contention. This is snapshot isolation in databases.',
+    '并发读取演示：读取者活跃时发生写入。读取者继续看到旧版本 — 零争用。这是数据库中的快照隔离。'
+  );
+  await delay(800);
+  if (!presetRunning || isAborted()) return;
+
+  newValue.value = 'NEW';
+  selectedIndex.value = 0;
+  doWrite();
+  message.value = t(
+    'Write created v2 (draft) — but R1, R2, R3 still safely read v1. No locks, no blocking, no torn reads. This is the power of copy-on-write.',
+    '写入创建了 v2（草稿）— 但 R1、R2、R3 仍安全读取 v1。没有锁，没有阻塞，没有撕裂读取。这就是写时复制的力量。'
+  );
+  await delay(1200);
+  if (!presetRunning || isAborted()) return;
+
+  doSwap();
+  await delay(1000);
+  if (!presetRunning || isAborted()) return;
+
+  message.value = t(
+    'v2 is now current. New readers would see v2, but existing R1/R2/R3 still have v1. In Java CopyOnWriteArrayList, iterators hold a snapshot of the array at creation time.',
+    'v2 现在是当前版本。新读取者看到 v2，但现有 R1/R2/R3 仍持有 v1。在 Java CopyOnWriteArrayList 中，迭代器持有创建时数组的快照。'
+  );
+  presetRunning = false;
 }
 </script>
 
@@ -294,7 +397,6 @@ function reset() {
                 : t('copy', '副本')
               }}
             </span>
-            <!-- Ref count badge -->
             <span class="cow-rc-badge" :class="{
               'cow-rc--shared': group.readerCount > 1,
               'cow-rc--exclusive': group.readerCount === 1,
@@ -316,7 +418,6 @@ function reset() {
           </div>
         </div>
 
-        <!-- Connection lines: colored bars linking block to readers -->
         <div class="cow-connectors" v-if="group.readerCount > 0">
           <div
             v-for="r in group.readers"
@@ -326,7 +427,6 @@ function reset() {
           ></div>
         </div>
 
-        <!-- Clustered readers beneath their version -->
         <div class="cow-readers-cluster">
           <div
             v-for="r in group.readers"
@@ -380,6 +480,17 @@ function reset() {
       <button class="viz-btn viz-btn--danger" @click="reset">
         {{ t('Reset', '重置') }}
       </button>
+      <div class="viz-speed">
+        <input type="range" min="0.5" max="3" step="0.5" v-model.number="speed" />
+        <span class="viz-speed-val">{{ speed }}x</span>
+      </div>
+    </div>
+
+    <div class="viz-presets">
+      <span class="viz-label">{{ t('Scenarios:', '场景：') }}</span>
+      <button class="viz-btn" @click="presetFullCycle">{{ t('Full Cycle', '完整周期') }}</button>
+      <button class="viz-btn" @click="presetMultipleWrites">{{ t('Version Pile-up', '版本堆积') }}</button>
+      <button class="viz-btn" @click="presetConcurrentRead">{{ t('Concurrent Read', '并发读取') }}</button>
     </div>
 
     <div class="viz-status">{{ message }}</div>

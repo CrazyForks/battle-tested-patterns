@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import { ref, reactive, computed, onUnmounted } from 'vue';
+import { ref, reactive, computed } from 'vue';
 import { useI18n } from '../composables/useI18n';
+import { useVizTimers } from '../composables/useVizTimers';
 
 const { t } = useI18n();
+const { delay, clearAll, speed, isAborted } = useVizTimers();
 
 interface AstNode {
   id: number;
@@ -12,6 +14,7 @@ interface AstNode {
 }
 
 let nextId = 0;
+let presetRunning = false;
 
 function makeNode(type: string, children: AstNode[] = []): AstNode {
   return { id: nextId++, type, children, visited: false };
@@ -45,13 +48,6 @@ const output = reactive<string[]>([]);
 const nodeCount = ref(0);
 const message = ref(t('Select a visitor type and click "Visit" to traverse the AST', '选择访问者类型并点击"访问"以遍历 AST'));
 
-let aborted = false;
-onUnmounted(() => { aborted = true; });
-
-function delay(ms: number) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
-
 function flatten(node: AstNode): AstNode[] {
   const result: AstNode[] = [node];
   for (const child of node.children) {
@@ -67,7 +63,7 @@ const visitedCount = computed(() => allNodes.value.filter(n => n.visited).length
 async function visitNode(node: AstNode, depth: number) {
   currentNodeId.value = node.id;
   await delay(420);
-  if (aborted) return;
+  if (isAborted()) return;
 
   if (visitorType.value === 'print') {
     const indent = '  '.repeat(depth);
@@ -93,7 +89,6 @@ async function startVisit() {
   const label = visitorType.value === 'print' ? 'Print Visitor' : 'Count Visitor';
   message.value = t(`${label} traversing...`, `${label} 遍历中...`);
 
-  // Reset visited state
   for (const n of allNodes.value) {
     n.visited = false;
   }
@@ -110,6 +105,8 @@ async function startVisit() {
 }
 
 function reset() {
+  clearAll();
+  presetRunning = false;
   tree.value = buildTree();
   visiting.value = false;
   currentNodeId.value = -1;
@@ -192,6 +189,72 @@ function shortLabel(type: string): string {
   if (type === 'Statement') return 'Stmt';
   if (type === 'Expression') return 'Expr';
   return type;
+}
+
+async function presetPrintVisitor() {
+  if (presetRunning) return;
+  reset();
+  presetRunning = true;
+  message.value = t(
+    'The classic Visitor pattern separates the algorithm from the object structure. Babel uses visitors to transform AST nodes — babel-plugin-transform-arrow-functions visits ArrowFunctionExpression. ESLint rules are visitors that check AST nodes for violations.',
+    '经典的 Visitor 模式将算法与对象结构分离。Babel 使用访问者来转换 AST 节点 — babel-plugin-transform-arrow-functions 访问 ArrowFunctionExpression。ESLint 规则就是检查 AST 节点是否违规的访问者。'
+  );
+  await delay(800);
+  if (!presetRunning || isAborted()) return;
+  visitorType.value = 'print';
+  await startVisit();
+  if (!presetRunning || isAborted()) return;
+  message.value = t(
+    'The visitor traversed depth-first (pre-order). Each node type can have its own handler. Adding a new operation (like type-checking) means adding a new visitor class, not modifying the AST node classes — this is the Open/Closed Principle.',
+    '访问者进行了深度优先（前序）遍历。每种节点类型可以有自己的处理程序。添加新操作（如类型检查）意味着添加新的访问者类，而不是修改 AST 节点类 — 这就是开闭原则。'
+  );
+  presetRunning = false;
+}
+
+async function presetCountVisitor() {
+  if (presetRunning) return;
+  reset();
+  presetRunning = true;
+  message.value = t(
+    'A counting visitor demonstrates accumulation across the tree. This is how code coverage tools work — Istanbul/NYC traverse the AST and count nodes to instrument. rustc uses visitors to count and verify various properties during compilation.',
+    '计数访问者展示了跨树的累积操作。代码覆盖率工具就是这样工作的 — Istanbul/NYC 遍历 AST 并计数节点进行插桩。rustc 使用访问者在编译期间计数和验证各种属性。'
+  );
+  await delay(800);
+  if (!presetRunning || isAborted()) return;
+  visitorType.value = 'count';
+  await startVisit();
+  if (!presetRunning || isAborted()) return;
+  message.value = t(
+    'Both visitors traverse the same tree structure but produce different results. This is the key insight: the structure is stable, the operations vary. Java\'s FileVisitor and Python\'s ast.NodeVisitor follow this same pattern.',
+    '两个访问者遍历相同的树结构但产生不同的结果。这是关键洞察：结构是稳定的，操作是变化的。Java 的 FileVisitor 和 Python 的 ast.NodeVisitor 遵循相同的模式。'
+  );
+  presetRunning = false;
+}
+
+async function presetBothVisitors() {
+  if (presetRunning) return;
+  reset();
+  presetRunning = true;
+  message.value = t(
+    'Running two different visitors on the same AST shows the pattern\'s power — the tree doesn\'t change, only the visitor does. This is double dispatch: the call depends on both the node type AND the visitor type.',
+    '在同一个 AST 上运行两个不同的访问者展示了模式的威力 — 树不变，只有访问者变。这就是双重分派：调用同时取决于节点类型和访问者类型。'
+  );
+  await delay(800);
+  if (!presetRunning || isAborted()) return;
+  visitorType.value = 'print';
+  await startVisit();
+  if (!presetRunning || isAborted()) return;
+  await delay(600);
+  if (!presetRunning || isAborted()) return;
+  visitorType.value = 'count';
+  tree.value = buildTree();
+  await startVisit();
+  if (!presetRunning || isAborted()) return;
+  message.value = t(
+    'In real compilers, the AST is visited many times — once for type checking, once for optimization, once for code generation. Clang/LLVM uses the CRTP visitor pattern (RecursiveASTVisitor) for this exact purpose.',
+    '在真实的编译器中，AST 会被多次访问 — 一次用于类型检查，一次用于优化，一次用于代码生成。Clang/LLVM 使用 CRTP 访问者模式（RecursiveASTVisitor）正是为了这个目的。'
+  );
+  presetRunning = false;
 }
 </script>
 
@@ -282,6 +345,16 @@ function shortLabel(type: string): string {
     <div class="viz-controls">
       <button class="viz-btn viz-btn--primary" :disabled="visiting" @click="startVisit">{{ t('Visit', '访问') }}</button>
       <button class="viz-btn viz-btn--danger" :disabled="visiting" @click="reset">{{ t('Reset', '重置') }}</button>
+      <div class="viz-speed">
+        <input type="range" min="0.5" max="3" step="0.5" v-model.number="speed" />
+        <span class="viz-speed-val">{{ speed }}x</span>
+      </div>
+    </div>
+
+    <div class="viz-presets">
+      <button class="viz-btn" :disabled="visiting && !presetRunning" @click="presetPrintVisitor">{{ t('Print Traversal', '打印遍历') }}</button>
+      <button class="viz-btn" :disabled="visiting && !presetRunning" @click="presetCountVisitor">{{ t('Count Traversal', '计数遍历') }}</button>
+      <button class="viz-btn" :disabled="visiting && !presetRunning" @click="presetBothVisitors">{{ t('Compare Visitors', '对比访问者') }}</button>
     </div>
 
     <div class="viz-status">{{ message }}</div>
@@ -299,7 +372,7 @@ function shortLabel(type: string): string {
 }
 
 .vv-pulse {
-  animation: vv-glow 0.4s ease;
+  animation: viz-pulse 0.4s ease;
 }
 
 .vv-visitor-select {
@@ -381,12 +454,6 @@ function shortLabel(type: string): string {
   color: var(--viz-text);
   line-height: 1.6;
   white-space: pre;
-}
-
-@keyframes vv-glow {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.18); }
-  100% { transform: scale(1); }
 }
 
 @media (max-width: 640px) {

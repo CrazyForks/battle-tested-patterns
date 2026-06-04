@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import { ref, computed, onUnmounted } from 'vue';
+import { ref, computed } from 'vue';
 import { useI18n } from '../composables/useI18n';
+import { useVizTimers } from '../composables/useVizTimers';
 
 const { t } = useI18n();
+const { safeInterval, safeTimeout, delay, clearAll, speed, isAborted } = useVizTimers();
 
 interface PoolObject {
   id: number;
@@ -13,11 +15,12 @@ interface PoolObject {
 }
 
 const INITIAL_POOL_SIZE = 5;
-const USE_DURATION = 4000; // ms
-const TICK = 100; // ms
+const USE_DURATION = 4000;
+const TICK = 100;
 const GROW_AMOUNT = 2;
 
 let nextId = 1;
+let presetRunning = false;
 
 function makeObject(): PoolObject {
   const id = nextId++;
@@ -36,10 +39,11 @@ function createPool(size: number): PoolObject[] {
 
 const pool = ref<PoolObject[]>(createPool(INITIAL_POOL_SIZE));
 const purposeInput = ref('');
-const message = ref(t('Pool ready -- click "Acquire" to check out an object', 'Object Pool 就绪 -- 点击"获取"来签出对象'));
-const timers = new Map<number, ReturnType<typeof setInterval>>();
+const message = ref(t(
+  'Pool ready — click "Acquire" to check out an object. Used by database connection pools (HikariCP, pgBouncer), thread pools (Java ExecutorService), and HTTP client pools.',
+  'Object Pool 就绪 — 点击"获取"来签出对象。数据库连接池 (HikariCP、pgBouncer)、线程池 (Java ExecutorService) 和 HTTP 客户端池都使用此模式。'
+));
 
-// Stats
 const totalAcquires = ref(0);
 const totalReleases = ref(0);
 const poolHits = ref(0);
@@ -90,16 +94,13 @@ function checkOut(obj: PoolObject, purpose: string) {
     `${obj.name} 已获取，用途"${purpose}"（${(USE_DURATION / 1000).toFixed(0)}s 后自动归还，或点击归还）`,
   );
 
-  const timer = setInterval(() => {
+  safeInterval(() => {
     obj.remaining -= TICK;
     if (obj.remaining <= 0) {
       obj.remaining = 0;
-      clearInterval(timer);
-      timers.delete(obj.id);
       returnObject(obj, true);
     }
   }, TICK);
-  timers.set(obj.id, timer);
 }
 
 function returnObject(obj: PoolObject, auto = false) {
@@ -109,12 +110,6 @@ function returnObject(obj: PoolObject, auto = false) {
   obj.purpose = '';
   obj.remaining = 0;
   totalReleases.value++;
-
-  const timer = timers.get(obj.id);
-  if (timer) {
-    clearInterval(timer);
-    timers.delete(obj.id);
-  }
 
   if (auto) {
     message.value = t(
@@ -134,23 +129,23 @@ function growPool() {
     pool.value.push(makeObject());
   }
   message.value = t(
-    `Pool grown by ${GROW_AMOUNT} -- now ${poolSize.value} total capacity`,
-    `池扩容 ${GROW_AMOUNT} 个 -- 当前总容量 ${poolSize.value}`,
+    `Pool grown by ${GROW_AMOUNT} — now ${poolSize.value} total capacity`,
+    `池扩容 ${GROW_AMOUNT} 个 — 当前总容量 ${poolSize.value}`,
   );
 }
 
 function reset() {
-  for (const timer of timers.values()) clearInterval(timer);
-  timers.clear();
+  clearAll();
   nextId = 1;
   purposeIndex = 0;
+  presetRunning = false;
   pool.value = createPool(INITIAL_POOL_SIZE);
   purposeInput.value = '';
   totalAcquires.value = 0;
   totalReleases.value = 0;
   poolHits.value = 0;
   poolMisses.value = 0;
-  message.value = t('Pool reset -- all objects available', '池已重置 -- 所有对象可用');
+  message.value = t('Pool reset — all objects available', '池已重置 — 所有对象可用');
 }
 
 function stateColor(s: PoolObject['state']): string {
@@ -162,10 +157,99 @@ function progressPercent(obj: PoolObject): number {
   return Math.max(0, (obj.remaining / USE_DURATION) * 100);
 }
 
-onUnmounted(() => {
-  for (const timer of timers.values()) clearInterval(timer);
-  timers.clear();
-});
+async function presetHighLoad() {
+  if (presetRunning) return;
+  reset();
+  presetRunning = true;
+  message.value = t(
+    'High load: acquiring all 5 objects rapidly. Watch the pool exhaust — this is what happens when HikariCP\'s maximumPoolSize is too small for your traffic.',
+    '高负载：快速获取全部 5 个对象。观察池耗尽 — 当 HikariCP 的 maximumPoolSize 对流量来说太小时就会发生这种情况。'
+  );
+  await delay(600);
+  if (!presetRunning || isAborted()) return;
+  for (let i = 0; i < 5; i++) {
+    if (!presetRunning || isAborted()) return;
+    acquire();
+    await delay(300);
+  }
+  await delay(300);
+  if (!presetRunning || isAborted()) return;
+  acquire();
+  message.value = t(
+    'Pool exhausted! The 6th request failed. Options: grow the pool (dynamic sizing), queue the request (bounded waiting), or reject fast (fail-open). HikariCP uses connectionTimeout to decide when to give up.',
+    '池耗尽！第 6 个请求失败。选项：扩容（动态调整）、排队请求（有界等待）或快速拒绝（快速失败）。HikariCP 使用 connectionTimeout 决定何时放弃。'
+  );
+  presetRunning = false;
+}
+
+async function presetAcquireRelease() {
+  if (presetRunning) return;
+  reset();
+  presetRunning = true;
+  message.value = t(
+    'Acquire-release cycle: acquire 3 objects, return 2, acquire 2 more. The returned objects are reused — no allocation cost. This is the core value proposition of object pooling.',
+    '获取-归还循环：获取 3 个对象，归还 2 个，再获取 2 个。归还的对象被重用 — 无分配成本。这是对象池的核心价值主张。'
+  );
+  await delay(600);
+  if (!presetRunning || isAborted()) return;
+  for (let i = 0; i < 3; i++) {
+    if (!presetRunning || isAborted()) return;
+    acquire();
+    await delay(400);
+  }
+  await delay(500);
+  if (!presetRunning || isAborted()) return;
+  const inUse = pool.value.filter(o => o.state === 'in-use');
+  if (inUse.length >= 2) {
+    returnObject(inUse[0]);
+    await delay(300);
+    if (!presetRunning || isAborted()) return;
+    returnObject(inUse[1]);
+    await delay(500);
+    if (!presetRunning || isAborted()) return;
+  }
+  acquire();
+  await delay(300);
+  if (!presetRunning || isAborted()) return;
+  acquire();
+  await delay(300);
+  if (!presetRunning || isAborted()) return;
+  message.value = t(
+    'Objects were reused — no new allocation needed. In JDBC pools, creating a new connection takes 5-50ms (TCP + TLS + auth). Reuse takes <0.1ms. That is 50-500x faster.',
+    '对象被重用 — 无需新分配。在 JDBC 池中，创建新连接需 5-50ms (TCP + TLS + auth)。重用只需 <0.1ms。快 50-500 倍。'
+  );
+  presetRunning = false;
+}
+
+async function presetDynamicGrowth() {
+  if (presetRunning) return;
+  reset();
+  presetRunning = true;
+  message.value = t(
+    'Dynamic growth: exhaust the pool, then grow it. This models HikariCP\'s minimumIdle vs maximumPoolSize — start small, grow on demand, shrink when idle.',
+    '动态增长：耗尽池，然后扩容。这模拟了 HikariCP 的 minimumIdle 与 maximumPoolSize — 小规模开始，按需增长，空闲时收缩。'
+  );
+  await delay(600);
+  if (!presetRunning || isAborted()) return;
+  for (let i = 0; i < 5; i++) {
+    if (!presetRunning || isAborted()) return;
+    acquire();
+    await delay(250);
+  }
+  await delay(400);
+  if (!presetRunning || isAborted()) return;
+  growPool();
+  await delay(400);
+  if (!presetRunning || isAborted()) return;
+  acquire();
+  await delay(300);
+  if (!presetRunning || isAborted()) return;
+  message.value = t(
+    'Pool grew from 5 to 7. The new object was acquired immediately. But beware: unbounded growth causes resource exhaustion. pgBouncer caps at max_client_conn; Go\'s database/sql has SetMaxOpenConns.',
+    '池从 5 增长到 7。新对象立即被获取。但注意：无限增长会导致资源耗尽。pgBouncer 限制 max_client_conn；Go 的 database/sql 有 SetMaxOpenConns。'
+  );
+  presetRunning = false;
+}
 </script>
 
 <template>
@@ -201,14 +285,6 @@ onUnmounted(() => {
         <span class="viz-label">{{ t('Available', '可用') }}</span>
       </div>
       <div class="op-stat">
-        <span class="op-stat-value">{{ totalAcquires }}</span>
-        <span class="viz-label">{{ t('Acquires', '获取') }}</span>
-      </div>
-      <div class="op-stat">
-        <span class="op-stat-value">{{ totalReleases }}</span>
-        <span class="viz-label">{{ t('Releases', '归还') }}</span>
-      </div>
-      <div class="op-stat">
         <span class="op-stat-value op-stat--success">{{ poolHits }}</span>
         <span class="viz-label">{{ t('Hits', '命中') }}</span>
       </div>
@@ -232,7 +308,6 @@ onUnmounted(() => {
         :role="obj.state === 'in-use' ? 'button' : undefined"
         :tabindex="obj.state === 'in-use' ? 0 : undefined"
       >
-        <!-- Progress bar background for in-use objects -->
         <div
           v-if="obj.state === 'in-use'"
           class="op-card-progress"
@@ -285,6 +360,17 @@ onUnmounted(() => {
     <div class="viz-controls">
       <button class="viz-btn" @click="growPool">{{ t(`Grow Pool +${GROW_AMOUNT}`, `扩容 +${GROW_AMOUNT}`) }}</button>
       <button class="viz-btn viz-btn--danger" @click="reset">{{ t('Reset', '重置') }}</button>
+      <div class="viz-speed">
+        <input type="range" min="0.5" max="3" step="0.5" v-model.number="speed" />
+        <span class="viz-speed-val">{{ speed }}x</span>
+      </div>
+    </div>
+
+    <div class="viz-presets">
+      <span class="viz-label">{{ t('Scenarios:', '场景：') }}</span>
+      <button class="viz-btn" @click="presetHighLoad">{{ t('High Load', '高负载') }}</button>
+      <button class="viz-btn" @click="presetAcquireRelease">{{ t('Acquire & Release', '获取归还') }}</button>
+      <button class="viz-btn" @click="presetDynamicGrowth">{{ t('Dynamic Growth', '动态增长') }}</button>
     </div>
 
     <div class="viz-status">{{ message }}</div>
@@ -292,7 +378,6 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
-/* Capacity bar */
 .op-capacity {
   margin-bottom: 0.75rem;
 }
@@ -325,7 +410,6 @@ onUnmounted(() => {
   margin-top: 0.25rem;
 }
 
-/* Stats bar */
 .op-stats {
   display: flex;
   gap: 0.5rem;
@@ -349,19 +433,10 @@ onUnmounted(() => {
   color: var(--viz-text);
 }
 
-.op-stat--primary {
-  color: var(--viz-primary);
-}
+.op-stat--primary { color: var(--viz-primary); }
+.op-stat--success { color: var(--viz-success); }
+.op-stat--danger { color: var(--viz-danger); }
 
-.op-stat--success {
-  color: var(--viz-success);
-}
-
-.op-stat--danger {
-  color: var(--viz-danger);
-}
-
-/* Pool grid */
 .op-pool {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
@@ -369,7 +444,6 @@ onUnmounted(() => {
   margin: 0.75rem 0;
 }
 
-/* Object card */
 .op-card {
   position: relative;
   border: 2px solid var(--viz-border);
@@ -381,15 +455,13 @@ onUnmounted(() => {
 
 .op-card--available {
   border-color: var(--viz-success);
-}
-
-.op-card--available .op-card-content {
-  background: transparent;
+  animation: viz-slide-in 0.4s ease;
 }
 
 .op-card--in-use {
   border-color: var(--viz-primary);
   cursor: pointer;
+  animation: viz-pulse 0.3s ease;
 }
 
 .op-card--in-use:hover {
@@ -401,7 +473,6 @@ onUnmounted(() => {
   transform: scale(0.97);
 }
 
-/* Progress bar inside card */
 .op-card-progress {
   position: absolute;
   top: 0;
@@ -477,7 +548,6 @@ onUnmounted(() => {
   font-weight: 600;
 }
 
-/* Pool exhaustion banner */
 .op-exhausted {
   display: flex;
   align-items: center;
@@ -490,7 +560,6 @@ onUnmounted(() => {
   color: #fff;
   font-size: 0.8125rem;
   font-weight: 600;
-  animation: op-pulse 1.5s ease-in-out infinite;
   flex-wrap: wrap;
 }
 
@@ -510,7 +579,6 @@ onUnmounted(() => {
   background: rgba(255, 255, 255, 0.35) !important;
 }
 
-/* Acquire row */
 .op-acquire-row {
   display: flex;
   gap: 0.5rem;
@@ -538,62 +606,29 @@ onUnmounted(() => {
   color: var(--viz-muted);
 }
 
-/* Animations */
-.op-card--available {
-  animation: op-return 0.4s ease;
-}
-
-.op-card--in-use {
-  animation: op-acquire 0.3s ease;
-}
-
-@keyframes op-acquire {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.03); }
-  100% { transform: scale(1); }
-}
-
-@keyframes op-return {
-  0% { transform: scale(0.95); opacity: 0.6; }
-  100% { transform: scale(1); opacity: 1; }
-}
-
-@keyframes op-pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.8; }
-}
-
-/* Mobile responsive */
 @media (max-width: 640px) {
   .op-stats {
     gap: 0.375rem;
   }
-
   .op-stat {
     min-width: 40px;
   }
-
   .op-stat-value {
     font-size: 1rem;
   }
-
   .op-pool {
     grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
     gap: 0.375rem;
   }
-
   .op-card-content {
     padding: 0.375rem;
   }
-
   .op-card-name {
     font-size: 0.75rem;
   }
-
   .op-acquire-row {
     flex-direction: column;
   }
-
   .op-exhausted {
     font-size: 0.75rem;
     gap: 0.375rem;

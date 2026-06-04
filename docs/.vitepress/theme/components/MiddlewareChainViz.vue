@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import { ref, computed, reactive, onUnmounted } from 'vue';
+import { ref, computed, reactive } from 'vue';
 import { useI18n } from '../composables/useI18n';
+import { useVizTimers } from '../composables/useVizTimers';
 
 const { t } = useI18n();
+const { delay, clearAll, speed, isAborted } = useVizTimers();
 
 type MiddlewareBehavior = 'pass' | 'reject';
 
@@ -12,9 +14,7 @@ interface Middleware {
   color: string;
   enabled: boolean;
   behavior: MiddlewareBehavior;
-  /** Whether the user can toggle behavior (Handler always passes) */
   configurable: boolean;
-  /** Description shown in the config panel */
   desc: { en: string; zh: string };
 }
 
@@ -72,6 +72,7 @@ const running = ref(false);
 const rejected = ref(false);
 const rejectAt = ref(-1);
 const requestCount = ref(0);
+let presetRunning = false;
 
 interface LogEntry {
   text: string;
@@ -80,18 +81,11 @@ interface LogEntry {
 
 const log = ref<LogEntry[]>([]);
 const message = ref(t(
-  'Configure middleware and click "Send Request"',
-  '配置 Middleware 后点击「发送请求」'
+  'Configure middleware and click "Send Request" — this is how Express, Koa, and ASP.NET Core process HTTP requests',
+  '配置 Middleware 后点击"发送请求" — Express、Koa 和 ASP.NET Core 就是这样处理 HTTP 请求的'
 ));
 
 const enabledCount = computed(() => middlewares.filter(m => m.enabled).length);
-
-let aborted = false;
-onUnmounted(() => { aborted = true; });
-
-function delay(ms: number) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
 
 function addLog(text: string, type: LogEntry['type'] = 'info') {
   log.value.push({ text, type });
@@ -112,7 +106,6 @@ async function sendRequest() {
   addLog(t(`[#${reqNum}] Request entering chain...`, `[#${reqNum}] 请求进入链...`), 'info');
   message.value = t('Request entering middleware chain...', '请求正在进入 Middleware 链...');
 
-  // Forward phase — go through each enabled middleware
   for (let i = 0; i < middlewares.length; i++) {
     const m = middlewares[i];
     if (!m.enabled) continue;
@@ -123,9 +116,8 @@ async function sendRequest() {
       `>> ${m.name}: 正在处理请求...`
     );
     await delay(450);
-    if (aborted) return;
+    if (isAborted()) return;
 
-    // Check if this middleware rejects
     if (m.behavior === 'reject') {
       rejected.value = true;
       rejectAt.value = i;
@@ -138,11 +130,10 @@ async function sendRequest() {
         `X ${m.name}: 拒绝了请求`
       );
       await delay(500);
-      if (aborted) return;
+      if (isAborted()) return;
       break;
     }
 
-    // Middleware passes
     if (m.name === 'Logger') {
       addLog(
         t(`[#${reqNum}] ${m.name}: logged request`, `[#${reqNum}] ${m.name}: 已记录请求`),
@@ -156,7 +147,6 @@ async function sendRequest() {
     }
   }
 
-  // Backward phase — response flows back
   phase.value = 'backward';
   if (!rejected.value) {
     addLog(
@@ -165,7 +155,7 @@ async function sendRequest() {
     );
     message.value = t('Response flowing back through chain...', '响应正在沿链路返回...');
     await delay(300);
-    if (aborted) return;
+    if (isAborted()) return;
   }
 
   const startFrom = rejected.value ? rejectAt.value : middlewares.length - 1;
@@ -189,10 +179,9 @@ async function sendRequest() {
       `<< ${m.name}: ${rejected.value ? '转发错误' : '添加响应头'}...`
     );
     await delay(350);
-    if (aborted) return;
+    if (isAborted()) return;
   }
 
-  // Done
   activeIdx.value = -1;
   phase.value = 'idle';
   if (rejected.value) {
@@ -221,7 +210,6 @@ async function sendRequest() {
 function toggleEnabled(idx: number) {
   if (running.value) return;
   const m = middlewares[idx];
-  // Handler cannot be disabled
   if (m.name === 'Handler') {
     message.value = t('Handler cannot be disabled', 'Handler 不能被禁用');
     return;
@@ -245,12 +233,14 @@ function toggleBehavior(idx: number) {
 }
 
 function reset() {
+  clearAll();
   activeIdx.value = -1;
   phase.value = 'idle';
   running.value = false;
   rejected.value = false;
   rejectAt.value = -1;
   requestCount.value = 0;
+  presetRunning = false;
   log.value = [];
   middlewares.forEach(m => {
     m.enabled = true;
@@ -264,6 +254,63 @@ function reset() {
 
 function clearLog() {
   log.value = [];
+}
+
+async function presetHappyPath() {
+  if (presetRunning) return;
+  reset();
+  presetRunning = true;
+  message.value = t(
+    'Happy path: all middleware passes. Watch the request flow forward through Auth→RateLimit→Logger→Validator→Handler, then the response flows backward. This is the "onion model" used by Koa and ASP.NET Core.',
+    '正常路径：所有 Middleware 通过。观察请求向前流经 Auth→RateLimit→Logger→Validator→Handler，然后响应向后流。这是 Koa 和 ASP.NET Core 使用的"洋葱模型"。'
+  );
+  await delay(800);
+  if (!presetRunning || isAborted()) return;
+  await sendRequest();
+  presetRunning = false;
+}
+
+async function presetAuthReject() {
+  if (presetRunning) return;
+  reset();
+  presetRunning = true;
+  middlewares[0].behavior = 'reject';
+  message.value = t(
+    'Auth rejection: the first middleware rejects — no downstream middleware runs at all. This is the "fail fast" principle: Auth check at the edge saves CPU for Validator and Handler.',
+    'Auth 拒绝：第一个 Middleware 拒绝 — 下游 Middleware 完全不执行。这是"快速失败"原则：在边缘进行 Auth 检查为 Validator 和 Handler 节省 CPU。'
+  );
+  await delay(800);
+  if (!presetRunning || isAborted()) return;
+  await sendRequest();
+  await delay(500);
+  if (!presetRunning || isAborted()) return;
+  message.value = t(
+    'Only Auth and Logger ran (Logger sees the error on the way back). Validator and Handler were never invoked — short-circuit saves resources. This is why API gateways put auth before rate limiting.',
+    '只有 Auth 和 Logger 执行了（Logger 在返回时看到错误）。Validator 和 Handler 从未调用 — 短路节省资源。这就是 API 网关将 auth 放在限流之前的原因。'
+  );
+  presetRunning = false;
+}
+
+async function presetSkipMiddleware() {
+  if (presetRunning) return;
+  reset();
+  presetRunning = true;
+  middlewares[1].enabled = false;
+  middlewares[3].enabled = false;
+  message.value = t(
+    'Minimal pipeline: RateLimit and Validator disabled. Only Auth→Logger→Handler remain. This shows how middleware is composable — you pick what you need per route. Express uses app.use() for global and router.use() for per-route.',
+    '最小管道：RateLimit 和 Validator 已禁用。只剩 Auth→Logger→Handler。这展示了 Middleware 的可组合性 — 每个路由选择需要的。Express 使用 app.use() 全局和 router.use() 按路由。'
+  );
+  await delay(800);
+  if (!presetRunning || isAborted()) return;
+  await sendRequest();
+  await delay(500);
+  if (!presetRunning || isAborted()) return;
+  message.value = t(
+    'Only 3 middleware ran instead of 5. Per-route middleware selection is how frameworks keep internal APIs fast while public APIs get full auth + rate limiting + validation.',
+    '只有 3 个 Middleware 执行而不是 5 个。按路由选择 Middleware 是框架保持内部 API 快速而公共 API 获得完整 auth + 限流 + 验证的方式。'
+  );
+  presetRunning = false;
 }
 </script>
 
@@ -285,7 +332,6 @@ function clearLog() {
           class="mw-config-item"
           :class="{ 'mw-config-item-disabled': !m.enabled }"
         >
-          <!-- Toggle switch for enable/disable -->
           <label class="mw-toggle" :class="{ 'mw-toggle-disabled': running || m.name === 'Handler' }">
             <input
               type="checkbox"
@@ -301,7 +347,6 @@ function clearLog() {
           </span>
           <span class="mw-config-desc">{{ t(m.desc.en, m.desc.zh) }}</span>
 
-          <!-- Behavior toggle (pass/reject) for configurable middleware -->
           <button
             v-if="m.configurable && m.enabled"
             class="mw-behavior-btn"
@@ -377,6 +422,17 @@ function clearLog() {
       <button v-if="log.length > 0" class="viz-btn" @click="clearLog">
         {{ t('Clear Log', '清除日志') }}
       </button>
+      <div class="viz-speed">
+        <input type="range" min="0.5" max="3" step="0.5" v-model.number="speed" />
+        <span class="viz-speed-val">{{ speed }}x</span>
+      </div>
+    </div>
+
+    <div class="viz-presets">
+      <span class="viz-label">{{ t('Scenarios:', '场景：') }}</span>
+      <button class="viz-btn" @click="presetHappyPath">{{ t('Happy Path', '正常路径') }}</button>
+      <button class="viz-btn" @click="presetAuthReject">{{ t('Auth Reject', 'Auth 拒绝') }}</button>
+      <button class="viz-btn" @click="presetSkipMiddleware">{{ t('Minimal', '最小管道') }}</button>
     </div>
 
     <div class="viz-status">{{ message }}</div>
@@ -399,7 +455,6 @@ function clearLog() {
 </template>
 
 <style scoped>
-/* ---- Configuration panel ---- */
 .mw-config-panel {
   border: 1px solid var(--viz-border);
   border-radius: 6px;
@@ -458,7 +513,6 @@ function clearLog() {
   white-space: nowrap;
 }
 
-/* ---- Toggle switch ---- */
 .mw-toggle {
   position: relative;
   display: inline-block;
@@ -507,7 +561,6 @@ function clearLog() {
   transform: translateX(14px);
 }
 
-/* ---- Behavior toggle button ---- */
 .mw-behavior-btn {
   flex-shrink: 0;
   padding: 1px 8px;
@@ -555,7 +608,6 @@ function clearLog() {
   font-family: var(--vp-font-family-mono);
 }
 
-/* ---- Visual chain ---- */
 .mw-chain {
   display: flex;
   align-items: center;
@@ -684,7 +736,6 @@ function clearLog() {
   border-radius: 3px;
 }
 
-/* ---- Execution log ---- */
 .mw-log {
   border: 1px solid var(--viz-border);
   border-radius: 6px;
@@ -715,22 +766,10 @@ function clearLog() {
   line-height: 1.5;
 }
 
-.mw-log-info {
-  color: var(--viz-text);
-}
-
-.mw-log-success {
-  color: var(--viz-success);
-}
-
-.mw-log-error {
-  color: var(--viz-danger);
-  font-weight: 600;
-}
-
-.mw-log-warn {
-  color: var(--viz-warning);
-}
+.mw-log-info { color: var(--viz-text); }
+.mw-log-success { color: var(--viz-success); }
+.mw-log-error { color: var(--viz-danger); font-weight: 600; }
+.mw-log-warn { color: var(--viz-warning); }
 
 @keyframes mw-shake {
   0%, 100% { transform: translateX(0) scale(1.08); }

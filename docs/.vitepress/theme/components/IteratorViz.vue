@@ -1,13 +1,14 @@
 <script setup lang="ts">
-import { ref, reactive, computed, onUnmounted } from 'vue';
+import { ref, reactive, computed } from 'vue';
 import { useI18n } from '../composables/useI18n';
+import { useVizTimers } from '../composables/useVizTimers';
 
 const { t } = useI18n();
+const { delay, clearAll, speed, isAborted } = useVizTimers();
 
 const SOURCE = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 const TAKE_COUNT = 3;
 
-// Pipeline: Source -> Filter(odd) -> Map(*10) -> Take(3) -> Collect
 interface PipelineState {
   sourceIdx: number;
   filterPassed: number[];
@@ -33,23 +34,23 @@ const state = reactive<PipelineState>({
 const activeStage = ref<string | null>(null);
 const activeValue = ref<number | null>(null);
 const animating = ref(false);
-const message = ref(t('Click "Pull Next" to pull one element through the lazy pipeline', '点击"拉取下一个"将一个元素拉过惰性管道'));
+const message = ref(t(
+  'Click "Pull Next" to pull one element through the lazy pipeline — this is how Rust iterators, Java Streams, and Python generators work',
+  '点击"拉取下一个"将一个元素拉过惰性管道 — Rust 迭代器、Java Streams 和 Python 生成器就是这样工作的'
+));
+let presetRunning = false;
 
 const hasNext = computed(() => !state.done && state.sourceIdx < SOURCE.length - 1);
-
-let aborted = false;
-onUnmounted(() => { aborted = true; });
-
-async function delay(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
 
 async function pullNext() {
   if (state.done || animating.value) return;
 
   if (state.taken.length >= TAKE_COUNT) {
     state.done = true;
-    message.value = t(`Take(${TAKE_COUNT}) satisfied! Pipeline complete. Only ${state.elementsProcessed} of ${SOURCE.length} source elements were touched.`, `Take(${TAKE_COUNT}) 已满足！管道完成。仅访问了 ${SOURCE.length} 个源元素中的 ${state.elementsProcessed} 个。`);
+    message.value = t(
+      `Take(${TAKE_COUNT}) satisfied! Pipeline complete. Only ${state.elementsProcessed} of ${SOURCE.length} source elements were touched — laziness saved ${SOURCE.length - state.elementsProcessed} evaluations.`,
+      `Take(${TAKE_COUNT}) 已满足！管道完成。仅访问了 ${SOURCE.length} 个源元素中的 ${state.elementsProcessed} 个 — 惰性求值节省了 ${SOURCE.length - state.elementsProcessed} 次计算。`
+    );
     activeStage.value = null;
     activeValue.value = null;
     return;
@@ -57,9 +58,7 @@ async function pullNext() {
 
   animating.value = true;
 
-  // We need to find the next element that passes through all stages
   while (state.sourceIdx < SOURCE.length - 1 && state.taken.length < TAKE_COUNT) {
-    // Stage 1: Source - pull next element
     state.sourceIdx++;
     state.elementsProcessed++;
     const val = SOURCE[state.sourceIdx];
@@ -68,62 +67,65 @@ async function pullNext() {
     activeValue.value = val;
     message.value = t(`Source: pulling element ${val}`, `Source：拉取元素 ${val}`);
     await delay(400);
-    if (aborted) return;
+    if (isAborted()) return;
 
-    // Stage 2: Filter - keep only odd numbers
     activeStage.value = 'filter';
     message.value = t(`Filter(isOdd): checking ${val}...`, `Filter(isOdd)：检查 ${val}...`);
     await delay(400);
-    if (aborted) return;
+    if (isAborted()) return;
 
     if (val % 2 === 0) {
-      // Rejected by filter
       state.filterRejected = [...state.filterRejected, val];
       activeStage.value = 'filter-reject';
-      message.value = t(`Filter: ${val} is even -> rejected. Pulling next from source...`, `Filter：${val} 是偶数 -> 已过滤。从 Source 拉取下一个...`);
+      message.value = t(
+        `Filter: ${val} is even -> rejected. Pulling next from source. No downstream work wasted.`,
+        `Filter：${val} 是偶数 -> 已过滤。从 Source 拉取下一个。不浪费下游工作。`
+      );
       await delay(300);
-      if (aborted) return;
-      continue; // Pull next from source
+      if (isAborted()) return;
+      continue;
     }
 
-    // Passed filter
     state.filterPassed = [...state.filterPassed, val];
     message.value = t(`Filter: ${val} is odd -> passed!`, `Filter：${val} 是奇数 -> 通过！`);
     await delay(300);
-    if (aborted) return;
+    if (isAborted()) return;
 
-    // Stage 3: Map - multiply by 10
     activeStage.value = 'map';
     const mapped = val * 10;
     message.value = t(`Map(*10): ${val} -> ${mapped}`, `Map(*10)：${val} -> ${mapped}`);
     activeValue.value = mapped;
     await delay(400);
-    if (aborted) return;
+    if (isAborted()) return;
     state.mapResults = [...state.mapResults, mapped];
 
-    // Stage 4: Take
     activeStage.value = 'take';
     message.value = t(`Take(${TAKE_COUNT}): collected ${state.taken.length + 1} of ${TAKE_COUNT}`, `Take(${TAKE_COUNT})：已收集 ${state.taken.length + 1}/${TAKE_COUNT}`);
     await delay(300);
-    if (aborted) return;
+    if (isAborted()) return;
     state.taken = [...state.taken, mapped];
 
-    // Stage 5: Collect
     activeStage.value = 'collect';
     state.collected = [...state.collected, mapped];
     message.value = t(`Collected: [${state.collected.join(', ')}]`, `已收集：[${state.collected.join(', ')}]`);
     await delay(300);
-    if (aborted) return;
+    if (isAborted()) return;
 
-    break; // One element pulled through successfully
+    break;
   }
 
   if (state.taken.length >= TAKE_COUNT) {
     state.done = true;
-    message.value = t(`Pipeline complete! Result: [${state.collected.join(', ')}]. Processed ${state.elementsProcessed} of ${SOURCE.length} elements (laziness saved ${SOURCE.length - state.elementsProcessed}!)`, `管道完成！结果：[${state.collected.join(', ')}]。处理了 ${SOURCE.length} 个元素中的 ${state.elementsProcessed} 个（惰性求值节省了 ${SOURCE.length - state.elementsProcessed} 个！）`);
+    message.value = t(
+      `Pipeline complete! Result: [${state.collected.join(', ')}]. Processed ${state.elementsProcessed} of ${SOURCE.length} elements. This is pull-based evaluation — Rust's .iter().filter().map().take().collect() chain.`,
+      `管道完成！结果：[${state.collected.join(', ')}]。处理了 ${SOURCE.length} 个元素中的 ${state.elementsProcessed} 个。这是基于拉取的求值 — Rust 的 .iter().filter().map().take().collect() 链。`
+    );
   } else if (state.sourceIdx >= SOURCE.length - 1 && state.taken.length < TAKE_COUNT) {
     state.done = true;
-    message.value = t(`Source exhausted. Got [${state.collected.join(', ')}] (${state.taken.length} of ${TAKE_COUNT} requested)`, `Source 已耗尽。获得 [${state.collected.join(', ')}]（请求 ${TAKE_COUNT} 个，实际 ${state.taken.length} 个）`);
+    message.value = t(
+      `Source exhausted. Got [${state.collected.join(', ')}] (${state.taken.length} of ${TAKE_COUNT} requested)`,
+      `Source 已耗尽。获得 [${state.collected.join(', ')}]（请求 ${TAKE_COUNT} 个，实际 ${state.taken.length} 个）`
+    );
   }
 
   activeStage.value = null;
@@ -132,6 +134,7 @@ async function pullNext() {
 }
 
 function reset() {
+  clearAll();
   state.sourceIdx = -1;
   state.filterPassed = [];
   state.filterRejected = [];
@@ -143,6 +146,7 @@ function reset() {
   activeStage.value = null;
   activeValue.value = null;
   animating.value = false;
+  presetRunning = false;
   message.value = t('Reset. Click "Pull Next" to start pulling elements lazily.', '已重置。点击"拉取下一个"开始惰性拉取元素。');
 }
 
@@ -154,6 +158,68 @@ function sourceState(idx: number): string {
   if (idx === state.sourceIdx && activeStage.value === 'source') return 'active';
   if (idx <= state.sourceIdx) return 'consumed';
   return 'waiting';
+}
+
+async function presetFullRun() {
+  if (presetRunning) return;
+  reset();
+  presetRunning = true;
+  message.value = t(
+    'Auto-run: pulling all 3 elements through the pipeline. Watch how even elements are rejected early — no map() call wasted on them.',
+    '自动运行：拉取全部 3 个元素通过管道。观察偶数元素如何被提前过滤 — 不在它们上浪费 map() 调用。'
+  );
+  await delay(600);
+  if (!presetRunning || isAborted()) return;
+  while (!state.done) {
+    if (!presetRunning || isAborted()) return;
+    await pullNext();
+    await delay(300);
+  }
+  presetRunning = false;
+}
+
+async function presetShortCircuit() {
+  if (presetRunning) return;
+  reset();
+  presetRunning = true;
+  message.value = t(
+    'Short-circuit demo: Take(3) stops the pipeline after 3 results. Elements 6-10 are never touched. This is why .find() on a lazy iterator is O(k), not O(n).',
+    '短路演示：Take(3) 在 3 个结果后停止管道。元素 6-10 永远不会被访问。这就是惰性迭代器上的 .find() 是 O(k) 而非 O(n) 的原因。'
+  );
+  await delay(800);
+  if (!presetRunning || isAborted()) return;
+  while (!state.done) {
+    if (!presetRunning || isAborted()) return;
+    await pullNext();
+    await delay(200);
+  }
+  await delay(600);
+  if (!presetRunning || isAborted()) return;
+  message.value = t(
+    `Done! ${state.elementsProcessed} elements processed, ${SOURCE.length - state.elementsProcessed} never touched. An eager pipeline would process all ${SOURCE.length} first, then take 3 — wasting ${SOURCE.length - state.elementsProcessed} map() calls.`,
+    `完成！${state.elementsProcessed} 个元素被处理，${SOURCE.length - state.elementsProcessed} 个未被访问。急切管道会先处理全部 ${SOURCE.length} 个，再取 3 个 — 浪费 ${SOURCE.length - state.elementsProcessed} 次 map() 调用。`
+  );
+  presetRunning = false;
+}
+
+async function presetStepByStep() {
+  if (presetRunning) return;
+  reset();
+  presetRunning = true;
+  message.value = t(
+    'Step-by-step: pull just one element, pause to observe. Each pull triggers source -> filter -> map -> take -> collect for one item. This is the iterator protocol: next() returns one value at a time.',
+    '逐步：只拉取一个元素，暂停观察。每次拉取触发一个元素的 source -> filter -> map -> take -> collect。这就是迭代器协议：next() 每次返回一个值。'
+  );
+  await delay(800);
+  if (!presetRunning || isAborted()) return;
+  await pullNext();
+  await delay(800);
+  if (!presetRunning || isAborted()) return;
+  message.value = t(
+    `First result collected. Notice: source processed ${state.elementsProcessed} element(s) to get 1 output (even numbers were filtered). Click "Pull Next" to continue manually.`,
+    `第一个结果已收集。注意：源处理了 ${state.elementsProcessed} 个元素才得到 1 个输出（偶数被过滤了）。点击"拉取下一个"手动继续。`
+  );
+  presetRunning = false;
 }
 </script>
 
@@ -183,7 +249,6 @@ function sourceState(idx: number): string {
 
     <!-- Pipeline stages -->
     <div class="it-pipeline">
-      <!-- Source -->
       <div class="it-stage" :class="{ 'it-stage--active': stageActive('source') }">
         <div class="it-stage-header">Source</div>
         <div class="it-stage-items">
@@ -206,7 +271,6 @@ function sourceState(idx: number): string {
         </svg>
       </div>
 
-      <!-- Filter -->
       <div class="it-stage" :class="{ 'it-stage--active': stageActive('filter'), 'it-stage--reject': stageActive('filter-reject') }">
         <div class="it-stage-header">Filter <span class="it-stage-desc">(isOdd)</span></div>
         <div class="it-stage-items">
@@ -222,7 +286,6 @@ function sourceState(idx: number): string {
         </svg>
       </div>
 
-      <!-- Map -->
       <div class="it-stage" :class="{ 'it-stage--active': stageActive('map') }">
         <div class="it-stage-header">Map <span class="it-stage-desc">(*10)</span></div>
         <div class="it-stage-items">
@@ -237,7 +300,6 @@ function sourceState(idx: number): string {
         </svg>
       </div>
 
-      <!-- Take -->
       <div class="it-stage" :class="{ 'it-stage--active': stageActive('take') }">
         <div class="it-stage-header">Take <span class="it-stage-desc">({{ TAKE_COUNT }})</span></div>
         <div class="it-stage-items">
@@ -252,7 +314,6 @@ function sourceState(idx: number): string {
         </svg>
       </div>
 
-      <!-- Collect -->
       <div class="it-stage it-stage--collect" :class="{ 'it-stage--active': stageActive('collect') }">
         <div class="it-stage-header">Collect</div>
         <div class="it-stage-items">
@@ -270,6 +331,17 @@ function sourceState(idx: number): string {
     <div class="viz-controls">
       <button class="viz-btn viz-btn--primary" @click="pullNext" :disabled="state.done || animating">{{ t('Pull Next', '拉取下一个') }}</button>
       <button class="viz-btn viz-btn--danger" @click="reset">{{ t('Reset', '重置') }}</button>
+      <div class="viz-speed">
+        <input type="range" min="0.5" max="3" step="0.5" v-model.number="speed" />
+        <span class="viz-speed-val">{{ speed }}x</span>
+      </div>
+    </div>
+
+    <div class="viz-presets">
+      <span class="viz-label">{{ t('Scenarios:', '场景：') }}</span>
+      <button class="viz-btn" @click="presetFullRun">{{ t('Auto Run', '自动运行') }}</button>
+      <button class="viz-btn" @click="presetShortCircuit">{{ t('Short Circuit', '短路') }}</button>
+      <button class="viz-btn" @click="presetStepByStep">{{ t('Step by Step', '逐步') }}</button>
     </div>
 
     <div class="viz-status">{{ message }}</div>
@@ -302,7 +374,6 @@ function sourceState(idx: number): string {
 .it-stat-value--success { color: var(--viz-success); }
 .it-stat-value--saved { color: var(--viz-muted); }
 
-/* Pipeline layout */
 .it-pipeline {
   display: flex;
   align-items: flex-start;
@@ -384,7 +455,7 @@ function sourceState(idx: number): string {
   background: var(--viz-primary);
   border-color: var(--viz-primary);
   color: #fff;
-  animation: it-pulse 0.4s ease;
+  animation: viz-pulse 0.4s ease;
 }
 
 .it-item--consumed {
@@ -468,7 +539,7 @@ function sourceState(idx: number): string {
   border: 1px solid var(--viz-primary);
   margin: 0.5rem auto;
   width: fit-content;
-  animation: it-appear 0.2s ease;
+  animation: viz-slide-in 0.2s ease;
 }
 
 .it-active-label {
@@ -481,22 +552,6 @@ function sourceState(idx: number): string {
   font-weight: 700;
   font-family: var(--vp-font-family-mono);
   color: var(--viz-primary);
-}
-
-.viz-btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-@keyframes it-pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.2); }
-  100% { transform: scale(1); }
-}
-
-@keyframes it-appear {
-  from { opacity: 0; transform: translateY(-4px); }
-  to { opacity: 1; transform: translateY(0); }
 }
 
 @media (max-width: 640px) {

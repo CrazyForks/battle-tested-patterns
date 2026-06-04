@@ -1,8 +1,12 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
 import { useI18n } from '../composables/useI18n';
+import { useVizTimers } from '../composables/useVizTimers';
 
 const { t } = useI18n();
+const { delay, clearAll, speed, isAborted } = useVizTimers();
+
+let presetRunning = false;
 
 type Tag = 'Number' | 'String' | 'Bool' | 'None';
 
@@ -85,11 +89,87 @@ watch(currentTag, () => {
 });
 
 function reset() {
+  clearAll();
+  presetRunning = false;
   currentTag.value = 'Number';
   matchHighlight.value = null;
   showMatchResult.value = false;
   matchResultText.value = '';
   message.value = t('Click a type button to set the variable. Watch the tag and value change together.', '点击类型按钮设置变量。观察标签和值一起变化。');
+}
+
+const allTags: Tag[] = ['Number', 'String', 'Bool', 'None'];
+
+async function presetMatchDispatch() {
+  if (presetRunning) return;
+  reset();
+  presetRunning = true;
+  message.value = t(
+    'Type Switch: Rust\'s match on enums guarantees exhaustiveness at compile time — you cannot forget a variant. Unlike C union + switch, the compiler enforces that every case is handled.',
+    '类型切换：Rust 的 match 对枚举做编译期穷尽检查——你不可能遗漏某个变体。不像 C 的 union + switch，编译器强制要求处理每个分支。'
+  );
+  await delay(1200);
+  if (!presetRunning || isAborted()) return;
+  for (const tag of allTags) {
+    setTag(tag);
+    await delay(800);
+    if (!presetRunning || isAborted()) return;
+    runMatch();
+    await delay(1000);
+    if (!presetRunning || isAborted()) return;
+  }
+  message.value = t(
+    'This is also how TypeScript discriminated unions work with switch(x.kind), and how Haskell/OCaml pattern matching dispatches on constructors. The compiler verifies all branches are covered.',
+    '这也是 TypeScript 可辨识联合通过 switch(x.kind) 工作的方式，以及 Haskell/OCaml 模式匹配在构造器上分派的方式。编译器验证所有分支都被覆盖。'
+  );
+  presetRunning = false;
+}
+
+async function presetMemoryLayout() {
+  if (presetRunning) return;
+  reset();
+  presetRunning = true;
+  message.value = t(
+    'Memory Layout: Tagged unions store a discriminant (tag byte) + payload. The tag tells the runtime how to interpret the payload bytes. This is how Rust enums, Protobuf oneof, and GraphQL unions work internally.',
+    '内存布局：Tagged Union 存储一个判别式（标签字节）+ 有效载荷。标签告诉运行时如何解释载荷字节。这是 Rust 枚举、Protobuf oneof 和 GraphQL union 的内部工作方式。'
+  );
+  await delay(1500);
+  if (!presetRunning || isAborted()) return;
+  for (const tag of allTags) {
+    setTag(tag);
+    await delay(1200);
+    if (!presetRunning || isAborted()) return;
+  }
+  message.value = t(
+    'The total size equals max(variant sizes) + tag size. Rust\'s Option<&T> uses null-pointer optimization: None = 0x00 pointer, Some = non-null pointer, so no extra tag byte is needed — the same size as a raw pointer.',
+    '总大小 = max(各变体大小) + 标签大小。Rust 的 Option<&T> 使用空指针优化：None = 0x00 指针，Some = 非空指针，因此不需要额外的标签字节——与裸指针大小相同。'
+  );
+  presetRunning = false;
+}
+
+async function presetExhaustiveness() {
+  if (presetRunning) return;
+  reset();
+  presetRunning = true;
+  message.value = t(
+    'Exhaustive Match: This is the key safety benefit. Rust, Haskell, and OCaml refuse to compile if you miss a case. TypeScript\'s never type achieves the same at compile time — an unhandled variant becomes type never, causing a type error.',
+    '穷尽匹配：这是关键的安全保障。Rust、Haskell 和 OCaml 会在你遗漏分支时拒绝编译。TypeScript 的 never 类型在编译期达成同样效果——未处理的变体变为 never 类型，产生类型错误。'
+  );
+  await delay(1500);
+  if (!presetRunning || isAborted()) return;
+  for (const tag of allTags) {
+    setTag(tag);
+    await delay(600);
+    if (!presetRunning || isAborted()) return;
+    runMatch();
+    await delay(1000);
+    if (!presetRunning || isAborted()) return;
+  }
+  message.value = t(
+    'C/C++ unions with manual tag checking have none of this safety — reading the wrong union member is undefined behavior. Swift enums and Kotlin sealed classes also enforce exhaustiveness, making invalid states unrepresentable.',
+    'C/C++ 的 union 加手动标签检查没有这些安全保障——读取错误的 union 成员是未定义行为。Swift 枚举和 Kotlin 密封类同样强制穷尽性，使无效状态不可表达。'
+  );
+  presetRunning = false;
 }
 </script>
 
@@ -196,6 +276,17 @@ function reset() {
     <div class="viz-controls">
       <button class="viz-btn viz-btn--primary" @click="runMatch">{{ t('Run match', '运行 match') }}</button>
       <button class="viz-btn viz-btn--danger" @click="reset">{{ t('Reset', '重置') }}</button>
+      <div class="viz-speed">
+        <input type="range" min="0.5" max="3" step="0.5" v-model.number="speed" />
+        <span class="viz-speed-val">{{ speed }}x</span>
+      </div>
+    </div>
+
+    <div class="viz-presets">
+      <span class="viz-label">{{ t('Scenarios:', '场景：') }}</span>
+      <button class="viz-btn" @click="presetMatchDispatch">{{ t('Type Switch', '类型切换') }}</button>
+      <button class="viz-btn" @click="presetMemoryLayout">{{ t('Memory Layout', '内存布局') }}</button>
+      <button class="viz-btn" @click="presetExhaustiveness">{{ t('Exhaustive Match', '穷尽匹配') }}</button>
     </div>
 
     <div class="viz-status">{{ message }}</div>
@@ -419,7 +510,7 @@ function reset() {
 
 .tu-match-arm--active {
   background: color-mix(in srgb, var(--viz-success) 10%, var(--vp-c-bg));
-  animation: tu-arm-flash 0.5s ease;
+  animation: viz-pulse 0.5s ease;
 }
 
 .tu-match-arm--dim {
@@ -434,7 +525,7 @@ function reset() {
   font-size: 0.625rem;
   font-weight: 700;
   white-space: nowrap;
-  animation: tu-slide-in 0.3s ease;
+  animation: viz-slide-in 0.3s ease;
 }
 
 /* Match result */
@@ -446,7 +537,7 @@ function reset() {
   border: 2px solid var(--viz-success);
   border-radius: 6px;
   background: color-mix(in srgb, var(--viz-success) 8%, var(--vp-c-bg));
-  animation: tu-fade-in 0.3s ease;
+  animation: viz-fade 0.3s ease;
 }
 
 .tu-result-label {
@@ -460,21 +551,6 @@ function reset() {
   font-weight: 700;
   font-family: var(--vp-font-family-mono);
   color: var(--viz-success);
-}
-
-@keyframes tu-arm-flash {
-  0% { background: color-mix(in srgb, var(--viz-success) 25%, var(--vp-c-bg)); }
-  100% { background: color-mix(in srgb, var(--viz-success) 10%, var(--vp-c-bg)); }
-}
-
-@keyframes tu-slide-in {
-  from { opacity: 0; transform: translateX(8px); }
-  to { opacity: 1; transform: translateX(0); }
-}
-
-@keyframes tu-fade-in {
-  from { opacity: 0; transform: translateY(-4px); }
-  to { opacity: 1; transform: translateY(0); }
 }
 
 @media (max-width: 640px) {

@@ -1,11 +1,10 @@
 <script setup lang="ts">
-import { ref, computed, onUnmounted } from 'vue';
+import { ref, computed } from 'vue';
 import { useI18n } from '../composables/useI18n';
+import { useVizTimers } from '../composables/useVizTimers';
 
 const { t } = useI18n();
-
-const pendingTimers = new Set<ReturnType<typeof setTimeout>>();
-onUnmounted(() => { for (const tid of pendingTimers) clearTimeout(tid); });
+const { safeTimeout, clearAll, delay, speed, isAborted } = useVizTimers();
 
 interface Item {
   id: number;
@@ -27,8 +26,12 @@ let nextBatchId = 1;
 const buffer = ref<Item[]>([]);
 const batches = ref<BatchRecord[]>([]);
 const totalItems = ref(0);
-const message = ref(t(`Items collect in the buffer — auto-flush at ${BATCH_THRESHOLD} items`, `元素在缓冲区中收集 — 达到 ${BATCH_THRESHOLD} 个时自动刷新`));
+const message = ref(t(
+  'Items collect in the buffer — auto-flush at 5 items. This amortizes per-item overhead, the same principle behind TCP Nagle\'s algorithm and database bulk inserts.',
+  '元素在缓冲区中收集 — 达到 5 个时自动刷新。这分摊了每项开销，与 TCP Nagle 算法和数据库批量插入的原理相同。'
+));
 const flushing = ref(false);
+let presetRunning = false;
 
 const batchCount = computed(() => batches.value.length);
 const avgPerBatch = computed(() => {
@@ -48,8 +51,8 @@ function addItem() {
   buffer.value = [...buffer.value, item];
   totalItems.value++;
   message.value = t(
-    `Added ${item.label} — buffer ${buffer.value.length}/${BATCH_THRESHOLD}`,
-    `已添加 ${item.label} — 缓冲区 ${buffer.value.length}/${BATCH_THRESHOLD}`
+    `Added ${item.label} — buffer ${buffer.value.length}/${BATCH_THRESHOLD}. Each item alone would need a full round-trip; batching reduces N calls to 1.`,
+    `已添加 ${item.label} — 缓冲区 ${buffer.value.length}/${BATCH_THRESHOLD}。每个元素单独需要完整的往返；批处理将 N 次调用减少为 1 次。`
   );
 
   if (buffer.value.length >= BATCH_THRESHOLD) {
@@ -69,10 +72,12 @@ function flushBatch() {
   for (const item of items) {
     item.state = 'flushing';
   }
-  message.value = t(`Flushing batch of ${items.length} items...`, `正在刷新 ${items.length} 个元素的批次...`);
+  message.value = t(
+    `Flushing batch of ${items.length} items... In databases, this is the difference between INSERT per row vs. INSERT ... VALUES (bulk). 10-100x throughput gain.`,
+    `正在刷新 ${items.length} 个元素的批次... 在数据库中，这就是单行 INSERT 与 INSERT ... VALUES（批量）的区别。吞吐量提升 10-100 倍。`
+  );
 
-  const tid = setTimeout(() => {
-    pendingTimers.delete(tid);
+  safeTimeout(() => {
     const batch: BatchRecord = {
       id: nextBatchId++,
       size: items.length,
@@ -82,24 +87,98 @@ function flushBatch() {
     buffer.value = [];
     flushing.value = false;
     message.value = t(
-      `Batch #${batch.id} flushed (${batch.size} items) — buffer cleared`,
-      `批次 #${batch.id} 已刷新（${batch.size} 个元素）— 缓冲区已清空`
+      `Batch #${batch.id} flushed (${batch.size} items) — buffer cleared. React batches setState calls the same way: multiple updates, one re-render.`,
+      `批次 #${batch.id} 已刷新（${batch.size} 个元素）— 缓冲区已清空。React 以相同方式批量处理 setState 调用：多次更新，一次重渲染。`
     );
   }, 600);
-  pendingTimers.add(tid);
 }
 
 function reset() {
+  clearAll();
   buffer.value = [];
   batches.value = [];
   totalItems.value = 0;
   nextItemId = 1;
   nextBatchId = 1;
   flushing.value = false;
+  presetRunning = false;
   message.value = t(
     `Reset — add items to fill the buffer (threshold: ${BATCH_THRESHOLD})`,
     `已重置 — 添加元素填满缓冲区（阈值: ${BATCH_THRESHOLD}）`
   );
+}
+
+async function presetAutoFill() {
+  if (presetRunning) return;
+  reset();
+  presetRunning = true;
+  message.value = t(
+    'Auto-filling buffer to threshold — watch it auto-flush. This is exactly how Kafka producers batch records: fill buffer, send when full or timeout.',
+    '自动填充缓冲区至阈值 — 观察自动刷新。这正是 Kafka 生产者批量处理记录的方式：填充缓冲区，满时或超时发送。'
+  );
+  await delay(600);
+  for (let i = 0; i < 5; i++) {
+    if (!presetRunning || isAborted()) return;
+    addItem();
+    await delay(400);
+    if (!presetRunning || isAborted()) return;
+  }
+  await delay(1000);
+  if (!presetRunning || isAborted()) return;
+  message.value = t(
+    'Buffer reached threshold and auto-flushed. In Kafka, linger.ms and batch.size control this tradeoff between latency and throughput.',
+    '缓冲区达到阈值并自动刷新。在 Kafka 中，linger.ms 和 batch.size 控制延迟与吞吐量之间的权衡。'
+  );
+  presetRunning = false;
+}
+
+async function presetPartialFlush() {
+  if (presetRunning) return;
+  reset();
+  presetRunning = true;
+  message.value = t(
+    'Adding 3 items then force-flushing before threshold. This is the "timeout flush" — don\'t wait forever for a full batch. HTTP/2 and gRPC use deadline-based flushing.',
+    '添加 3 个元素然后在阈值前强制刷新。这是"超时刷新" — 不要永远等待满批。HTTP/2 和 gRPC 使用基于截止时间的刷新。'
+  );
+  await delay(600);
+  for (let i = 0; i < 3; i++) {
+    if (!presetRunning || isAborted()) return;
+    addItem();
+    await delay(400);
+    if (!presetRunning || isAborted()) return;
+  }
+  message.value = t(
+    'Buffer has 3/5 items — force flushing a partial batch. Better to send 3 items now than wait indefinitely for 5.',
+    '缓冲区有 3/5 个元素 — 强制刷新部分批次。现在发送 3 个比无限期等待 5 个要好。'
+  );
+  await delay(800);
+  if (!presetRunning || isAborted()) return;
+  flushBatch();
+  presetRunning = false;
+}
+
+async function presetMultiBatch() {
+  if (presetRunning) return;
+  reset();
+  presetRunning = true;
+  message.value = t(
+    'Adding 12 items — will produce 2 full batches + 2 remaining. Watch the batch count grow. PostgreSQL COPY command uses unbounded batching for maximum throughput.',
+    '添加 12 个元素 — 将产生 2 个完整批次 + 2 个剩余。观察批次数增长。PostgreSQL COPY 命令使用无界批处理以获得最大吞吐量。'
+  );
+  await delay(600);
+  for (let i = 0; i < 12; i++) {
+    if (!presetRunning || isAborted()) return;
+    addItem();
+    await delay(250);
+    if (!presetRunning || isAborted()) return;
+  }
+  await delay(800);
+  if (!presetRunning || isAborted()) return;
+  message.value = t(
+    `${batchCount.value} batches processed, ${buffer.value.length} items remaining in buffer. Total throughput: ${totalItems.value} items. Force flush to clear remaining.`,
+    `${batchCount.value} 个批次已处理，缓冲区剩余 ${buffer.value.length} 个元素。总吞吐量：${totalItems.value} 个元素。强制刷新以清除剩余。`
+  );
+  presetRunning = false;
 }
 </script>
 
@@ -181,6 +260,17 @@ function reset() {
       <button class="viz-btn viz-btn--primary" @click="addItem" :disabled="flushing">{{ t('Add Item', '添加元素') }}</button>
       <button class="viz-btn" @click="flushBatch" :disabled="flushing || buffer.length === 0">{{ t('Force Flush', '强制刷新') }}</button>
       <button class="viz-btn viz-btn--danger" @click="reset">{{ t('Reset', '重置') }}</button>
+      <div class="viz-speed">
+        <input type="range" min="0.5" max="3" step="0.5" v-model.number="speed" />
+        <span class="viz-speed-val">{{ speed }}x</span>
+      </div>
+    </div>
+
+    <div class="viz-presets">
+      <span class="viz-label">{{ t('Scenarios:', '场景：') }}</span>
+      <button class="viz-btn" @click="presetAutoFill">{{ t('Auto Fill', '自动填充') }}</button>
+      <button class="viz-btn" @click="presetPartialFlush">{{ t('Partial Flush', '部分刷新') }}</button>
+      <button class="viz-btn" @click="presetMultiBatch">{{ t('Multi-Batch', '多批次') }}</button>
     </div>
 
     <div class="viz-status">{{ message }}</div>
@@ -259,13 +349,13 @@ function reset() {
   border-style: solid;
   border-color: var(--viz-primary);
   background: rgba(59, 130, 246, 0.1);
-  animation: bp-arrive 0.3s ease;
+  animation: viz-slide-in 0.3s ease;
 }
 
 .bp-slot--flushing {
   border-color: var(--viz-success);
   background: rgba(16, 185, 129, 0.15);
-  animation: bp-flush 0.5s ease;
+  animation: viz-pulse 0.5s ease;
 }
 
 .bp-slot-label {
@@ -330,7 +420,7 @@ function reset() {
   background: rgba(16, 185, 129, 0.08);
   font-size: 0.7rem;
   font-family: var(--vp-font-family-mono);
-  animation: bp-arrive 0.3s ease;
+  animation: viz-slide-in 0.3s ease;
 }
 
 .bp-batch-id {
@@ -348,17 +438,6 @@ function reset() {
   font-style: italic;
   text-align: center;
   padding: 1rem;
-}
-
-@keyframes bp-arrive {
-  from { opacity: 0; transform: translateY(-4px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes bp-flush {
-  0% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.08); opacity: 0.7; }
-  100% { transform: scale(1); opacity: 1; }
 }
 
 @media (max-width: 640px) {

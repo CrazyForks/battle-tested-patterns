@@ -1,6 +1,6 @@
 {
   "name": "@battle-tested-patterns/docs",
-  "version": "0.0.1",
+  "version": "1.5.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -9,6 +9,7 @@
     "preview": "vitepress preview"
   },
   "devDependencies": {
+    "comma-separated-tokens": "^2.0.3",
     "mermaid": "^11.15.0",
     "vitepress": "^1.6.3",
     "vitepress-plugin-mermaid": "^2.0.17",

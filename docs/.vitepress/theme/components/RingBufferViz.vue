@@ -1,20 +1,24 @@
 <script setup lang="ts">
-import { ref, computed, onUnmounted } from 'vue';
+import { ref, computed } from 'vue';
 import { useI18n } from '../composables/useI18n';
+import { useVizTimers } from '../composables/useVizTimers';
 
 const { t } = useI18n();
+const { delay, safeTimeout, clearAll, speed, isAborted } = useVizTimers();
 
-const pendingTimers = new Set<ReturnType<typeof setTimeout>>();
-onUnmounted(() => { for (const tid of pendingTimers) clearTimeout(tid); });
 const SIZE = 8;
 const buffer = ref<(string | null)[]>(Array(SIZE).fill(null));
 const head = ref(0);
 const tail = ref(0);
 const count = ref(0);
-const message = ref(t('Click Enqueue to add items', '点击"入队"添加元素'));
+const message = ref(t(
+  'Click Enqueue to add items — or pick a scenario to see circular reuse in action',
+  '点击"入队"添加元素 — 或选择场景观看循环复用过程'
+));
 const nextValue = ref(1);
 const animatingIndex = ref(-1);
 const animationType = ref<'enqueue' | 'dequeue' | ''>('');
+let presetRunning = false;
 
 const CX = 140, CY = 140, R = 100;
 
@@ -45,18 +49,24 @@ const tailLabelPos = computed(() => pointerPos(tail.value, 158));
 
 function enqueue() {
   if (count.value >= SIZE) {
-    message.value = t('Buffer full! Dequeue first.', '缓冲区已满！请先出队。');
+    message.value = t(
+      'Buffer full! Must dequeue first. In io_uring, this would trigger backpressure on the producer.',
+      '缓冲区已满！必须先出队。在 io_uring 中，这会对生产者触发背压。'
+    );
     return;
   }
   const val = `${nextValue.value++}`;
   buffer.value[tail.value] = val;
   animatingIndex.value = tail.value;
   animationType.value = 'enqueue';
+  const oldTail = tail.value;
   tail.value = (tail.value + 1) % SIZE;
   count.value++;
-  message.value = t(`Enqueued "${val}" → tail moves to ${tail.value}`, `入队 "${val}" → 尾指针移至 ${tail.value}`);
-  const tid1 = setTimeout(() => { pendingTimers.delete(tid1); animatingIndex.value = -1; animationType.value = ''; }, 400);
-  pendingTimers.add(tid1);
+  message.value = t(
+    `Enqueued "${val}" at slot ${oldTail}. Tail wraps: ${oldTail} → ${tail.value} (mod ${SIZE}). No allocation needed — slot reuse is the key insight.`,
+    `在槽 ${oldTail} 入队 "${val}"。尾指针回绕：${oldTail} → ${tail.value}（mod ${SIZE}）。无需分配 — 槽位复用是核心洞察。`
+  );
+  safeTimeout(() => { animatingIndex.value = -1; animationType.value = ''; }, 400);
 }
 
 function dequeue() {
@@ -68,14 +78,18 @@ function dequeue() {
   animatingIndex.value = head.value;
   animationType.value = 'dequeue';
   buffer.value[head.value] = null;
+  const oldHead = head.value;
   head.value = (head.value + 1) % SIZE;
   count.value--;
-  message.value = t(`Dequeued "${val}" → head moves to ${head.value}`, `出队 "${val}" → 头指针移至 ${head.value}`);
-  const tid2 = setTimeout(() => { pendingTimers.delete(tid2); animatingIndex.value = -1; animationType.value = ''; }, 400);
-  pendingTimers.add(tid2);
+  message.value = t(
+    `Dequeued "${val}" from slot ${oldHead}. Head advances: ${oldHead} → ${head.value}. The slot is now free for reuse — zero-copy, O(1).`,
+    `从槽 ${oldHead} 出队 "${val}"。头指针前进：${oldHead} → ${head.value}。该槽位现在可以复用 — 零拷贝，O(1)。`
+  );
+  safeTimeout(() => { animatingIndex.value = -1; animationType.value = ''; }, 400);
 }
 
 function reset() {
+  clearAll();
   buffer.value = Array(SIZE).fill(null);
   head.value = 0;
   tail.value = 0;
@@ -83,7 +97,74 @@ function reset() {
   nextValue.value = 1;
   animatingIndex.value = -1;
   animationType.value = '';
+  presetRunning = false;
   message.value = t('Reset! Click Enqueue to start.', '已重置！点击"入队"开始。');
+}
+
+async function presetFillDrain() {
+  if (presetRunning) return;
+  reset();
+  presetRunning = true;
+  for (let i = 0; i < SIZE; i++) {
+    if (!presetRunning || isAborted()) return;
+    enqueue();
+    await delay(500);
+    if (!presetRunning || isAborted()) return;
+  }
+  message.value = t(
+    'Buffer full! Now draining — watch the head pointer chase the tail around the ring.',
+    '缓冲区已满！现在排空 — 观察头指针绕环追赶尾指针。'
+  );
+  await delay(800);
+  for (let i = 0; i < SIZE; i++) {
+    if (!presetRunning || isAborted()) return;
+    dequeue();
+    await delay(500);
+    if (!presetRunning || isAborted()) return;
+  }
+  message.value = t(
+    'Fill & drain complete. Head caught up with tail — both back at start. The ring structure means memory is always reused.',
+    '填充和排空完成。头指针追上尾指针 — 两者回到起点。环形结构意味着内存始终被复用。'
+  );
+  presetRunning = false;
+}
+
+async function presetProducerConsumer() {
+  if (presetRunning) return;
+  reset();
+  presetRunning = true;
+  const ops = ['E', 'E', 'D', 'E', 'E', 'D', 'E', 'D', 'D', 'E', 'E', 'D'];
+  for (const op of ops) {
+    if (!presetRunning || isAborted()) return;
+    if (op === 'E') enqueue(); else dequeue();
+    await delay(600);
+    if (!presetRunning || isAborted()) return;
+  }
+  message.value = t(
+    'Producer-consumer pattern: producer enqueues faster than consumer dequeues. This is how LMAX Disruptor achieves millions of ops/sec.',
+    '生产者-消费者模式：生产者入队速度快于消费者出队。LMAX Disruptor 就是这样实现百万级 ops/sec。'
+  );
+  presetRunning = false;
+}
+
+async function presetOverflow() {
+  if (presetRunning) return;
+  reset();
+  presetRunning = true;
+  for (let i = 0; i < SIZE; i++) {
+    if (!presetRunning || isAborted()) return;
+    enqueue();
+    await delay(400);
+    if (!presetRunning || isAborted()) return;
+  }
+  await delay(400);
+  if (!presetRunning || isAborted()) return;
+  enqueue();
+  message.value = t(
+    'Overflow rejected! Fixed size = predictable memory. In io_uring, overflow triggers CQ overflow handling. This is the trade-off: bounded memory vs. unbounded queues.',
+    '溢出被拒绝！固定大小 = 可预测的内存。在 io_uring 中，溢出会触发 CQ 溢出处理。这就是权衡：有界内存 vs 无界队列。'
+  );
+  presetRunning = false;
 }
 </script>
 
@@ -142,6 +223,16 @@ function reset() {
           <button class="viz-btn viz-btn--primary" @click="enqueue">{{ t('Enqueue', '入队') }}</button>
           <button class="viz-btn" @click="dequeue">{{ t('Dequeue', '出队') }}</button>
           <button class="viz-btn viz-btn--danger" @click="reset">{{ t('Reset', '重置') }}</button>
+          <div class="viz-speed">
+            <input type="range" min="0.5" max="3" step="0.5" v-model.number="speed" />
+            <span class="viz-speed-val">{{ speed }}x</span>
+          </div>
+        </div>
+        <div class="viz-presets">
+          <span class="viz-label">{{ t('Scenarios:', '场景：') }}</span>
+          <button class="viz-btn" @click="presetFillDrain">{{ t('Fill & Drain', '填充排空') }}</button>
+          <button class="viz-btn" @click="presetProducerConsumer">{{ t('Producer-Consumer', '生产消费') }}</button>
+          <button class="viz-btn" @click="presetOverflow">{{ t('Overflow', '溢出') }}</button>
         </div>
         <div class="viz-status">{{ message }}</div>
       </div>
@@ -195,26 +286,16 @@ function reset() {
 .ringbuf-dot--tail { background: var(--viz-warning); }
 
 .ringbuf-cell-pop {
-  animation: cell-pop 0.4s ease;
+  animation: viz-pulse 0.4s ease;
   transform-origin: center;
 }
 
 .ringbuf-cell-fade {
-  animation: cell-fade 0.4s ease;
+  animation: viz-fade 0.4s ease;
 }
 
 .ringbuf-pointer {
   transition: transform 0.3s ease;
-}
-
-@keyframes cell-pop {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.18); }
-}
-
-@keyframes cell-fade {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.3; }
 }
 
 @media (max-width: 640px) {

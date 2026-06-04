@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref } from 'vue';
 import { useI18n } from '../composables/useI18n';
+import { useVizTimers } from '../composables/useVizTimers';
 
 const { t } = useI18n();
+const { delay, clearAll, speed, isAborted } = useVizTimers();
 
 interface DiffLine {
   type: 'keep' | 'add' | 'del';
@@ -18,9 +20,13 @@ const originalLines = ref<string[]>([
 
 const modifiedLines = ref<string[]>([...originalLines.value]);
 const diffResult = ref<DiffLine[]>([]);
-const message = ref(t('Click "Modify" to make random edits, then "Diff" to compare', '点击"修改"进行随机编辑，然后点击"Diff"进行对比'));
+const message = ref(t(
+  'Click "Modify" to make random edits, then "Diff" to compare — or pick a scenario below',
+  '点击"修改"进行随机编辑，然后点击"Diff"进行对比 — 或选择下方场景'
+));
 const hasDiff = ref(false);
 const patched = ref(false);
+let presetRunning = false;
 
 const insertions = [
   '  // validate input',
@@ -60,13 +66,15 @@ function modify() {
   diffResult.value = [];
   hasDiff.value = false;
   patched.value = false;
-  message.value = t('Modified panel updated — click "Diff" to see changes', '修改面板已更新 — 点击"Diff"查看变更');
+  message.value = t(
+    'Modified panel updated — click "Diff" to compute the LCS-based diff. This is the same algorithm git uses internally.',
+    '修改面板已更新 — 点击"Diff"计算基于 LCS 的差异。这与 git 内部使用的算法相同。'
+  );
 }
 
 function computeDiff() {
   const a = originalLines.value;
   const b = modifiedLines.value;
-  const result: DiffLine[] = [];
 
   const m = a.length;
   const n = b.length;
@@ -105,7 +113,11 @@ function computeDiff() {
 
   const adds = stack.filter(l => l.type === 'add').length;
   const dels = stack.filter(l => l.type === 'del').length;
-  message.value = t(`Diff computed: +${adds} additions, -${dels} deletions`, `Diff 计算完成：+${adds} 新增，-${dels} 删除`);
+  const keeps = stack.filter(l => l.type === 'keep').length;
+  message.value = t(
+    `Diff computed via LCS (Longest Common Subsequence): +${adds} additions, -${dels} deletions, ${keeps} unchanged. Time complexity: O(m×n) where m=${m}, n=${n}.`,
+    `通过 LCS（最长公共子序列）计算差异：+${adds} 新增，-${dels} 删除，${keeps} 未变。时间复杂度：O(m×n)，m=${m}，n=${n}。`
+  );
 }
 
 function patch() {
@@ -115,10 +127,14 @@ function patch() {
   }
   originalLines.value = [...modifiedLines.value];
   patched.value = true;
-  message.value = t('Patch applied — original now matches modified', 'Patch 已应用 — 原始文件已与修改后一致');
+  message.value = t(
+    'Patch applied — original now matches modified. In production, patches are transmitted instead of full files. Git stores deltas (packfiles) using this principle.',
+    'Patch 已应用 — 原始文件已与修改后一致。生产环境中传输 patch 而非完整文件。Git 使用此原理存储增量（packfiles）。'
+  );
 }
 
 function reset() {
+  clearAll();
   originalLines.value = [
     'function greet(name) {',
     '  console.log("Hello, " + name);',
@@ -129,7 +145,84 @@ function reset() {
   diffResult.value = [];
   hasDiff.value = false;
   patched.value = false;
+  presetRunning = false;
   message.value = t('Reset to initial state', '已重置为初始状态');
+}
+
+async function presetMinimalDiff() {
+  if (presetRunning) return;
+  reset();
+  presetRunning = true;
+  message.value = t(
+    'Minimal change: renaming a parameter. The diff will show exactly 1 deletion + 1 addition. This is how code review tools highlight what actually changed.',
+    '最小改动：重命名参数。差异将显示恰好 1 个删除 + 1 个添加。这就是代码审查工具高亮实际变更的方式。'
+  );
+  await delay(800);
+  if (!presetRunning || isAborted()) return;
+  modifiedLines.value = [
+    'function greet(user) {',
+    '  console.log("Hello, " + name);',
+    '  return true;',
+    '}',
+  ];
+  await delay(600);
+  if (!presetRunning || isAborted()) return;
+  computeDiff();
+  presetRunning = false;
+}
+
+async function presetInsertBlock() {
+  if (presetRunning) return;
+  reset();
+  presetRunning = true;
+  message.value = t(
+    'Inserting a validation block — the diff algorithm finds that existing lines are "kept" and new lines are "added". The LCS ensures minimum edit distance.',
+    '插入验证代码块 — 差异算法发现现有行被"保留"而新行被"添加"。LCS 确保最小编辑距离。'
+  );
+  await delay(800);
+  if (!presetRunning || isAborted()) return;
+  modifiedLines.value = [
+    'function greet(name) {',
+    '  if (!name) {',
+    '    throw new Error("name required");',
+    '  }',
+    '  console.log("Hello, " + name);',
+    '  return true;',
+    '}',
+  ];
+  await delay(600);
+  if (!presetRunning || isAborted()) return;
+  computeDiff();
+  await delay(1200);
+  if (!presetRunning || isAborted()) return;
+  message.value = t(
+    'Notice: 3 lines added, 0 deleted, 4 kept. The patch would be just 3 lines — much smaller than sending the whole file. This is why git push only transfers deltas.',
+    '注意：3 行添加，0 行删除，4 行保留。补丁只有 3 行 — 比发送整个文件小得多。这就是 git push 只传输增量的原因。'
+  );
+  presetRunning = false;
+}
+
+async function presetFullRewrite() {
+  if (presetRunning) return;
+  reset();
+  presetRunning = true;
+  message.value = t(
+    'Complete rewrite — every line changes. The diff shows all original lines deleted and all new lines added. When the diff is larger than the file, git stores the whole file instead.',
+    '完全重写 — 每行都改变。差异显示所有原始行被删除，所有新行被添加。当差异大于文件本身时，git 存储完整文件。'
+  );
+  await delay(800);
+  if (!presetRunning || isAborted()) return;
+  modifiedLines.value = [
+    'const sayHello = (name: string) => {',
+    '  const msg = `Hello, ${name}!`;',
+    '  console.info(msg);',
+    '  return msg;',
+    '};',
+  ];
+  await delay(600);
+  if (!presetRunning || isAborted()) return;
+  computeDiff();
+  presetRunning = false;
 }
 
 const diffPrefix = (type: string) => {
@@ -191,6 +284,17 @@ const diffPrefix = (type: string) => {
       <button class="viz-btn viz-btn--primary" @click="computeDiff">{{ t('Diff', 'Diff') }}</button>
       <button class="viz-btn viz-btn--primary" :disabled="!hasDiff || patched" @click="patch">{{ t('Patch', 'Patch') }}</button>
       <button class="viz-btn viz-btn--danger" @click="reset">{{ t('Reset', '重置') }}</button>
+      <div class="viz-speed">
+        <input type="range" min="0.5" max="3" step="0.5" v-model.number="speed" />
+        <span class="viz-speed-val">{{ speed }}x</span>
+      </div>
+    </div>
+
+    <div class="viz-presets">
+      <span class="viz-label">{{ t('Scenarios:', '场景：') }}</span>
+      <button class="viz-btn" @click="presetMinimalDiff">{{ t('Minimal Change', '最小改动') }}</button>
+      <button class="viz-btn" @click="presetInsertBlock">{{ t('Insert Block', '插入代码块') }}</button>
+      <button class="viz-btn" @click="presetFullRewrite">{{ t('Full Rewrite', '完全重写') }}</button>
     </div>
 
     <div class="viz-status">{{ message }}</div>
@@ -307,11 +411,6 @@ const diffPrefix = (type: string) => {
 .dp-diff-text {
   color: var(--viz-text);
   white-space: pre;
-}
-
-.viz-btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
 }
 
 @media (max-width: 640px) {

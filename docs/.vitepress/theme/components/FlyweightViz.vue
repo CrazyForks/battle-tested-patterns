@@ -1,31 +1,27 @@
 <script setup lang="ts">
-import { ref, computed, onUnmounted } from 'vue';
+import { ref, computed } from 'vue';
 import { useI18n } from '../composables/useI18n';
+import { useVizTimers } from '../composables/useVizTimers';
 
 const { t } = useI18n();
-
-const pendingTimers = new Set<ReturnType<typeof setTimeout>>();
-onUnmounted(() => { for (const tid of pendingTimers) clearTimeout(tid); });
+const { safeTimeout, delay, clearAll, speed, isAborted } = useVizTimers();
 
 /* ── Flyweight data model ── */
 
 interface Flyweight {
   char: string;
-  /** Simulated intrinsic byte size (glyph bitmap, font metrics, etc.) */
   intrinsicSize: number;
 }
 
 interface CharInstance {
   id: number;
   char: string;
-  /** Extrinsic: position index in the rendered text */
   position: number;
-  /** Extrinsic: hue offset for visual variety */
   hue: number;
 }
 
-const INTRINSIC_BYTES = 256; // simulated cost per unique glyph
-const EXTRINSIC_BYTES = 16;  // position + ref pointer per instance
+const INTRINSIC_BYTES = 256;
+const EXTRINSIC_BYTES = 16;
 
 let nextId = 0;
 
@@ -37,6 +33,7 @@ const message = ref('');
 const cacheHits = ref(0);
 const cacheMisses = ref(0);
 const lastAddedIds = ref<Set<number>>(new Set());
+let presetRunning = false;
 
 /* ── Derived stats ── */
 
@@ -95,8 +92,7 @@ function processText(text: string) {
     newIds.add(id);
   }
   lastAddedIds.value = newIds;
-  const tid = setTimeout(() => { pendingTimers.delete(tid); lastAddedIds.value = new Set(); }, 500);
-  pendingTimers.add(tid);
+  safeTimeout(() => { lastAddedIds.value = new Set(); }, 500);
 }
 
 /* ── User actions ── */
@@ -107,7 +103,6 @@ function applyText() {
     message.value = t('Type something first.', '请先输入内容。');
     return;
   }
-  // Reset state for fresh demo
   flyweightPool.value = new Map();
   instances.value = [];
   cacheHits.value = 0;
@@ -120,8 +115,8 @@ function applyText() {
   const unique = flyweightPool.value.size;
   const total = instances.value.length;
   message.value = t(
-    `Processed ${total} characters with only ${unique} unique flyweight objects.`,
-    `处理了 ${total} 个字符，仅使用 ${unique} 个唯一的 Flyweight 对象。`
+    `Processed ${total} characters with only ${unique} unique flyweight objects. Each glyph bitmap stored once — Java's String.intern() and Python's string interning work the same way.`,
+    `处理了 ${total} 个字符，仅使用 ${unique} 个唯一的 Flyweight 对象。每个字形位图只存储一次 — Java 的 String.intern() 和 Python 的字符串驻留原理相同。`
   );
 }
 
@@ -138,8 +133,8 @@ function appendText() {
 
   if (newFlyweights === 0) {
     message.value = t(
-      `Appended ${text.length} instances. All characters already in pool — 100% cache hit!`,
-      `追加了 ${text.length} 个实例。所有字符已在池中 — 100% 缓存命中！`
+      `Appended ${text.length} instances. All characters already in pool — 100% cache hit! This is the steady-state behavior.`,
+      `追加了 ${text.length} 个实例。所有字符已在池中 — 100% 缓存命中！这是稳态行为。`
     );
   } else {
     message.value = t(
@@ -154,6 +149,7 @@ function selectChar(char: string) {
 }
 
 function reset() {
+  clearAll();
   flyweightPool.value = new Map();
   instances.value = [];
   cacheHits.value = 0;
@@ -161,6 +157,7 @@ function reset() {
   nextId = 0;
   selectedChar.value = null;
   lastAddedIds.value = new Set();
+  presetRunning = false;
   message.value = t('Reset. Type a sentence and click Apply.', '已重置。输入一句话并点击应用。');
 }
 
@@ -172,6 +169,72 @@ function formatBytes(bytes: number): string {
 function charColor(char: string): string {
   const hue = (char.charCodeAt(0) * 47) % 360;
   return `hsl(${hue}, 65%, 50%)`;
+}
+
+async function presetTextEditor() {
+  if (presetRunning) return;
+  reset();
+  presetRunning = true;
+  inputText.value = 'AAABBBCCC';
+  message.value = t(
+    'Text editor scenario: "AAABBBCCC" — 9 characters but only 3 unique glyphs. This is how text editors like VS Code render millions of characters with shared glyph atlases.',
+    '文本编辑器场景："AAABBBCCC" — 9 个字符但只有 3 个唯一字形。VS Code 等文本编辑器就是用共享字形图集渲染数百万字符的。'
+  );
+  await delay(800);
+  if (!presetRunning || isAborted()) return;
+  applyText();
+  await delay(1000);
+  if (!presetRunning || isAborted()) return;
+  message.value = t(
+    `3 flyweights store 768B of glyph data. Without sharing: 9 copies = 2,304B. Saved ${memorySavedPct.value}%. Game engines use this for particle systems — millions of particles share one texture.`,
+    `3 个 flyweight 存储 768B 字形数据。不共享：9 份 = 2,304B。节省 ${memorySavedPct.value}%。游戏引擎用此模式处理粒子系统 — 数百万粒子共享一个纹理。`
+  );
+  presetRunning = false;
+}
+
+async function presetHighRedundancy() {
+  if (presetRunning) return;
+  reset();
+  presetRunning = true;
+  inputText.value = 'aaaaaaaaaaaaaaaaaa';
+  message.value = t(
+    'Maximum redundancy: 18 instances of "a". One flyweight serves all 18 — this is the best case for flyweight pattern.',
+    '最大冗余：18 个 "a" 实例。一个 flyweight 服务全部 18 个 — 这是 flyweight 模式的最佳场景。'
+  );
+  await delay(800);
+  if (!presetRunning || isAborted()) return;
+  applyText();
+  await delay(1000);
+  if (!presetRunning || isAborted()) return;
+  message.value = t(
+    `1 flyweight for 18 instances: ${memorySavedPct.value}% memory saved. CSS applies the same principle — one style rule shared across thousands of DOM elements.`,
+    `1 个 flyweight 服务 18 个实例：节省 ${memorySavedPct.value}% 内存。CSS 应用相同原则 — 一条样式规则在数千个 DOM 元素间共享。`
+  );
+  presetRunning = false;
+}
+
+async function presetAppendDemo() {
+  if (presetRunning) return;
+  reset();
+  presetRunning = true;
+  inputText.value = 'Hello';
+  message.value = t(
+    'Append demo: apply "Hello", then append it again. Second time = 100% cache hits. This models how a document grows — early chars build the pool, later chars reuse it.',
+    '追加演示：应用 "Hello"，然后再次追加。第二次 = 100% 缓存命中。这模拟文档增长 — 早期字符构建池，后续字符复用它。'
+  );
+  await delay(800);
+  if (!presetRunning || isAborted()) return;
+  applyText();
+  await delay(800);
+  if (!presetRunning || isAborted()) return;
+  appendText();
+  await delay(800);
+  if (!presetRunning || isAborted()) return;
+  message.value = t(
+    `After appending: ${totalInstances.value} instances, ${uniqueCount.value} flyweights, ${hitRate.value}% hit rate. The pool amortizes creation cost over the document's lifetime.`,
+    `追加后：${totalInstances.value} 个实例，${uniqueCount.value} 个 flyweight，${hitRate.value}% 命中率。池在文档生命周期内摊销创建成本。`
+  );
+  presetRunning = false;
 }
 
 /* ── Initialize on mount ── */
@@ -307,6 +370,20 @@ applyText();
           ) }}
         </div>
       </div>
+    </div>
+
+    <div class="viz-controls">
+      <div class="viz-speed">
+        <input type="range" min="0.5" max="3" step="0.5" v-model.number="speed" />
+        <span class="viz-speed-val">{{ speed }}x</span>
+      </div>
+    </div>
+
+    <div class="viz-presets">
+      <span class="viz-label">{{ t('Scenarios:', '场景：') }}</span>
+      <button class="viz-btn" @click="presetTextEditor">{{ t('Text Editor', '文本编辑器') }}</button>
+      <button class="viz-btn" @click="presetHighRedundancy">{{ t('Max Redundancy', '最大冗余') }}</button>
+      <button class="viz-btn" @click="presetAppendDemo">{{ t('Append Growth', '追加增长') }}</button>
     </div>
 
     <div class="viz-status">{{ message }}</div>
@@ -604,7 +681,7 @@ applyText();
 }
 
 .fw-grid-cell--new {
-  animation: fw-pop-in 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: viz-slide-in 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .fw-grid-empty {
@@ -630,19 +707,5 @@ applyText();
   font-family: var(--vp-font-family-mono);
   font-size: 1rem;
   margin-right: 0.3rem;
-}
-
-@keyframes fw-pop-in {
-  0% {
-    opacity: 0;
-    transform: scale(0);
-  }
-  60% {
-    opacity: 1;
-    transform: scale(1.2);
-  }
-  100% {
-    transform: scale(1);
-  }
 }
 </style>

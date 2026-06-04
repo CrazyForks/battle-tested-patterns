@@ -1,11 +1,10 @@
 <script setup lang="ts">
-import { ref, computed, onUnmounted } from 'vue';
+import { ref, computed } from 'vue';
 import { useI18n } from '../composables/useI18n';
+import { useVizTimers } from '../composables/useVizTimers';
 
 const { t } = useI18n();
-
-const pendingTimers = new Set<ReturnType<typeof setTimeout>>();
-onUnmounted(() => { for (const tid of pendingTimers) clearTimeout(tid); });
+const { safeTimeout, delay, clearAll, speed, isAborted } = useVizTimers();
 
 interface Version {
   ver: number;
@@ -27,6 +26,7 @@ interface Transaction {
 
 const globalVer = ref(1);
 let txnCounter = 0;
+let presetRunning = false;
 
 const store = ref<KeyVersions[]>([
   { key: 'user', versions: [{ ver: 1, value: '"alice"', txnId: 0 }] },
@@ -34,7 +34,10 @@ const store = ref<KeyVersions[]>([
 ]);
 
 const transactions = ref<Transaction[]>([]);
-const message = ref(t('Begin a transaction to start. Each gets a snapshot version.', '开始一个事务。每个事务获取一个快照版本。'));
+const message = ref(t(
+  'Begin a transaction to start. Each gets a snapshot version — this is how PostgreSQL, MySQL InnoDB, and CockroachDB achieve isolation without locks.',
+  '开始一个事务。每个事务获取一个快照版本 — PostgreSQL、MySQL InnoDB 和 CockroachDB 就是这样无锁实现隔离的。'
+));
 const highlightKey = ref('');
 const highlightVer = ref(-1);
 
@@ -47,7 +50,10 @@ function beginTxn() {
     writes: [],
   };
   transactions.value.push(txn);
-  message.value = t(`T${txn.id} started at snapshot version ${txn.snapshotVer}. It will read data as of v${txn.snapshotVer}.`, `T${txn.id} 在快照版本 ${txn.snapshotVer} 启动。它将读取 v${txn.snapshotVer} 时的数据。`);
+  message.value = t(
+    `T${txn.id} started at snapshot version ${txn.snapshotVer}. It will read data as of v${txn.snapshotVer} — later commits are invisible.`,
+    `T${txn.id} 在快照版本 ${txn.snapshotVer} 启动。它将读取 v${txn.snapshotVer} 时的数据 — 之后的提交不可见。`
+  );
 }
 
 const activeTxns = computed(() =>
@@ -88,8 +94,7 @@ function readKey(key: string) {
     highlightKey.value = key;
     highlightVer.value = -1;
     message.value = t(`T${txn.id} READ "${key}" -> ${ownWrite.value} (own uncommitted write)`, `T${txn.id} READ "${key}" -> ${ownWrite.value}（自身未提交写入）`);
-    const tid = setTimeout(() => { pendingTimers.delete(tid); highlightKey.value = ''; }, 600);
-    pendingTimers.add(tid);
+    safeTimeout(() => { highlightKey.value = ''; }, 600);
     return;
   }
 
@@ -105,9 +110,11 @@ function readKey(key: string) {
   const found = visible[0];
   highlightKey.value = key;
   highlightVer.value = found.ver;
-  message.value = t(`T${txn.id} READ "${key}" -> ${found.value} (version ${found.ver}). Newer versions invisible to snapshot v${txn.snapshotVer}.`, `T${txn.id} READ "${key}" -> ${found.value}（版本 ${found.ver}）。更新版本对快照 v${txn.snapshotVer} 不可见。`);
-  const tid2 = setTimeout(() => { pendingTimers.delete(tid2); highlightKey.value = ''; highlightVer.value = -1; }, 800);
-  pendingTimers.add(tid2);
+  message.value = t(
+    `T${txn.id} READ "${key}" -> ${found.value} (version ${found.ver}). Newer versions invisible to snapshot v${txn.snapshotVer}.`,
+    `T${txn.id} READ "${key}" -> ${found.value}（版本 ${found.ver}）。更新版本对快照 v${txn.snapshotVer} 不可见。`
+  );
+  safeTimeout(() => { highlightKey.value = ''; highlightVer.value = -1; }, 800);
 }
 
 function writeToKey() {
@@ -156,7 +163,10 @@ function commitTxn() {
 
   txn.status = 'committed';
   const writeCount = txn.writes.length;
-  message.value = t(`T${txn.id} COMMITTED at version ${newVer}. ${writeCount} write(s) now visible to new transactions.`, `T${txn.id} 在版本 ${newVer} 提交。${writeCount} 个写入现在对新事务可见。`);
+  message.value = t(
+    `T${txn.id} COMMITTED at version ${newVer}. ${writeCount} write(s) now visible to new transactions.`,
+    `T${txn.id} 在版本 ${newVer} 提交。${writeCount} 个写入现在对新事务可见。`
+  );
   selectedTxn.value = null;
 }
 
@@ -176,8 +186,10 @@ function abortTxn() {
 }
 
 function reset() {
+  clearAll();
   globalVer.value = 1;
   txnCounter = 0;
+  presetRunning = false;
   store.value = [
     { key: 'user', versions: [{ ver: 1, value: '"alice"', txnId: 0 }] },
     { key: 'balance', versions: [{ ver: 1, value: '100', txnId: 0 }] },
@@ -186,7 +198,132 @@ function reset() {
   selectedTxn.value = null;
   highlightKey.value = '';
   highlightVer.value = -1;
-  message.value = t('Begin a transaction to start. Each gets a snapshot version.', '开始一个事务。每个事务获取一个快照版本。');
+  message.value = t(
+    'Begin a transaction to start. Each gets a snapshot version.',
+    '开始一个事务。每个事务获取一个快照版本。'
+  );
+}
+
+async function presetSnapshotIsolation() {
+  if (presetRunning) return;
+  reset();
+  presetRunning = true;
+  message.value = t(
+    'Snapshot isolation: T1 reads, T2 writes and commits, then T1 reads again — T1 still sees the old value. This is PostgreSQL\'s default REPEATABLE READ level.',
+    '快照隔离：T1 读取，T2 写入并提交，然后 T1 再次读取 — T1 仍看到旧值。这是 PostgreSQL 默认的 REPEATABLE READ 级别。'
+  );
+  await delay(800);
+  if (!presetRunning || isAborted()) return;
+
+  beginTxn(); // T1
+  await delay(400);
+  if (!presetRunning || isAborted()) return;
+  selectTxn(1);
+  readKey('balance');
+  await delay(600);
+  if (!presetRunning || isAborted()) return;
+
+  beginTxn(); // T2
+  await delay(400);
+  if (!presetRunning || isAborted()) return;
+  selectTxn(2);
+  writeKey.value = 'balance';
+  writeValue.value = '200';
+  writeToKey();
+  await delay(400);
+  if (!presetRunning || isAborted()) return;
+  commitTxn();
+  await delay(600);
+  if (!presetRunning || isAborted()) return;
+
+  selectTxn(1);
+  readKey('balance');
+  await delay(600);
+  if (!presetRunning || isAborted()) return;
+  message.value = t(
+    'T1 still reads balance=100 even though T2 committed 200! T1\'s snapshot (v1) is frozen — it never sees T2\'s changes. This prevents "phantom reads" and is how PostgreSQL, CockroachDB, and TiDB implement MVCC.',
+    'T1 仍然读到 balance=100，即使 T2 已提交 200！T1 的快照 (v1) 被冻结 — 永远看不到 T2 的变更。这防止了"幻读"，是 PostgreSQL、CockroachDB 和 TiDB 实现 MVCC 的方式。'
+  );
+  presetRunning = false;
+}
+
+async function presetWriteConflict() {
+  if (presetRunning) return;
+  reset();
+  presetRunning = true;
+  message.value = t(
+    'Write conflict: T1 and T2 both try to update the same key. In real MVCC databases, one would abort due to write-write conflict detection.',
+    '写冲突：T1 和 T2 都尝试更新同一个键。在真实 MVCC 数据库中，其中一个会因写-写冲突检测而中止。'
+  );
+  await delay(800);
+  if (!presetRunning || isAborted()) return;
+
+  beginTxn(); // T1
+  beginTxn(); // T2
+  await delay(400);
+  if (!presetRunning || isAborted()) return;
+
+  selectTxn(1);
+  writeKey.value = 'balance';
+  writeValue.value = '300';
+  writeToKey();
+  await delay(400);
+  if (!presetRunning || isAborted()) return;
+
+  selectTxn(2);
+  writeKey.value = 'balance';
+  writeValue.value = '500';
+  writeToKey();
+  await delay(400);
+  if (!presetRunning || isAborted()) return;
+
+  selectTxn(1);
+  commitTxn();
+  await delay(400);
+  if (!presetRunning || isAborted()) return;
+
+  selectTxn(2);
+  abortTxn();
+  await delay(400);
+  if (!presetRunning || isAborted()) return;
+  message.value = t(
+    'T1 committed, T2 aborted — only one writer wins. PostgreSQL uses "first-updater-wins" rule; CockroachDB uses timestamp ordering. Both prevent lost updates without row-level locks.',
+    'T1 提交，T2 中止 — 只有一个写入者胜出。PostgreSQL 使用"先更新者获胜"规则；CockroachDB 使用时间戳排序。两者都无需行级锁即可防止丢失更新。'
+  );
+  presetRunning = false;
+}
+
+async function presetVersionChainGrowth() {
+  if (presetRunning) return;
+  reset();
+  presetRunning = true;
+  message.value = t(
+    'Version chain growth: multiple commits create multiple versions. Old versions are kept for active snapshots — this is why VACUUM is critical in PostgreSQL.',
+    '版本链增长：多次提交创建多个版本。旧版本为活跃快照保留 — 这就是 PostgreSQL 中 VACUUM 至关重要的原因。'
+  );
+  await delay(800);
+  if (!presetRunning || isAborted()) return;
+
+  for (let i = 0; i < 3; i++) {
+    if (!presetRunning || isAborted()) return;
+    beginTxn();
+    await delay(300);
+    if (!presetRunning || isAborted()) return;
+    selectTxn(txnCounter);
+    writeKey.value = 'user';
+    writeValue.value = `"user_v${i + 2}"`;
+    writeToKey();
+    await delay(300);
+    if (!presetRunning || isAborted()) return;
+    commitTxn();
+    await delay(400);
+  }
+  if (!presetRunning || isAborted()) return;
+  message.value = t(
+    'The "user" key now has 4 versions. In PostgreSQL, VACUUM removes versions no active transaction needs. In MySQL InnoDB, purge threads clean the undo log. Without cleanup, the version chain grows unbounded — this is "MVCC bloat".',
+    '"user" 键现在有 4 个版本。在 PostgreSQL 中，VACUUM 移除没有活跃事务需要的版本。在 MySQL InnoDB 中，purge 线程清理 undo log。不清理的话，版本链无限增长 — 这就是"MVCC 膨胀"。'
+  );
+  presetRunning = false;
 }
 </script>
 
@@ -256,6 +393,10 @@ function reset() {
       <button class="viz-btn" :disabled="selectedTxn === null" @click="commitTxn">{{ t('Commit', '提交') }}</button>
       <button class="viz-btn viz-btn--danger" :disabled="selectedTxn === null" @click="abortTxn">{{ t('Abort', '中止') }}</button>
       <button class="viz-btn viz-btn--danger" @click="reset">{{ t('Reset', '重置') }}</button>
+      <div class="viz-speed">
+        <input type="range" min="0.5" max="3" step="0.5" v-model.number="speed" />
+        <span class="viz-speed-val">{{ speed }}x</span>
+      </div>
     </div>
 
     <div v-if="selectedTxn !== null" class="mv-write-row">
@@ -265,6 +406,13 @@ function reset() {
       </select>
       <input v-model="writeValue" class="mv-input" :placeholder="t('value', '值')" @keyup.enter="writeToKey" />
       <button class="viz-btn viz-btn--primary" @click="writeToKey">{{ t('Write', '写入') }}</button>
+    </div>
+
+    <div class="viz-presets">
+      <span class="viz-label">{{ t('Scenarios:', '场景：') }}</span>
+      <button class="viz-btn" @click="presetSnapshotIsolation">{{ t('Snapshot Isolation', '快照隔离') }}</button>
+      <button class="viz-btn" @click="presetWriteConflict">{{ t('Write Conflict', '写冲突') }}</button>
+      <button class="viz-btn" @click="presetVersionChainGrowth">{{ t('Version Growth', '版本增长') }}</button>
     </div>
 
     <div class="viz-status">{{ message }}</div>
@@ -345,7 +493,7 @@ function reset() {
   border-color: var(--viz-success);
   background: var(--viz-success);
   color: #fff;
-  animation: mv-flash 0.5s ease;
+  animation: viz-pulse 0.5s ease;
 }
 
 .mv-ver--hl .mv-ver-num,
@@ -491,12 +639,6 @@ function reset() {
 .mv-input:focus {
   outline: none;
   border-color: var(--viz-primary);
-}
-
-@keyframes mv-flash {
-  0% { transform: scale(1); }
-  40% { transform: scale(1.1); }
-  100% { transform: scale(1); }
 }
 
 @media (max-width: 640px) {

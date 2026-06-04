@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useI18n } from '../composables/useI18n';
+import { useVizTimers } from '../composables/useVizTimers';
+
 const { t } = useI18n();
+const { delay, clearAll, speed, isAborted } = useVizTimers();
 
 interface Process {
   name: string;
@@ -16,14 +19,21 @@ const processes = ref<Process[]>([
   { name: 'P3', color: 'var(--viz-warning)', clock: 0, events: [] },
 ]);
 
-const message = ref(t('Perform local events and send messages between processes', '执行本地事件并在进程间发送消息'));
+const message = ref(t(
+  'Perform local events and send messages between processes — Lamport clocks establish causal ordering in distributed systems like DynamoDB and Cassandra',
+  '执行本地事件并在进程间发送消息 — Lamport 时钟在 DynamoDB 和 Cassandra 等分布式系统中建立因果顺序'
+));
 const pendingMessages = ref<{ from: number; clock: number }[]>([]);
+let presetRunning = false;
 
 function localEvent(idx: number) {
   const p = processes.value[idx];
   p.clock++;
   p.events = [...p.events, { type: 'local', clock: p.clock, label: 'local' }];
-  message.value = t(`${p.name}: local event → clock = ${p.clock}`, `${p.name}：本地事件 → 时钟 = ${p.clock}`);
+  message.value = t(
+    `${p.name}: local event → clock = ${p.clock}. Rule: increment on every event. This timestamps the event for causal ordering.`,
+    `${p.name}：本地事件 → 时钟 = ${p.clock}。规则：每个事件递增。这为因果排序标记时间戳。`
+  );
 }
 
 function sendMessage(fromIdx: number) {
@@ -31,7 +41,10 @@ function sendMessage(fromIdx: number) {
   from.clock++;
   from.events = [...from.events, { type: 'send', clock: from.clock, label: 'send' }];
   pendingMessages.value = [...pendingMessages.value, { from: fromIdx, clock: from.clock }];
-  message.value = t(`${from.name}: sent message (clock=${from.clock}) — click "Receive" on another process`, `${from.name}：已发送消息 (clock=${from.clock}) — 在其他进程上点击"接收"`);
+  message.value = t(
+    `${from.name}: sent message (clock=${from.clock}) — click "Receive" on another process. The message carries the sender's timestamp.`,
+    `${from.name}：已发送消息 (clock=${from.clock}) — 在其他进程上点击"接收"。消息携带发送方的时间戳。`
+  );
 }
 
 function receiveMessage(toIdx: number) {
@@ -47,19 +60,106 @@ function receiveMessage(toIdx: number) {
   pendingMessages.value = pendingMessages.value.slice(1);
 
   const to = processes.value[toIdx];
+  const prevClock = to.clock;
   to.clock = Math.max(to.clock, msg.clock) + 1;
   to.events = [...to.events, { type: 'recv', clock: to.clock, label: `recv(${msg.clock})` }];
-  message.value = t(`${to.name}: received (sender clock=${msg.clock}) → max(${to.clock - 1}, ${msg.clock}) + 1 = ${to.clock}`, `${to.name}：已接收 (发送方 clock=${msg.clock}) → max(${to.clock - 1}, ${msg.clock}) + 1 = ${to.clock}`);
+  message.value = t(
+    `${to.name}: received (sender clock=${msg.clock}) → max(${prevClock}, ${msg.clock}) + 1 = ${to.clock}. The max() ensures causal ordering: if A→B, then clock(A) < clock(B).`,
+    `${to.name}：已接收 (发送方 clock=${msg.clock}) → max(${prevClock}, ${msg.clock}) + 1 = ${to.clock}。max() 确保因果顺序：如果 A→B，则 clock(A) < clock(B)。`
+  );
 }
 
 function reset() {
+  clearAll();
   processes.value = [
     { name: 'P1', color: 'var(--viz-primary)', clock: 0, events: [] },
     { name: 'P2', color: 'var(--viz-success)', clock: 0, events: [] },
     { name: 'P3', color: 'var(--viz-warning)', clock: 0, events: [] },
   ];
   pendingMessages.value = [];
+  presetRunning = false;
   message.value = t('Reset — perform events to see Lamport clocks', '已重置 — 执行事件以查看 Lamport 时钟');
+}
+
+async function presetCausalChain() {
+  if (presetRunning) return;
+  reset();
+  presetRunning = true;
+  message.value = t(
+    'Causal chain: P1 does work, sends to P2, P2 does work, sends to P3. Each receive merges clocks — this is how "happens-before" ordering works in distributed databases.',
+    '因果链：P1 工作，发送给 P2，P2 工作，发送给 P3。每次接收合并时钟 — 这就是分布式数据库中"先于"排序的工作方式。'
+  );
+  await delay(800);
+  if (!presetRunning || isAborted()) return;
+  localEvent(0); await delay(400);
+  if (!presetRunning || isAborted()) return;
+  sendMessage(0); await delay(500);
+  if (!presetRunning || isAborted()) return;
+  receiveMessage(1); await delay(500);
+  if (!presetRunning || isAborted()) return;
+  localEvent(1); await delay(400);
+  if (!presetRunning || isAborted()) return;
+  sendMessage(1); await delay(500);
+  if (!presetRunning || isAborted()) return;
+  receiveMessage(2); await delay(500);
+  if (!presetRunning || isAborted()) return;
+  message.value = t(
+    'Causal chain complete: P1(1)→P2(2)→P2(3)→P3(4). Each receive\'s clock is strictly greater than the send — this guarantees if A caused B, clock(A) < clock(B). Used by Spanner, CockroachDB, and TiDB.',
+    '因果链完成：P1(1)→P2(2)→P2(3)→P3(4)。每次接收的时钟严格大于发送 — 保证如果 A 导致了 B，则 clock(A) < clock(B)。Spanner、CockroachDB 和 TiDB 使用此原理。'
+  );
+  presetRunning = false;
+}
+
+async function presetConcurrentEvents() {
+  if (presetRunning) return;
+  reset();
+  presetRunning = true;
+  message.value = t(
+    'Concurrent events: P1, P2, P3 all do local events independently. Their clocks advance separately — these events are concurrent (no causal relationship). Lamport clocks cannot distinguish concurrent events from causally related ones.',
+    '并发事件：P1、P2、P3 各自独立做本地事件。它们的时钟分别推进 — 这些事件是并发的（无因果关系）。Lamport 时钟无法区分并发事件和因果相关事件。'
+  );
+  await delay(800);
+  if (!presetRunning || isAborted()) return;
+  localEvent(0); await delay(300);
+  if (!presetRunning || isAborted()) return;
+  localEvent(1); await delay(300);
+  if (!presetRunning || isAborted()) return;
+  localEvent(2); await delay(300);
+  if (!presetRunning || isAborted()) return;
+  localEvent(0); await delay(300);
+  if (!presetRunning || isAborted()) return;
+  localEvent(2); await delay(500);
+  if (!presetRunning || isAborted()) return;
+  message.value = t(
+    'All three processes have clock=1 or clock=2 — same value but no causal link. This is Lamport clocks\' limitation: equal timestamps don\'t mean simultaneous. Vector clocks (used by DynamoDB) solve this by tracking per-process counters.',
+    '三个进程的时钟都是 1 或 2 — 相同值但无因果关系。这是 Lamport 时钟的局限：相等的时间戳不意味着同时发生。向量时钟（DynamoDB 使用）通过跟踪每个进程的计数器解决此问题。'
+  );
+  presetRunning = false;
+}
+
+async function presetClockSkew() {
+  if (presetRunning) return;
+  reset();
+  presetRunning = true;
+  message.value = t(
+    'Clock synchronization: P1 does 5 local events (clock=5), then sends to P2 (clock=0). P2\'s clock jumps to 6 — the max() rule synchronizes clocks across the system.',
+    '时钟同步：P1 做 5 个本地事件（clock=5），然后发送给 P2（clock=0）。P2 的时钟跳到 6 — max() 规则在系统间同步时钟。'
+  );
+  await delay(800);
+  if (!presetRunning || isAborted()) return;
+  for (let i = 0; i < 5; i++) {
+    localEvent(0); await delay(250);
+    if (!presetRunning || isAborted()) return;
+  }
+  sendMessage(0); await delay(500);
+  if (!presetRunning || isAborted()) return;
+  receiveMessage(1); await delay(500);
+  if (!presetRunning || isAborted()) return;
+  message.value = t(
+    'P2 jumped from 0 to 6: max(0, 5) + 1 = 6. This ensures P2\'s future events are ordered after P1\'s message. Without this, a slow process could timestamp events before the cause — violating causality.',
+    'P2 从 0 跳到 6：max(0, 5) + 1 = 6。这确保 P2 的未来事件排在 P1 的消息之后。没有这个，慢进程可能在原因之前标记事件 — 违反因果性。'
+  );
+  presetRunning = false;
 }
 </script>
 
@@ -105,6 +205,17 @@ function reset() {
 
     <div class="viz-controls">
       <button class="viz-btn viz-btn--danger" @click="reset">{{ t('Reset', '重置') }}</button>
+      <div class="viz-speed">
+        <input type="range" min="0.5" max="3" step="0.5" v-model.number="speed" />
+        <span class="viz-speed-val">{{ speed }}x</span>
+      </div>
+    </div>
+
+    <div class="viz-presets">
+      <span class="viz-label">{{ t('Scenarios:', '场景：') }}</span>
+      <button class="viz-btn" @click="presetCausalChain">{{ t('Causal Chain', '因果链') }}</button>
+      <button class="viz-btn" @click="presetConcurrentEvents">{{ t('Concurrent', '并发') }}</button>
+      <button class="viz-btn" @click="presetClockSkew">{{ t('Clock Sync', '时钟同步') }}</button>
     </div>
 
     <div class="viz-status">{{ message }}</div>
@@ -165,7 +276,7 @@ function reset() {
   border-radius: 4px;
   font-size: 0.6rem;
   font-family: var(--vp-font-family-mono);
-  animation: lc-pop 0.2s ease;
+  animation: viz-slide-in 0.2s ease;
 }
 
 .lc-event-local {
@@ -211,10 +322,5 @@ function reset() {
   padding: 0.3rem;
   background: rgba(245, 158, 11, 0.1);
   border-radius: 4px;
-}
-
-@keyframes lc-pop {
-  from { transform: scale(0.8); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
 }
 </style>

@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import { ref, onUnmounted, computed } from 'vue';
+import { ref, computed } from 'vue';
 import { useI18n } from '../composables/useI18n';
+import { useVizTimers } from '../composables/useVizTimers';
 
 const { t } = useI18n();
+const { safeTimeout, clearAll, delay, speed, isAborted } = useVizTimers();
 
 interface Message {
   id: number;
@@ -39,8 +41,11 @@ const customMsg = ref('');
 
 const totalSent = ref(0);
 const totalProcessed = ref(0);
-const message = ref('');
-const timers = new Set<ReturnType<typeof setTimeout>>();
+const message = ref(t(
+  'Send messages between actors — each processes its mailbox sequentially, one at a time',
+  '在 Actor 之间发送消息 — 每个 Actor 按顺序逐个处理邮箱中的消息'
+));
+let presetRunning = false;
 
 const msgTypes = [
   { value: 'increment', label: 'increment (+1)', labelZh: 'increment（+1）' },
@@ -77,8 +82,8 @@ function sendMessage() {
   receiver.mailbox = [...receiver.mailbox, msg];
   totalSent.value++;
   message.value = t(
-    `${sender.name} → ${receiver.name}: "${content}"`,
-    `${sender.name} → ${receiver.name}："${content}"`
+    `${sender.name} → ${receiver.name}: "${content}". Messages are enqueued — the actor processes them one at a time, ensuring no shared mutable state.`,
+    `${sender.name} → ${receiver.name}："${content}"。消息被排入队列 — Actor 逐个处理，确保没有共享可变状态。`
   );
 
   if (!receiver.processing) {
@@ -106,8 +111,8 @@ function flood() {
   receiver.mailbox = [...receiver.mailbox, ...msgs];
   totalSent.value += 5;
   message.value = t(
-    `Flooded ${receiver.name} with 5 messages — watch the mailbox queue!`,
-    `向 ${receiver.name} 洪泛 5 条消息 — 观察邮箱排队！`
+    `Flooded ${receiver.name} with 5 messages — mailbox acts as a backpressure buffer. Erlang/OTP processes handle millions of queued messages this way.`,
+    `向 ${receiver.name} 洪泛 5 条消息 — 邮箱充当背压缓冲区。Erlang/OTP 进程以这种方式处理数百万排队消息。`
   );
 
   if (!receiver.processing) {
@@ -128,34 +133,28 @@ function processNext(actorIdx: number) {
   actor.state = `→ ${pending.content}`;
   pending.state = 'processing';
 
-  const timer = setTimeout(() => {
-    timers.delete(timer);
+  safeTimeout(() => {
     pending.state = 'done';
     totalProcessed.value++;
 
-    // Apply state change based on message
     switch (pending.content) {
       case 'increment': actor.counter++; break;
       case 'decrement': actor.counter--; break;
       case 'reset':     actor.counter = 0; break;
       case 'double':    actor.counter *= 2; break;
-      default: break; // custom messages don't change counter
+      default: break;
     }
     actor.log = [...actor.log.slice(-4), `${pending.content} (from ${pending.from})`];
 
-    const cleanup = setTimeout(() => {
-      timers.delete(cleanup);
+    safeTimeout(() => {
       actor.mailbox = actor.mailbox.filter(m => m.id !== pending.id);
       processNext(actorIdx);
     }, 300);
-    timers.add(cleanup);
   }, 600);
-  timers.add(timer);
 }
 
 function reset() {
-  for (const t of timers) clearTimeout(t);
-  timers.clear();
+  clearAll();
   nextMsgId = 1;
   actors.value = [
     { name: 'Actor A', color: 'var(--viz-primary)', mailbox: [], state: 'idle', processing: false, counter: 0, log: [] },
@@ -164,13 +163,111 @@ function reset() {
   ];
   totalSent.value = 0;
   totalProcessed.value = 0;
+  presetRunning = false;
   message.value = t('Reset — actors ready', '已重置 — Actor 就绪');
 }
 
-onUnmounted(() => {
-  for (const t of timers) clearTimeout(t);
-  timers.clear();
-});
+async function presetPingPong() {
+  if (presetRunning) return;
+  reset();
+  presetRunning = true;
+  message.value = t(
+    'Ping-pong: A sends to B, B sends to C, C sends back to A. This circular message flow is how Erlang supervision trees propagate health checks.',
+    'Ping-pong：A 发送给 B，B 发送给 C，C 发回给 A。这种循环消息流就是 Erlang 监督树传播健康检查的方式。'
+  );
+  await delay(800);
+  if (!presetRunning || isAborted()) return;
+
+  // A -> B
+  selectedFrom.value = 0; selectedTo.value = 1; selectedMsg.value = 'increment';
+  sendMessage();
+  await delay(1000);
+  if (!presetRunning || isAborted()) return;
+
+  // B -> C
+  selectedFrom.value = 1; selectedTo.value = 2; selectedMsg.value = 'increment';
+  sendMessage();
+  await delay(1000);
+  if (!presetRunning || isAborted()) return;
+
+  // C -> A
+  selectedFrom.value = 2; selectedTo.value = 0; selectedMsg.value = 'increment';
+  sendMessage();
+  await delay(1200);
+  if (!presetRunning || isAborted()) return;
+
+  message.value = t(
+    'All 3 actors processed one message each — no locks needed! Each actor is single-threaded internally. Akka (JVM) and Orleans (.NET) use this exact pattern for distributed systems.',
+    '所有 3 个 Actor 各处理了一条消息 — 不需要锁！每个 Actor 内部是单线程的。Akka (JVM) 和 Orleans (.NET) 在分布式系统中使用完全相同的模式。'
+  );
+  presetRunning = false;
+}
+
+async function presetMailboxOverflow() {
+  if (presetRunning) return;
+  reset();
+  presetRunning = true;
+  message.value = t(
+    'Flooding Actor B — watch the mailbox queue grow. In production, mailbox overflow causes backpressure. Erlang kills processes with oversized mailboxes by default.',
+    '洪泛 Actor B — 观察邮箱队列增长。生产环境中，邮箱溢出导致背压。Erlang 默认会杀死邮箱过大的进程。'
+  );
+  await delay(800);
+  if (!presetRunning || isAborted()) return;
+
+  selectedFrom.value = 0; selectedTo.value = 1;
+  flood();
+  await delay(600);
+  if (!presetRunning || isAborted()) return;
+
+  selectedFrom.value = 2;
+  flood();
+  await delay(1500);
+  if (!presetRunning || isAborted()) return;
+
+  message.value = t(
+    '10 messages queued in B\'s mailbox — processed FIFO. Without backpressure, this is how "hot actor" problems cause memory exhaustion in distributed systems.',
+    '10 条消息排入 B 的邮箱 — FIFO 处理。没有背压时，这就是"热 Actor"问题在分布式系统中导致内存耗尽的方式。'
+  );
+  presetRunning = false;
+}
+
+async function presetFanOut() {
+  if (presetRunning) return;
+  reset();
+  presetRunning = true;
+  message.value = t(
+    'Fan-out: A broadcasts to B and C simultaneously. This is the pub/sub pattern — used in event-driven architectures like NATS and Kafka consumer groups.',
+    'Fan-out：A 同时广播给 B 和 C。这是发布/订阅模式 — 用于 NATS 和 Kafka 消费者组等事件驱动架构。'
+  );
+  await delay(800);
+  if (!presetRunning || isAborted()) return;
+
+  selectedFrom.value = 0; selectedMsg.value = 'increment';
+  selectedTo.value = 1;
+  sendMessage();
+  await delay(200);
+  if (!presetRunning || isAborted()) return;
+  selectedTo.value = 2;
+  sendMessage();
+  await delay(1200);
+  if (!presetRunning || isAborted()) return;
+
+  selectedMsg.value = 'double';
+  selectedTo.value = 1;
+  sendMessage();
+  await delay(200);
+  if (!presetRunning || isAborted()) return;
+  selectedTo.value = 2;
+  sendMessage();
+  await delay(1500);
+  if (!presetRunning || isAborted()) return;
+
+  message.value = t(
+    'Fan-out complete — B and C received identical messages but process independently. Location transparency: the sender doesn\'t care if recipients are local or remote.',
+    'Fan-out 完成 — B 和 C 收到相同消息但独立处理。位置透明性：发送者不关心接收者是本地还是远程。'
+  );
+  presetRunning = false;
+}
 </script>
 
 <template>
@@ -224,6 +321,17 @@ onUnmounted(() => {
       <button class="viz-btn viz-btn--primary" @click="sendMessage">{{ t('Send', '发送') }}</button>
       <button class="viz-btn viz-btn--warning" @click="flood">{{ t('Flood ×5', '洪泛 ×5') }}</button>
       <button class="viz-btn viz-btn--danger" @click="reset">{{ t('Reset', '重置') }}</button>
+      <div class="viz-speed">
+        <input type="range" min="0.5" max="3" step="0.5" v-model.number="speed" />
+        <span class="viz-speed-val">{{ speed }}x</span>
+      </div>
+    </div>
+
+    <div class="viz-presets">
+      <span class="viz-label">{{ t('Scenarios:', '场景：') }}</span>
+      <button class="viz-btn" @click="presetPingPong">{{ t('Ping-Pong', 'Ping-Pong') }}</button>
+      <button class="viz-btn" @click="presetMailboxOverflow">{{ t('Mailbox Flood', '邮箱洪泛') }}</button>
+      <button class="viz-btn" @click="presetFanOut">{{ t('Fan-Out', 'Fan-Out') }}</button>
     </div>
 
     <!-- Actors -->
@@ -276,10 +384,7 @@ onUnmounted(() => {
       </div>
     </div>
 
-    <div class="viz-status">{{ message || t(
-      'Choose sender, receiver, and message type — then click Send',
-      '选择发送方、接收方和消息类型 — 然后点击发送'
-    ) }}</div>
+    <div class="viz-status">{{ message }}</div>
   </div>
 </template>
 
@@ -488,7 +593,7 @@ onUnmounted(() => {
   border-radius: 4px;
   font-size: 0.625rem;
   font-family: var(--vp-font-family-mono);
-  animation: am-arrive 0.3s ease;
+  animation: viz-slide-in 0.3s ease;
 }
 
 .am-msg--queued {
@@ -499,7 +604,7 @@ onUnmounted(() => {
 .am-msg--processing {
   background: rgba(59, 130, 246, 0.15);
   border: 1px solid var(--viz-primary);
-  animation: am-pulse 0.6s ease-in-out infinite;
+  animation: viz-pulse 0.6s ease-in-out infinite;
 }
 
 .am-msg--done {
@@ -545,26 +650,6 @@ onUnmounted(() => {
   font-family: var(--vp-font-family-mono);
   color: var(--viz-muted);
   padding: 1px 0;
-}
-
-.viz-btn--warning {
-  border-color: var(--viz-warning);
-  color: var(--viz-warning);
-}
-
-.viz-btn--warning:hover {
-  background: var(--viz-warning);
-  color: #fff;
-}
-
-@keyframes am-arrive {
-  from { opacity: 0; transform: translateX(-8px); }
-  to { opacity: 1; transform: translateX(0); }
-}
-
-@keyframes am-pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.6; }
 }
 
 @media (max-width: 640px) {

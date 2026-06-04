@@ -1,7 +1,10 @@
 <script setup lang="ts">
-import { ref, computed, onUnmounted } from 'vue';
+import { ref, computed } from 'vue';
 import { useI18n } from '../composables/useI18n';
+import { useVizTimers } from '../composables/useVizTimers';
+
 const { t } = useI18n();
+const { delay, clearAll, speed, isAborted } = useVizTimers();
 
 interface Attempt {
   number: number;
@@ -17,9 +20,12 @@ const BASE_DELAY = 1000;
 const failureRate = ref(70);
 const running = ref(false);
 const attempts = ref<Attempt[]>([]);
-const message = ref(t('Configure failure rate and click "Send Request" to begin', '配置失败率并点击"发送请求"开始'));
+const message = ref(t(
+  'Configure failure rate and click "Send Request" — or pick a scenario below',
+  '配置失败率并点击"发送请求" — 或选择下方场景'
+));
 const finalOutcome = ref<'idle' | 'success' | 'exhausted'>('idle');
-const activeTimers = ref<ReturnType<typeof setTimeout>[]>([]);
+let presetRunning = false;
 
 const maxPossibleDelay = computed(() => {
   let total = 0;
@@ -28,13 +34,6 @@ const maxPossibleDelay = computed(() => {
   }
   return total;
 });
-
-function delay(ms: number): Promise<void> {
-  return new Promise((resolve) => {
-    const id = setTimeout(resolve, ms);
-    activeTimers.value.push(id);
-  });
-}
 
 function addJitter(baseDelay: number): { jitter: number; total: number } {
   const maxJitter = baseDelay * 0.3;
@@ -52,7 +51,10 @@ async function startRequest() {
   running.value = true;
   attempts.value = [];
   finalOutcome.value = 'idle';
-  message.value = t('Sending initial request...', '正在发送初始请求...');
+  message.value = t(
+    'Sending initial request... First attempt has zero delay — only retries back off.',
+    '正在发送初始请求... 首次尝试零延迟 — 仅重试时退避。'
+  );
 
   for (let i = 0; i < MAX_RETRIES; i++) {
     const attemptDelay = i === 0 ? 0 : BASE_DELAY * Math.pow(2, i - 1);
@@ -70,23 +72,29 @@ async function startRequest() {
     attempts.value.push(attempt);
 
     if (i > 0) {
-      message.value = t(`Waiting ${totalDelay}ms before attempt #${i + 1} (${attemptDelay}ms + ${jitter >= 0 ? '+' : ''}${jitter}ms jitter)...`, `等待 ${totalDelay}ms 后进行第 ${i + 1} 次尝试 (${attemptDelay}ms + ${jitter >= 0 ? '+' : ''}${jitter}ms 抖动)...`);
+      message.value = t(
+        `Waiting ${totalDelay}ms before attempt #${i + 1} (base ${attemptDelay}ms × 2^${i - 1} + ${jitter >= 0 ? '+' : ''}${jitter}ms jitter). Exponential backoff prevents thundering herd.`,
+        `等待 ${totalDelay}ms 后进行第 ${i + 1} 次尝试（基础 ${attemptDelay}ms × 2^${i - 1} + ${jitter >= 0 ? '+' : ''}${jitter}ms 抖动）。指数退避防止惊群效应。`
+      );
       const scaledDelay = Math.min(totalDelay / 2, 1500);
       await delay(scaledDelay);
-      if (!running.value) return;
+      if (!running.value || isAborted()) return;
     }
 
     attempts.value[i].result = 'pending';
     message.value = t(`Attempt #${i + 1} — sending request...`, `第 ${i + 1} 次尝试 — 正在发送请求...`);
     await delay(300);
-    if (!running.value) return;
+    if (!running.value || isAborted()) return;
 
     const success = simulateCall();
 
     if (success) {
       attempts.value[i].result = 'success';
       finalOutcome.value = 'success';
-      message.value = t(`Success on attempt #${i + 1}!${i > 0 ? ` (after ${i} ${i === 1 ? 'retry' : 'retries'})` : ' (first try)'}`, `第 ${i + 1} 次尝试成功！${i > 0 ? `（经过 ${i} 次重试）` : '（首次尝试）'}`);
+      message.value = t(
+        `Success on attempt #${i + 1}!${i > 0 ? ` Recovered after ${i} ${i === 1 ? 'retry' : 'retries'}. AWS SDKs and gRPC use this exact backoff strategy.` : ' First try succeeded — no backoff needed.'}`,
+        `第 ${i + 1} 次尝试成功！${i > 0 ? `经过 ${i} 次重试后恢复。AWS SDK 和 gRPC 使用完全相同的退避策略。` : '首次尝试即成功 — 无需退避。'}`
+      );
       running.value = false;
       return;
     }
@@ -94,7 +102,10 @@ async function startRequest() {
     attempts.value[i].result = 'fail';
     if (i === MAX_RETRIES - 1) {
       finalOutcome.value = 'exhausted';
-      message.value = t(`All ${MAX_RETRIES} attempts failed — retries exhausted!`, `全部 ${MAX_RETRIES} 次尝试均失败 — 重试已耗尽！`);
+      message.value = t(
+        `All ${MAX_RETRIES} attempts failed — circuit breaker should open now. Total backoff time: ${timelineTotalMs.value}ms. Without a cap, exponential growth becomes dangerous.`,
+        `全部 ${MAX_RETRIES} 次尝试均失败 — 断路器应该开启。总退避时间：${timelineTotalMs.value}ms。没有上限时，指数增长会变得危险。`
+      );
     }
   }
 
@@ -102,12 +113,15 @@ async function startRequest() {
 }
 
 function reset() {
+  clearAll();
   running.value = false;
-  activeTimers.value.forEach(clearTimeout);
-  activeTimers.value = [];
   attempts.value = [];
   finalOutcome.value = 'idle';
-  message.value = t('Configure failure rate and click "Send Request" to begin', '配置失败率并点击"发送请求"开始');
+  presetRunning = false;
+  message.value = t(
+    'Configure failure rate and click "Send Request" — or pick a scenario below',
+    '配置失败率并点击"发送请求" — 或选择下方场景'
+  );
 }
 
 const timelineTotalMs = computed(() => {
@@ -151,9 +165,56 @@ const statusBorderColor = computed(() => {
   }
 });
 
-onUnmounted(() => {
-  activeTimers.value.forEach(clearTimeout);
-});
+async function presetGuaranteedFail() {
+  if (presetRunning) return;
+  reset();
+  presetRunning = true;
+  failureRate.value = 100;
+  await delay(300);
+  if (!presetRunning || isAborted()) return;
+  message.value = t(
+    '100% failure rate — all 5 attempts will fail. Watch the exponential delay growth: 1s → 2s → 4s → 8s. This is why you need a max backoff cap.',
+    '100% 失败率 — 全部 5 次尝试都会失败。观察指数延迟增长：1s → 2s → 4s → 8s。这就是为什么你需要最大退避上限。'
+  );
+  await delay(600);
+  if (!presetRunning || isAborted()) return;
+  await startRequest();
+  presetRunning = false;
+}
+
+async function presetFlaky() {
+  if (presetRunning) return;
+  reset();
+  presetRunning = true;
+  failureRate.value = 50;
+  await delay(300);
+  if (!presetRunning || isAborted()) return;
+  message.value = t(
+    '50% failure rate — simulates a flaky network. Jitter randomizes retry timing so clients don\'t retry in sync — preventing the "thundering herd" that crashed early AWS services.',
+    '50% 失败率 — 模拟不稳定网络。抖动随机化重试时间，使客户端不会同步重试 — 防止早期 AWS 服务遭遇的"惊群效应"崩溃。'
+  );
+  await delay(600);
+  if (!presetRunning || isAborted()) return;
+  await startRequest();
+  presetRunning = false;
+}
+
+async function presetNoBackoff() {
+  if (presetRunning) return;
+  reset();
+  presetRunning = true;
+  failureRate.value = 70;
+  await delay(300);
+  if (!presetRunning || isAborted()) return;
+  message.value = t(
+    'Watch the delay bars grow exponentially: each retry waits 2x longer. Without this, a failing server receives retry storms at full rate — making recovery impossible.',
+    '观察延迟条指数增长：每次重试等待时间翻倍。如果没有这个机制，故障服务器会以全速接收重试风暴 — 使恢复变得不可能。'
+  );
+  await delay(600);
+  if (!presetRunning || isAborted()) return;
+  await startRequest();
+  presetRunning = false;
+}
 </script>
 
 <template>
@@ -276,6 +337,17 @@ onUnmounted(() => {
         {{ running ? t('Running...', '运行中...') : t('Send Request', '发送请求') }}
       </button>
       <button class="viz-btn viz-btn--danger" @click="reset">{{ t('Reset', '重置') }}</button>
+      <div class="viz-speed">
+        <input type="range" min="0.5" max="3" step="0.5" v-model.number="speed" />
+        <span class="viz-speed-val">{{ speed }}x</span>
+      </div>
+    </div>
+
+    <div class="viz-presets">
+      <span class="viz-label">{{ t('Scenarios:', '场景：') }}</span>
+      <button class="viz-btn" @click="presetGuaranteedFail">{{ t('All Fail', '全部失败') }}</button>
+      <button class="viz-btn" @click="presetFlaky">{{ t('Flaky Network', '不稳定网络') }}</button>
+      <button class="viz-btn" @click="presetNoBackoff">{{ t('Exponential Growth', '指数增长') }}</button>
     </div>
 
     <div class="viz-status" :style="{ borderLeft: `3px solid ${statusBorderColor}` }">
@@ -346,7 +418,7 @@ onUnmounted(() => {
   border-radius: 6px;
   padding: 0.5rem 0.625rem;
   background: var(--vp-c-bg);
-  animation: rb-slide-in 0.3s ease;
+  animation: viz-slide-in 0.3s ease;
 }
 
 .rb-attempt--success {
@@ -359,12 +431,12 @@ onUnmounted(() => {
 
 .rb-attempt--waiting {
   border-color: var(--viz-warning);
-  animation: rb-pulse 1s ease infinite;
+  animation: viz-pulse 1s ease infinite;
 }
 
 .rb-attempt--pending {
   border-color: var(--viz-primary);
-  animation: rb-pulse 0.6s ease infinite;
+  animation: viz-pulse 0.6s ease infinite;
 }
 
 .rb-attempt-header {
@@ -431,25 +503,5 @@ onUnmounted(() => {
   padding: 0.375rem 0;
   border-top: 1px solid var(--viz-border);
   margin-top: 0.25rem;
-}
-
-@keyframes rb-slide-in {
-  from {
-    opacity: 0;
-    transform: translateY(-8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes rb-pulse {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.6;
-  }
 }
 </style>

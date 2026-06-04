@@ -1,16 +1,12 @@
 <script setup lang="ts">
-import { ref, computed, onUnmounted } from 'vue';
+import { ref, computed } from 'vue';
 import { useI18n } from '../composables/useI18n';
+import { useVizTimers } from '../composables/useVizTimers';
 
 const { t } = useI18n();
+const { safeTimeout, delay, clearAll, speed, isAborted } = useVizTimers();
 
-const pendingTimers = new Set<ReturnType<typeof setTimeout>>();
-let aborted = false;
-onUnmounted(() => {
-  aborted = true;
-  pendingTimers.forEach(id => clearTimeout(id));
-  pendingTimers.clear();
-});
+let presetRunning = false;
 
 interface TrieNode {
   char: string;
@@ -58,8 +54,7 @@ function insertWord() {
   message.value = t(`Inserted "${word}" (${word.length} nodes traversed)`, `已插入 "${word}"（遍历 ${word.length} 个节点）`);
   inputWord.value = '';
 
-  const id = setTimeout(() => { pendingTimers.delete(id); highlightIds.value = new Set(); }, 800);
-  pendingTimers.add(id);
+  safeTimeout(() => { highlightIds.value = new Set(); }, 800);
 }
 
 async function searchWord() {
@@ -75,11 +70,10 @@ async function searchWord() {
   for (const ch of word) {
     highlightIds.value = new Set(path);
     await delay(200);
-    if (aborted) return;
+    if (isAborted()) return;
     if (!current.children.has(ch)) {
       message.value = t(`"${word}" not found — no '${ch}' edge from current node`, `未找到 "${word}" — 当前节点无 '${ch}' 边`);
-      const id = setTimeout(() => { pendingTimers.delete(id); highlightIds.value = new Set(); }, 800);
-      pendingTimers.add(id);
+      safeTimeout(() => { highlightIds.value = new Set(); }, 800);
       return;
     }
     current = current.children.get(ch)!;
@@ -92,8 +86,7 @@ async function searchWord() {
   } else {
     message.value = t(`"${word}" is a prefix but not a stored word`, `"${word}" 是前缀但不是已存储的单词`);
   }
-  const id2 = setTimeout(() => { pendingTimers.delete(id2); highlightIds.value = new Set(); }, 1200);
-  pendingTimers.add(id2);
+  safeTimeout(() => { highlightIds.value = new Set(); }, 1200);
 }
 
 function addPresets() {
@@ -105,6 +98,8 @@ function addPresets() {
 }
 
 function reset() {
+  clearAll();
+  presetRunning = false;
   nextId = 0;
   root.value = createNode('');
   words.value = [];
@@ -113,8 +108,89 @@ function reset() {
   inputWord.value = '';
 }
 
-function delay(ms: number) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+async function presetPrefixSharing() {
+  if (presetRunning) return;
+  reset();
+  presetRunning = true;
+  message.value = t(
+    "Prefix sharing: 'cat', 'car', 'card', 'care' share the prefix 'ca'. The trie stores shared prefixes once — 4 words but only 7 unique nodes instead of 15 characters.",
+    "前缀共享：'cat'、'car'、'card'、'care' 共享前缀 'ca'。Trie 只存储一次共享前缀 — 4 个单词仅需 7 个唯一节点，而非 15 个字符。"
+  );
+  await delay(600);
+  if (!presetRunning || isAborted()) return;
+
+  for (const word of ['cat', 'car', 'card', 'care']) {
+    inputWord.value = word;
+    insertWord();
+    await delay(500);
+    if (!presetRunning || isAborted()) return;
+  }
+
+  message.value = t(
+    "Prefix sharing saved 53% storage. Linux uses LC-trie (fib_trie.c) for IPv4 routing — millions of routes compressed via shared prefixes. Autocomplete systems (Google Search, IDE IntelliSense) use tries for O(k) prefix lookup where k = query length.",
+    "前缀共享节省了 53% 存储。Linux 使用 LC-trie（fib_trie.c）进行 IPv4 路由 — 数百万条路由通过共享前缀压缩。自动补全系统（Google 搜索、IDE IntelliSense）使用 Trie 实现 O(k) 前缀查找，其中 k = 查询长度。"
+  );
+  presetRunning = false;
+}
+
+async function presetSearchPath() {
+  if (presetRunning) return;
+  reset();
+  presetRunning = true;
+  message.value = t(
+    "Search traversal: following edges character by character. Each step is O(1) — total search is O(k) where k = word length, regardless of how many words are stored. Compare with hash table O(k) for hashing + O(1) lookup, but tries also support prefix queries.",
+    "搜索遍历：逐字符沿边查找。每步 O(1) — 总搜索为 O(k)，其中 k = 单词长度，与存储的单词数量无关。对比哈希表 O(k) 哈希 + O(1) 查找，但 Trie 还支持前缀查询。"
+  );
+  await delay(600);
+  if (!presetRunning || isAborted()) return;
+
+  for (const word of ['cat', 'car', 'card', 'care']) {
+    inputWord.value = word;
+    insertWord();
+    await delay(400);
+    if (!presetRunning || isAborted()) return;
+  }
+
+  inputWord.value = 'card';
+  await searchWord();
+  await delay(600);
+  if (!presetRunning || isAborted()) return;
+
+  inputWord.value = 'cap';
+  await searchWord();
+  await delay(400);
+  if (!presetRunning || isAborted()) return;
+
+  message.value = t(
+    "'card' found, 'cap' not found — failed at 'p' edge from 'ca'. Tries give precise failure points; hash tables just say 'not found'. DNS resolvers use tries for domain name lookup (right-to-left: com → example → www).",
+    "找到 'card'，未找到 'cap' — 在 'ca' 处的 'p' 边失败。Trie 给出精确失败点；哈希表只会说“未找到”。DNS 解析器使用 Trie 进行域名查找（从右到左：com → example → www）。"
+  );
+  presetRunning = false;
+}
+
+async function presetDenseTree() {
+  if (presetRunning) return;
+  reset();
+  presetRunning = true;
+  message.value = t(
+    "Dense subtree: all words share 'do' prefix. Radix tries (Patricia tries) compress single-child chains: 'd-o-g' becomes one node 'dog'. Redis RAX does this for memory-efficient key storage. Go's HTTP router (httprouter) uses radix tries for O(k) URL matching.",
+    "密集子树：所有单词共享 'do' 前缀。基数树（Patricia 树）压缩单子链：'d-o-g' 变为一个节点 'dog'。Redis RAX 以此实现内存高效的键存储。Go 的 HTTP 路由器（httprouter）使用基数树实现 O(k) URL 匹配。"
+  );
+  await delay(600);
+  if (!presetRunning || isAborted()) return;
+
+  for (const word of ['do', 'dog', 'dot', 'dote', 'dots']) {
+    inputWord.value = word;
+    insertWord();
+    await delay(500);
+    if (!presetRunning || isAborted()) return;
+  }
+
+  message.value = t(
+    "Dense subtree built: 5 words, all branching from 'do'. Radix tries (Patricia tries) compress single-child chains: 'd-o-g' becomes one node 'dog'. Redis RAX does this for memory-efficient key storage. Go's HTTP router (httprouter) uses radix tries for O(k) URL matching.",
+    "密集子树已构建：5 个单词，全部从 'do' 分支。基数树（Patricia 树）压缩单子链：'d-o-g' 变为一个节点 'dog'。Redis RAX 以此实现内存高效的键存储。Go 的 HTTP 路由器（httprouter）使用基数树实现 O(k) URL 匹配。"
+  );
+  presetRunning = false;
 }
 
 interface TreeLayout {
@@ -242,6 +318,17 @@ const edges = computed(() => edgesFromLayout(treeLayout.value));
       <button class="viz-btn" @click="searchWord">{{ t('Search', '搜索') }}</button>
       <button class="viz-btn" @click="addPresets">{{ t('Demo', '演示') }}</button>
       <button class="viz-btn viz-btn--danger" @click="reset">{{ t('Reset', '重置') }}</button>
+      <div class="viz-speed">
+        <input type="range" min="0.5" max="3" step="0.5" v-model.number="speed" />
+        <span class="viz-speed-val">{{ speed }}x</span>
+      </div>
+    </div>
+
+    <div class="viz-presets">
+      <span class="viz-label">{{ t('Scenarios:', '场景：') }}</span>
+      <button class="viz-btn" @click="presetPrefixSharing">{{ t('Prefix Sharing', '前缀共享') }}</button>
+      <button class="viz-btn" @click="presetSearchPath">{{ t('Search Path', '搜索路径') }}</button>
+      <button class="viz-btn" @click="presetDenseTree">{{ t('Dense Tree', '密集树') }}</button>
     </div>
 
     <div class="viz-status">{{ message }}</div>
@@ -259,7 +346,7 @@ const edges = computed(() => edgesFromLayout(treeLayout.value));
 }
 
 .trie-node-pulse {
-  animation: trie-pulse 0.3s ease;
+  animation: viz-pulse 0.3s ease;
 }
 
 .trie-words {
@@ -290,10 +377,5 @@ const edges = computed(() => edgesFromLayout(treeLayout.value));
   background: var(--vp-c-bg);
   color: var(--viz-text);
   width: 100px;
-}
-
-@keyframes trie-pulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.15); }
 }
 </style>

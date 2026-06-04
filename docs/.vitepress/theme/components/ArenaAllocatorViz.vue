@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { ref, computed, reactive } from 'vue';
 import { useI18n } from '../composables/useI18n';
+import { useVizTimers } from '../composables/useVizTimers';
 
 const { t } = useI18n();
+const { delay, clearAll: clearTimers, speed, isAborted } = useVizTimers();
 
 interface Allocation {
   id: number;
@@ -46,6 +48,7 @@ let arenaIdCounter = 1;
 
 const selectedSize = ref(2);
 const customLabel = ref('');
+let presetRunning = false;
 
 const arenas = ref<Arena[]>([
   { id: arenaIdCounter++, capacity: ARENA_CAPACITY, pointer: 0, allocations: [] },
@@ -66,8 +69,8 @@ const history = reactive<HistoryEntry[]>([]);
 
 const message = ref(
   t(
-    'Arena is empty -- choose a size and click "Allocate" to bump the pointer',
-    'Arena 为空 -- 选择大小并点击"分配"将指针向前推进'
+    'Arena allocator: bump a pointer forward to allocate, free everything at once. Used by compilers (LLVM), game engines (Unreal), and Go\'s escape analysis.',
+    'Arena 分配器：向前移动指针来分配，一次性释放所有内容。编译器（LLVM）、游戏引擎（Unreal）和 Go 的逃逸分析都使用此模式。'
   )
 );
 
@@ -104,8 +107,8 @@ function allocate() {
 
   if (arena.pointer + size > arena.capacity) {
     message.value = t(
-      `Cannot allocate ${size} unit(s) in Arena #${arena.id} -- only ${arena.capacity - arena.pointer} free. Add a new arena or reset.`,
-      `无法在 Arena #${arena.id} 中分配 ${size} 个单元 -- 仅剩 ${arena.capacity - arena.pointer} 可用。添加新 Arena 或重置。`
+      `Cannot allocate ${size} unit(s) in Arena #${arena.id} — only ${arena.capacity - arena.pointer} free. Add a new arena (chaining) or reset.`,
+      `无法在 Arena #${arena.id} 中分配 ${size} 个单元 — 仅剩 ${arena.capacity - arena.pointer} 可用。添加新 Arena（链式）或重置。`
     );
     return;
   }
@@ -133,8 +136,8 @@ function allocate() {
   });
 
   message.value = t(
-    `Allocated "${alloc.label}" (${size} unit(s)) at offset ${alloc.offset} in Arena #${arena.id} -- pointer now at ${arena.pointer}`,
-    `已分配 "${alloc.label}" (${size} 个单元) 在偏移量 ${alloc.offset} (Arena #${arena.id}) -- 指针现在位于 ${arena.pointer}`
+    `Allocated "${alloc.label}" (${size} unit(s)) at offset ${alloc.offset} — pointer bumped to ${arena.pointer}. O(1) allocation: just increment a pointer, no free-list traversal.`,
+    `已分配 "${alloc.label}" (${size} 个单元) 在偏移量 ${alloc.offset} — 指针移至 ${arena.pointer}。O(1) 分配：只需递增指针，无需遍历空闲链表。`
   );
 }
 
@@ -150,12 +153,13 @@ function resetArena(index: number) {
   });
 
   message.value = t(
-    `Arena #${arena.id} reset -- all memory freed at once (O(1) deallocation)`,
-    `Arena #${arena.id} 已重置 -- 所有内存一次性释放（O(1) 释放）`
+    `Arena #${arena.id} reset — all memory freed in O(1). No per-object destructor calls. This is why arena allocation is 10-100x faster than malloc/free.`,
+    `Arena #${arena.id} 已重置 — 所有内存 O(1) 释放。没有逐对象析构调用。这就是 arena 分配比 malloc/free 快 10-100 倍的原因。`
   );
 }
 
 function resetAll() {
+  clearTimers();
   arenas.value = [
     { id: arenaIdCounter++, capacity: ARENA_CAPACITY, pointer: 0, allocations: [] },
   ];
@@ -163,10 +167,11 @@ function resetAll() {
   globalAllocId = 1;
   globalColorIdx = 0;
   history.length = 0;
+  presetRunning = false;
 
   message.value = t(
-    'All arenas reset -- fresh start with a single empty arena',
-    '所有 Arena 已重置 -- 以单个空 Arena 重新开始'
+    'All arenas reset — fresh start with a single empty arena',
+    '所有 Arena 已重置 — 以单个空 Arena 重新开始'
   );
 }
 
@@ -187,8 +192,8 @@ function addArena() {
   });
 
   message.value = t(
-    `New Arena #${newArena.id} created (chained) -- active arena switched`,
-    `新 Arena #${newArena.id} 已创建（链式） -- 已切换活跃 Arena`
+    `New Arena #${newArena.id} created (chained). When one arena fills up, chain a new one — like Go's arena allocator or Rust's bumpalo crate.`,
+    `新 Arena #${newArena.id} 已创建（链式）。当一个 arena 满时，链接新的 — 类似 Go 的 arena 分配器或 Rust 的 bumpalo crate。`
   );
 }
 
@@ -207,6 +212,98 @@ function usagePercent(arena: Arena): number {
 function formatTime(ts: number): string {
   const d = new Date(ts);
   return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+}
+
+async function presetFillAndChain() {
+  if (presetRunning) return;
+  resetAll();
+  presetRunning = true;
+  message.value = t(
+    'Filling an arena to capacity, then chaining a new one. LLVM does this for AST nodes — each compilation phase gets its own arena, freed atomically when done.',
+    '将 arena 填满，然后链接新的。LLVM 对 AST 节点这样做 — 每个编译阶段有自己的 arena，完成后原子释放。'
+  );
+  await delay(600);
+  selectedSize.value = 4;
+  for (let i = 0; i < 8; i++) {
+    if (!presetRunning || isAborted()) return;
+    allocate();
+    await delay(300);
+    if (!presetRunning || isAborted()) return;
+  }
+  message.value = t(
+    'Arena full (32/32)! Adding a chained arena...',
+    'Arena 已满 (32/32)！添加链式 arena...'
+  );
+  await delay(600);
+  if (!presetRunning || isAborted()) return;
+  addArena();
+  await delay(400);
+  if (!presetRunning || isAborted()) return;
+  selectedSize.value = 2;
+  allocate();
+  await delay(300);
+  if (!presetRunning || isAborted()) return;
+  allocate();
+  message.value = t(
+    'Chained arena working. When both phases are done, reset both arenas in O(1) each — no per-object cleanup.',
+    '链式 arena 正常工作。当两个阶段完成时，每个 arena O(1) 重置 — 无需逐对象清理。'
+  );
+  presetRunning = false;
+}
+
+async function presetCompilerPhase() {
+  if (presetRunning) return;
+  resetAll();
+  presetRunning = true;
+  message.value = t(
+    'Compiler phase simulation: allocate AST nodes for parsing, then reset the entire arena when done. This is how Zig, Rust (rustc), and Go compilers manage memory.',
+    '编译器阶段模拟：为解析分配 AST 节点，完成后重置整个 arena。Zig、Rust (rustc) 和 Go 编译器就是这样管理内存的。'
+  );
+  await delay(600);
+
+  const nodeNames = ['FnDecl', 'Param', 'Block', 'Return', 'Expr', 'Ident', 'Literal'];
+  const sizes = [4, 1, 2, 2, 1, 1, 1];
+  for (let i = 0; i < nodeNames.length; i++) {
+    if (!presetRunning || isAborted()) return;
+    customLabel.value = nodeNames[i];
+    selectedSize.value = sizes[i];
+    allocate();
+    await delay(350);
+    if (!presetRunning || isAborted()) return;
+  }
+  message.value = t(
+    'Parse phase complete — 7 AST nodes allocated. Now resetting the arena. In a real compiler, this frees hundreds of thousands of nodes instantly.',
+    '解析阶段完成 — 7 个 AST 节点已分配。现在重置 arena。在真实编译器中，这会瞬间释放数十万个节点。'
+  );
+  await delay(1200);
+  if (!presetRunning || isAborted()) return;
+  resetArena(0);
+  presetRunning = false;
+}
+
+async function presetMixedSizes() {
+  if (presetRunning) return;
+  resetAll();
+  presetRunning = true;
+  message.value = t(
+    'Mixed allocation sizes: unlike malloc, arena allocation has zero internal fragmentation — each object is placed contiguously after the last.',
+    '混合分配大小：与 malloc 不同，arena 分配零内部碎片 — 每个对象连续放置在上一个之后。'
+  );
+  await delay(600);
+
+  const pattern = [1, 4, 2, 1, 4, 2, 1, 1, 2, 4];
+  for (const size of pattern) {
+    if (!presetRunning || isAborted()) return;
+    selectedSize.value = size;
+    allocate();
+    await delay(300);
+    if (!presetRunning || isAborted()) return;
+  }
+  message.value = t(
+    `${totalAllocations.value} allocations, ${totalUsed.value}/${totalCapacity.value} used. Zero fragmentation — every byte is utilized. malloc would have metadata overhead per allocation (16-32 bytes each on 64-bit).`,
+    `${totalAllocations.value} 次分配，${totalUsed.value}/${totalCapacity.value} 已使用。零碎片 — 每个字节都被利用。malloc 每次分配会有元数据开销（64 位系统每次 16-32 字节）。`
+  );
+  presetRunning = false;
 }
 </script>
 
@@ -274,6 +371,17 @@ function formatTime(ts: number): string {
       <button class="viz-btn viz-btn--danger" @click="resetAll">
         {{ t('Reset All', '全部重置') }}
       </button>
+      <div class="viz-speed">
+        <input type="range" min="0.5" max="3" step="0.5" v-model.number="speed" />
+        <span class="viz-speed-val">{{ speed }}x</span>
+      </div>
+    </div>
+
+    <div class="viz-presets">
+      <span class="viz-label">{{ t('Scenarios:', '场景：') }}</span>
+      <button class="viz-btn" @click="presetFillAndChain">{{ t('Fill & Chain', '填满链接') }}</button>
+      <button class="viz-btn" @click="presetCompilerPhase">{{ t('Compiler Phase', '编译阶段') }}</button>
+      <button class="viz-btn" @click="presetMixedSizes">{{ t('Mixed Sizes', '混合大小') }}</button>
     </div>
 
     <div class="viz-status">{{ message }}</div>

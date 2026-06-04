@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import { ref, onUnmounted, watch } from 'vue';
+import { ref, watch } from 'vue';
 import { useI18n } from '../composables/useI18n';
+import { useVizTimers } from '../composables/useVizTimers';
 
 const { t } = useI18n();
+const { safeTimeout, safeInterval, clearAll, speed, delay, isAborted } = useVizTimers();
 
 const TOTAL_UNITS = 20;
 const CHUNK_SIZE = 4;
@@ -17,14 +19,14 @@ const ballY = ref(0);
 const ballDir = ref(1);
 const ballAnimating = ref(true);
 const timeline = ref<Array<{ type: 'work' | 'yield' | 'idle'; chunk: number }>>([]);
-const message = ref(t('Toggle mode and click "Start Long Task" to compare blocking vs cooperative', '切换模式并点击"启动长任务"来对比阻塞与协作调度'));
-
-let workTimer: ReturnType<typeof setTimeout> | null = null;
-let ballTimer: ReturnType<typeof setInterval> | null = null;
+const message = ref(t(
+  'Toggle mode and click "Start Long Task" — or pick a scenario to compare blocking vs cooperative',
+  '切换模式并点击"启动长任务" — 或选择场景对比阻塞与协作调度'
+));
+let presetRunning = false;
 
 function startBallAnimation() {
-  if (ballTimer) return;
-  ballTimer = setInterval(() => {
+  safeInterval(() => {
     if (!ballAnimating.value) return;
     ballY.value += ballDir.value * 3;
     if (ballY.value >= 40) { ballY.value = 40; ballDir.value = -1; }
@@ -33,18 +35,6 @@ function startBallAnimation() {
 }
 
 startBallAnimation();
-
-function stopBallAnimation() {
-  if (ballTimer) {
-    clearInterval(ballTimer);
-    ballTimer = null;
-  }
-}
-
-onUnmounted(() => {
-  stopBallAnimation();
-  if (workTimer) clearTimeout(workTimer);
-});
 
 function startTask() {
   if (running.value) return;
@@ -64,7 +54,10 @@ function startTask() {
 function runBlocking() {
   blocked.value = true;
   ballAnimating.value = false;
-  message.value = t('BLOCKING: Main thread is frozen! UI cannot update (ball stops)', '阻塞中：主线程被冻结！UI 无法更新（球停止）');
+  message.value = t(
+    'BLOCKING: Main thread is frozen! UI cannot update (ball stops). This is what happens with long synchronous loops in JavaScript.',
+    '阻塞中：主线程被冻结！UI 无法更新（球停止）。这就是 JavaScript 中长同步循环会发生的情况。'
+  );
 
   let done = 0;
   function tick() {
@@ -72,13 +65,16 @@ function runBlocking() {
       blocked.value = false;
       ballAnimating.value = true;
       running.value = false;
-      message.value = t(`Done! All ${TOTAL_UNITS} units processed in one blocking run. UI was frozen the entire time.`, `完成！所有 ${TOTAL_UNITS} 个单元在一次阻塞运行中处理完毕。UI 全程冻结。`);
+      message.value = t(
+        `Done! All ${TOTAL_UNITS} units processed in one blocking run. UI was frozen the entire time — a 200ms task would cause visible jank in a 60fps app.`,
+        `完成！所有 ${TOTAL_UNITS} 个单元在一次阻塞运行中处理完毕。UI 全程冻结 — 200ms 的任务会在 60fps 应用中造成明显卡顿。`
+      );
       return;
     }
     done++;
     progress.value = done;
     timeline.value = [...timeline.value, { type: 'work', chunk: 0 }];
-    workTimer = setTimeout(tick, TICK_MS);
+    safeTimeout(tick, TICK_MS);
   }
   tick();
 }
@@ -92,23 +88,30 @@ function runCooperative(startUnit: number) {
   let done = startUnit;
   const chunkEnd = Math.min(startUnit + CHUNK_SIZE, TOTAL_UNITS);
 
-  message.value = t(`Chunk ${chunkNum + 1}: processing units ${startUnit + 1}-${chunkEnd} of ${TOTAL_UNITS}`, `分块 ${chunkNum + 1}：正在处理第 ${startUnit + 1}-${chunkEnd} 个单元（共 ${TOTAL_UNITS} 个）`);
+  message.value = t(
+    `Chunk ${chunkNum + 1}: processing units ${startUnit + 1}-${chunkEnd}. The "yield" gap lets the browser paint, handle events, and run requestAnimationFrame.`,
+    `分块 ${chunkNum + 1}：正在处理第 ${startUnit + 1}-${chunkEnd} 个单元。"让出"间隙让浏览器绘制、处理事件和运行 requestAnimationFrame。`
+  );
 
   function tick() {
     if (done >= chunkEnd) {
-      // Chunk done, yield
       if (done >= TOTAL_UNITS) {
         running.value = false;
         ballAnimating.value = true;
-        message.value = t(`Done! ${TOTAL_UNITS} units in ${Math.ceil(TOTAL_UNITS / CHUNK_SIZE)} chunks. UI stayed responsive throughout!`, `完成！${TOTAL_UNITS} 个单元分 ${Math.ceil(TOTAL_UNITS / CHUNK_SIZE)} 块处理。UI 全程保持响应！`);
+        message.value = t(
+          `Done! ${TOTAL_UNITS} units in ${Math.ceil(TOTAL_UNITS / CHUNK_SIZE)} chunks. UI stayed responsive throughout! React's fiber scheduler uses this exact pattern — work in 5ms chunks, then yield to the browser.`,
+          `完成！${TOTAL_UNITS} 个单元分 ${Math.ceil(TOTAL_UNITS / CHUNK_SIZE)} 块处理。UI 全程保持响应！React 的 fiber 调度器使用完全相同的模式 — 每次工作 5ms，然后让出给浏览器。`
+        );
         return;
       }
-      // Yield gap
       yieldGap.value = true;
       ballAnimating.value = true;
       timeline.value = [...timeline.value, { type: 'yield', chunk: chunkNum }];
-      message.value = t('Yielding... UI can update (ball bounces). Next chunk starts shortly.', '让出中...UI 可以更新（球在跳动）。下一块即将开始。');
-      workTimer = setTimeout(() => {
+      message.value = t(
+        'Yielding... UI can update (ball bounces). This is like React\'s shouldYield() — check if the browser needs the main thread back.',
+        '让出中...UI 可以更新（球在跳动）。这类似 React 的 shouldYield() — 检查浏览器是否需要回收主线程。'
+      );
+      safeTimeout(() => {
         yieldGap.value = false;
         runCooperative(done);
       }, TICK_MS * 3);
@@ -117,29 +120,97 @@ function runCooperative(startUnit: number) {
     done++;
     progress.value = done;
     timeline.value = [...timeline.value, { type: 'work', chunk: chunkNum }];
-    workTimer = setTimeout(tick, TICK_MS);
+    safeTimeout(tick, TICK_MS);
   }
   tick();
 }
 
 function reset() {
-  if (workTimer) { clearTimeout(workTimer); workTimer = null; }
+  clearAll();
   running.value = false;
   progress.value = 0;
   blocked.value = false;
   yieldGap.value = false;
   ballAnimating.value = true;
   timeline.value = [];
+  presetRunning = false;
   message.value = t('Reset. Toggle mode and start again.', '已重置。切换模式并重新开始。');
+  startBallAnimation();
 }
 
 watch(cooperative, () => {
   if (!running.value) {
     message.value = cooperative.value
-      ? t('Cooperative mode: work split into chunks of 4, yielding between each', '协作模式：工作分为 4 个一组，每组间让出控制权')
-      : t('Blocking mode: all 20 units run without yielding', '阻塞模式：20 个单元不间断运行');
+      ? t('Cooperative mode: work split into chunks of 4, yielding between each. Used by React Fiber, scheduler.postTask(), and requestIdleCallback().', '协作模式：工作分为 4 个一组，每组间让出控制权。React Fiber、scheduler.postTask() 和 requestIdleCallback() 使用此模式。')
+      : t('Blocking mode: all 20 units run without yielding. Simulates a long synchronous task on the main thread.', '阻塞模式：20 个单元不间断运行。模拟主线程上的长同步任务。');
   }
 });
+
+async function presetSideBySide() {
+  if (presetRunning) return;
+  reset();
+  presetRunning = true;
+  message.value = t(
+    'First: blocking mode — watch the ball freeze. Then: cooperative mode — ball stays smooth. This is the core insight behind React\'s concurrent rendering.',
+    '首先：阻塞模式 — 观察球冻结。然后：协作模式 — 球保持流畅。这是 React 并发渲染的核心洞察。'
+  );
+  await delay(1000);
+  if (!presetRunning || isAborted()) return;
+  cooperative.value = false;
+  startTask();
+
+  const waitForDone = () => new Promise<void>((resolve) => {
+    const check = () => {
+      if (!running.value) { resolve(); return; }
+      safeTimeout(check, 100);
+    };
+    safeTimeout(check, 100);
+  });
+  await waitForDone();
+  if (!presetRunning || isAborted()) return;
+
+  message.value = t(
+    'Blocking done — UI was frozen. Now switching to cooperative mode...',
+    '阻塞完成 — UI 已冻结。现在切换到协作模式...'
+  );
+  await delay(1200);
+  if (!presetRunning || isAborted()) return;
+  progress.value = 0;
+  timeline.value = [];
+  cooperative.value = true;
+  startTask();
+  presetRunning = false;
+}
+
+async function presetReactFiber() {
+  if (presetRunning) return;
+  reset();
+  presetRunning = true;
+  cooperative.value = true;
+  message.value = t(
+    'React Fiber simulation: work is split into "units of work". After each chunk, React calls shouldYield() to check if the browser needs the thread. If yes, it pauses and resumes later.',
+    'React Fiber 模拟：工作被分成"工作单元"。每块完成后，React 调用 shouldYield() 检查浏览器是否需要线程。如果是，暂停并稍后恢复。'
+  );
+  await delay(800);
+  if (!presetRunning || isAborted()) return;
+  startTask();
+  presetRunning = false;
+}
+
+async function presetInputLatency() {
+  if (presetRunning) return;
+  reset();
+  presetRunning = true;
+  cooperative.value = false;
+  message.value = t(
+    'Input latency demo: in blocking mode, user clicks and keystrokes are queued until the task finishes. Google\'s INP (Interaction to Next Paint) metric penalizes this — tasks > 50ms hurt your Core Web Vitals score.',
+    '输入延迟演示：阻塞模式下，用户的点击和按键被排队直到任务完成。Google 的 INP（下次绘制的交互）指标会对此惩罚 — 超过 50ms 的任务会影响 Core Web Vitals 分数。'
+  );
+  await delay(800);
+  if (!presetRunning || isAborted()) return;
+  startTask();
+  presetRunning = false;
+}
 
 const chunkColors = [
   'var(--viz-primary)',
@@ -240,6 +311,17 @@ const chunkColors = [
     <div class="viz-controls">
       <button class="viz-btn viz-btn--primary" @click="startTask" :disabled="running">{{ t('Start Long Task', '启动长任务') }}</button>
       <button class="viz-btn viz-btn--danger" @click="reset">{{ t('Reset', '重置') }}</button>
+      <div class="viz-speed">
+        <input type="range" min="0.5" max="3" step="0.5" v-model.number="speed" />
+        <span class="viz-speed-val">{{ speed }}x</span>
+      </div>
+    </div>
+
+    <div class="viz-presets">
+      <span class="viz-label">{{ t('Scenarios:', '场景：') }}</span>
+      <button class="viz-btn" @click="presetSideBySide">{{ t('Block → Coop', '阻塞 → 协作') }}</button>
+      <button class="viz-btn" @click="presetReactFiber">{{ t('React Fiber', 'React Fiber') }}</button>
+      <button class="viz-btn" @click="presetInputLatency">{{ t('Input Latency', '输入延迟') }}</button>
     </div>
 
     <div class="viz-status">{{ message }}</div>
@@ -480,11 +562,6 @@ const chunkColors = [
 .cs-legend-dot--yield {
   background: rgba(16, 185, 129, 0.15);
   border: 1px dashed var(--viz-success);
-}
-
-.viz-btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
 }
 
 @keyframes cs-unit-appear {

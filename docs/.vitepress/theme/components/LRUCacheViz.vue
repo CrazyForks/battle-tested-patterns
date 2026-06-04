@@ -1,11 +1,10 @@
 <script setup lang="ts">
-import { ref, computed, onUnmounted } from 'vue';
+import { ref, computed } from 'vue';
 import { useI18n } from '../composables/useI18n';
+import { useVizTimers } from '../composables/useVizTimers';
 
 const { t } = useI18n();
-
-const pendingTimers = new Set<ReturnType<typeof setTimeout>>();
-onUnmounted(() => { for (const tid of pendingTimers) clearTimeout(tid); });
+const { safeTimeout, clearAll, speed } = useVizTimers();
 
 const CAPACITY = 4;
 
@@ -16,23 +15,19 @@ interface CacheEntry {
 }
 
 const entries = ref<CacheEntry[]>([]);
-const message = ref(t('Try get("A") or put("A","1") to start', '试试 get("A") 或 put("A","1") 开始'));
+const message = ref(t('Try get("A") or put("A","1") — or pick a preset scenario below', '试试 get("A") 或 put("A","1") — 或选择下方的预设场景'));
 const animKey = ref('');
 const animAction = ref<'hit' | 'miss' | 'evict' | 'insert' | ''>('');
 const inputKey = ref('');
 const inputValue = ref('');
 let idCounter = 0;
-
-const presets: [string, string][] = [
-  ['A', '1'], ['B', '2'], ['C', '3'], ['D', '4'], ['E', '5'],
-];
-let presetIndex = 0;
+let presetRunning = false;
 
 function put(key?: string, value?: string) {
   const k = key ?? inputKey.value.trim().toUpperCase();
   const v = value ?? inputValue.value.trim();
   if (!k) { message.value = t('Enter a key first', '请先输入键'); return; }
-  const val = v || String(++presetIndex);
+  const val = v || String(idCounter + 1);
 
   const existIdx = entries.value.findIndex(e => e.key === k);
   if (existIdx >= 0) {
@@ -40,24 +35,31 @@ function put(key?: string, value?: string) {
     entries.value.unshift({ key: k, value: val, id: ++idCounter });
     animKey.value = k;
     animAction.value = 'hit';
-    message.value = t(`put("${k}", "${val}") → key exists, moved to front`, `put("${k}", "${val}") → 键已存在，移至头部`);
+    message.value = t(
+      `put("${k}") → already exists — moved to MRU end. LRU assumes recent access predicts future access.`,
+      `put("${k}") → 已存在 — 移至 MRU 端。LRU 假设最近访问的数据未来更可能再次被访问。`
+    );
   } else {
     if (entries.value.length >= CAPACITY) {
       const evicted = entries.value.pop()!;
       animKey.value = evicted.key;
       animAction.value = 'evict';
-      message.value = t(`put("${k}", "${val}") → evicted "${evicted.key}", inserted at front`, `put("${k}", "${val}") → 淘汰 "${evicted.key}"，插入头部`);
+      message.value = t(
+        `put("${k}") → cache full! Evicted "${evicted.key}" (least recently used). This is O(1) with a hash map + doubly-linked list.`,
+        `put("${k}") → 缓存已满！淘汰 "${evicted.key}"（最近最少使用）。通过哈希表 + 双向链表实现 O(1)。`
+      );
     } else {
-      message.value = t(`put("${k}", "${val}") → inserted at front`, `put("${k}", "${val}") → 插入头部`);
+      message.value = t(
+        `put("${k}", "${val}") → inserted at MRU position (front of list).`,
+        `put("${k}", "${val}") → 插入到 MRU 位置（链表头部）。`
+      );
     }
     entries.value.unshift({ key: k, value: val, id: ++idCounter });
-    const tid1 = setTimeout(() => { pendingTimers.delete(tid1); animKey.value = k; animAction.value = 'insert'; }, 50);
-    pendingTimers.add(tid1);
+    safeTimeout(() => { animKey.value = k; animAction.value = 'insert'; }, 50);
   }
   inputKey.value = '';
   inputValue.value = '';
-  const tid2 = setTimeout(() => { pendingTimers.delete(tid2); animKey.value = ''; animAction.value = ''; }, 500);
-  pendingTimers.add(tid2);
+  safeTimeout(() => { animKey.value = ''; animAction.value = ''; }, 500);
 }
 
 function get(key?: string) {
@@ -70,29 +72,84 @@ function get(key?: string) {
     entries.value.unshift(entry);
     animKey.value = k;
     animAction.value = 'hit';
-    message.value = t(`get("${k}") → HIT! value="${entry.value}", moved to front`, `get("${k}") → 命中！value="${entry.value}"，移至头部`);
+    message.value = t(
+      `get("${k}") → HIT! Moved to front — recently used items stay in cache longer.`,
+      `get("${k}") → 命中！移至头部 — 最近使用的项在缓存中保留更久。`
+    );
   } else {
     animKey.value = k;
     animAction.value = 'miss';
-    message.value = t(`get("${k}") → MISS! key not in cache`, `get("${k}") → 未命中！键不在缓存中`);
+    message.value = t(
+      `get("${k}") → MISS! Not in cache. In production, this triggers a slower fetch from the backing store.`,
+      `get("${k}") → 未命中！不在缓存中。在生产中，这会触发一次较慢的后端存储查询。`
+    );
   }
   inputKey.value = '';
-  const tid3 = setTimeout(() => { pendingTimers.delete(tid3); animKey.value = ''; animAction.value = ''; }, 500);
-  pendingTimers.add(tid3);
-}
-
-function quickPut() {
-  const [k, v] = presets[presetIndex % presets.length];
-  presetIndex++;
-  put(k, v);
+  safeTimeout(() => { animKey.value = ''; animAction.value = ''; }, 500);
 }
 
 function reset() {
+  clearAll();
   entries.value = [];
   message.value = t('Cache cleared!', '缓存已清空！');
   animKey.value = '';
   animAction.value = '';
-  presetIndex = 0;
+  presetRunning = false;
+}
+
+async function runPreset(steps: Array<{ op: 'put' | 'get'; key: string; val?: string }>) {
+  if (presetRunning) return;
+  reset();
+  presetRunning = true;
+  for (const step of steps) {
+    if (!presetRunning) return;
+    await new Promise(r => safeTimeout(r, 800));
+    if (!presetRunning) return;
+    if (step.op === 'put') put(step.key, step.val ?? step.key.toLowerCase());
+    else get(step.key);
+  }
+  presetRunning = false;
+}
+
+function presetWebCache() {
+  runPreset([
+    { op: 'put', key: 'A', val: 'page1' },
+    { op: 'put', key: 'B', val: 'page2' },
+    { op: 'put', key: 'C', val: 'page3' },
+    { op: 'put', key: 'D', val: 'page4' },
+    { op: 'get', key: 'A' },
+    { op: 'get', key: 'B' },
+    { op: 'put', key: 'E', val: 'page5' },
+    { op: 'get', key: 'C' },
+  ]);
+}
+
+function presetThrashing() {
+  runPreset([
+    { op: 'put', key: 'A', val: '1' },
+    { op: 'put', key: 'B', val: '2' },
+    { op: 'put', key: 'C', val: '3' },
+    { op: 'put', key: 'D', val: '4' },
+    { op: 'put', key: 'E', val: '5' },
+    { op: 'get', key: 'A' },
+    { op: 'put', key: 'F', val: '6' },
+    { op: 'get', key: 'B' },
+  ]);
+}
+
+function presetZipf() {
+  runPreset([
+    { op: 'put', key: 'A', val: 'hot' },
+    { op: 'put', key: 'B', val: 'warm' },
+    { op: 'put', key: 'C', val: 'cool' },
+    { op: 'put', key: 'D', val: 'cold' },
+    { op: 'get', key: 'A' },
+    { op: 'get', key: 'A' },
+    { op: 'get', key: 'B' },
+    { op: 'get', key: 'A' },
+    { op: 'put', key: 'E', val: 'new' },
+    { op: 'get', key: 'A' },
+  ]);
 }
 
 const emptySlots = computed(() => Math.max(0, CAPACITY - entries.value.length));
@@ -141,9 +198,19 @@ const emptySlots = computed(() => Math.max(0, CAPACITY - entries.value.length));
       <div class="viz-controls" style="margin-top: 0">
         <button class="viz-btn viz-btn--primary" @click="put()">Put</button>
         <button class="viz-btn" @click="get()">Get</button>
-        <button class="viz-btn" @click="quickPut">{{ t('Auto Put', '自动 Put') }}</button>
         <button class="viz-btn viz-btn--danger" @click="reset">{{ t('Reset', '重置') }}</button>
+        <div class="viz-speed">
+          <input type="range" min="0.5" max="3" step="0.5" v-model.number="speed" />
+          <span class="viz-speed-val">{{ speed }}x</span>
+        </div>
       </div>
+    </div>
+
+    <div class="viz-presets">
+      <span class="viz-label">{{ t('Scenarios:', '场景：') }}</span>
+      <button class="viz-btn" @click="presetWebCache">{{ t('Web Cache', 'Web 缓存') }}</button>
+      <button class="viz-btn" @click="presetThrashing">{{ t('Thrashing', '缓存抖动') }}</button>
+      <button class="viz-btn" @click="presetZipf">{{ t('Zipf (Hot Keys)', 'Zipf（热键）') }}</button>
     </div>
 
     <div class="viz-status" :class="{
@@ -195,13 +262,13 @@ const emptySlots = computed(() => Math.max(0, CAPACITY - entries.value.length));
 }
 
 .lru-node--hit {
-  animation: node-highlight 0.5s ease;
+  animation: viz-pulse 0.5s ease;
   border-color: var(--viz-success);
   box-shadow: 0 0 12px rgba(16, 185, 129, 0.3);
 }
 
 .lru-node--insert {
-  animation: node-slide-in 0.4s ease;
+  animation: viz-slide-in 0.4s ease;
 }
 
 .lru-node-key {
@@ -249,20 +316,5 @@ const emptySlots = computed(() => Math.max(0, CAPACITY - entries.value.length));
 .lru-input:focus {
   outline: none;
   border-color: var(--viz-primary);
-}
-
-.viz-status--hit { border-left: 3px solid var(--viz-success); }
-.viz-status--miss { border-left: 3px solid var(--viz-danger); }
-.viz-status--evict { border-left: 3px solid var(--viz-warning); }
-
-@keyframes node-highlight {
-  0% { transform: scale(1); }
-  40% { transform: scale(1.1); }
-  100% { transform: scale(1); }
-}
-
-@keyframes node-slide-in {
-  0% { opacity: 0; transform: translateY(-12px); }
-  100% { opacity: 1; transform: translateY(0); }
 }
 </style>

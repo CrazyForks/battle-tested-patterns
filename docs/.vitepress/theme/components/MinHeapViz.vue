@@ -1,19 +1,24 @@
 <script setup lang="ts">
-import { ref, computed, onUnmounted } from 'vue';
+import { ref, computed } from 'vue';
 import { useI18n } from '../composables/useI18n';
+import { useVizTimers } from '../composables/useVizTimers';
 
 const { t } = useI18n();
+const { delay, clearAll, speed, isAborted } = useVizTimers();
 
 const heap = ref<number[]>([]);
-const message = ref(t('Insert values to build a min-heap, then extract the minimum', '插入值来构建最小堆，然后提取最小值'));
+const message = ref(t(
+  'Insert values to build a min-heap — or pick a scenario below to watch the algorithm in action',
+  '插入值来构建最小堆 — 或选择下方场景观看算法运行过程'
+));
 const highlightIndices = ref<number[]>([]);
 const animType = ref<'insert' | 'extract' | 'swap' | ''>('');
+let presetRunning = false;
 
 const SVG_W = 400, SVG_H = 200;
 
 function nodePos(index: number) {
   const depth = Math.floor(Math.log2(index + 1));
-  const maxDepth = heap.value.length > 0 ? Math.floor(Math.log2(heap.value.length)) : 0;
   const nodesAtDepth = 1 << depth;
   const posInLevel = index - (nodesAtDepth - 1);
   const spacing = SVG_W / (nodesAtDepth + 1);
@@ -43,61 +48,83 @@ const edges = computed(() =>
     }))
 );
 
-async function insert() {
-  const val = Math.floor(Math.random() * 99) + 1;
-  heap.value.push(val);
+async function insert(val?: number) {
+  const v = val ?? Math.floor(Math.random() * 99) + 1;
+  heap.value.push(v);
   let i = heap.value.length - 1;
   highlightIndices.value = [i];
   animType.value = 'insert';
-  message.value = t(`Inserted ${val} at index ${i}`, `已插入 ${val}，索引 ${i}`);
+  message.value = t(
+    `Inserted ${v} at bottom (index ${i}). Now bubble up: compare with parent to restore heap property.`,
+    `在底部插入 ${v}（索引 ${i}）。现在上浮：与父节点比较以恢复堆性质。`
+  );
 
   await delay(300);
-  if (aborted) return;
+  if (isAborted()) return;
 
   while (i > 0) {
     const parent = Math.floor((i - 1) / 2);
     if (heap.value[i] < heap.value[parent]) {
       highlightIndices.value = [i, parent];
-      message.value = t(`Bubble up: swap ${heap.value[i]} ↔ ${heap.value[parent]}`, `上浮：交换 ${heap.value[i]} ↔ ${heap.value[parent]}`);
+      message.value = t(
+        `${heap.value[i]} < ${heap.value[parent]} → swap! Heap invariant: every parent ≤ its children.`,
+        `${heap.value[i]} < ${heap.value[parent]} → 交换！堆不变量：每个父节点 ≤ 其子节点。`
+      );
       await delay(400);
-      if (aborted) return;
+      if (isAborted()) return;
       [heap.value[i], heap.value[parent]] = [heap.value[parent], heap.value[i]];
       i = parent;
     } else {
+      message.value = t(
+        `${heap.value[i]} ≥ ${heap.value[parent]} → stop. Heap property satisfied.`,
+        `${heap.value[i]} ≥ ${heap.value[parent]} → 停止。堆性质已满足。`
+      );
       break;
     }
   }
 
   highlightIndices.value = [i];
-  message.value = t(`${val} settled at index ${i} — heap property restored`, `${val} 落在索引 ${i} — 堆性质已恢复`);
+  if (i === 0) {
+    message.value = t(
+      `${v} is now the root (minimum). In React Scheduler, this would be the highest-priority task.`,
+      `${v} 现在是根节点（最小值）。在 React Scheduler 中，这将是最高优先级任务。`
+    );
+  }
   await delay(300);
-  if (aborted) return;
+  if (isAborted()) return;
   highlightIndices.value = [];
   animType.value = '';
 }
 
 async function extractMin() {
   if (heap.value.length === 0) {
-    message.value = t('Heap is empty!', '堆为空！');
+    message.value = t('Heap is empty — nothing to extract!', '堆为空 — 没有可提取的元素！');
     return;
   }
 
   const min = heap.value[0];
   animType.value = 'extract';
   highlightIndices.value = [0];
-  message.value = t(`Extracting min = ${min}`, `正在提取最小值 = ${min}`);
+  message.value = t(
+    `Extracting min = ${min}. O(1) to find it (always at root). Now must restore heap property.`,
+    `提取最小值 = ${min}。O(1) 找到它（总在根节点）。现在需要恢复堆性质。`
+  );
   await delay(300);
-  if (aborted) return;
+  if (isAborted()) return;
 
   if (heap.value.length === 1) {
     heap.value.pop();
     highlightIndices.value = [];
     animType.value = '';
-    message.value = t(`Extracted ${min} — heap is now empty`, `已提取 ${min} — 堆现在为空`);
+    message.value = t(`Extracted ${min} — heap is now empty.`, `已提取 ${min} — 堆现在为空。`);
     return;
   }
 
   heap.value[0] = heap.value.pop()!;
+  message.value = t(
+    `Moved last element (${heap.value[0]}) to root. Now sift down to find its correct position.`,
+    `将最后一个元素 (${heap.value[0]}) 移至根节点。现在下沉以找到正确位置。`
+  );
   let i = 0;
 
   while (true) {
@@ -110,9 +137,12 @@ async function extractMin() {
 
     if (smallest !== i) {
       highlightIndices.value = [i, smallest];
-      message.value = t(`Sift down: swap ${heap.value[i]} ↔ ${heap.value[smallest]}`, `下沉：交换 ${heap.value[i]} ↔ ${heap.value[smallest]}`);
+      message.value = t(
+        `Sift down: ${heap.value[i]} > ${heap.value[smallest]} → swap. Total: O(log n) swaps.`,
+        `下沉：${heap.value[i]} > ${heap.value[smallest]} → 交换。总计：O(log n) 次交换。`
+      );
       await delay(400);
-      if (aborted) return;
+      if (isAborted()) return;
       [heap.value[i], heap.value[smallest]] = [heap.value[smallest], heap.value[i]];
       i = smallest;
     } else {
@@ -122,21 +152,77 @@ async function extractMin() {
 
   highlightIndices.value = [];
   animType.value = '';
-  message.value = t(`Extracted min = ${min} — heap property restored`, `已提取最小值 = ${min} — 堆性质已恢复`);
+  message.value = t(
+    `Extracted min = ${min}. Heap property restored in O(log n). This is why schedulers use heaps.`,
+    `已提取最小值 = ${min}。O(log n) 恢复堆性质。这就是调度器使用堆的原因。`
+  );
 }
 
 function reset() {
+  clearAll();
   heap.value = [];
   highlightIndices.value = [];
   animType.value = '';
+  presetRunning = false;
   message.value = t('Heap cleared!', '堆已清空！');
 }
 
-let aborted = false;
-onUnmounted(() => { aborted = true; });
+async function presetScheduler() {
+  if (presetRunning) return;
+  reset();
+  presetRunning = true;
+  const tasks = [
+    { val: 5, label: 'NormalPriority' },
+    { val: 2, label: 'UserBlocking' },
+    { val: 8, label: 'IdlePriority' },
+    { val: 1, label: 'Immediate' },
+    { val: 3, label: 'UserBlocking' },
+  ];
+  for (const task of tasks) {
+    if (!presetRunning || isAborted()) return;
+    await insert(task.val);
+    await delay(400);
+    if (!presetRunning || isAborted()) return;
+  }
+  message.value = t(
+    'React Scheduler: extract-min always picks the highest-priority (lowest number) task next.',
+    'React Scheduler：extract-min 总是选择优先级最高（数字最小）的任务。'
+  );
+  presetRunning = false;
+}
 
-function delay(ms: number) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+async function presetHeapSort() {
+  if (presetRunning) return;
+  reset();
+  presetRunning = true;
+  const vals = [42, 15, 73, 8, 31, 56, 23, 67];
+  for (const v of vals) {
+    if (!presetRunning || isAborted()) return;
+    await insert(v);
+    await delay(200);
+    if (!presetRunning || isAborted()) return;
+  }
+  await delay(600);
+  if (!presetRunning || isAborted()) return;
+  message.value = t(
+    'All inserted. Now extracting in sorted order — this is heap sort! O(n log n) total.',
+    '全部插入完毕。现在按顺序提取 — 这就是堆排序！总计 O(n log n)。'
+  );
+  await delay(800);
+  const sorted: number[] = [];
+  while (heap.value.length > 0) {
+    if (!presetRunning || isAborted()) return;
+    const min = heap.value[0];
+    await extractMin();
+    sorted.push(min);
+    await delay(400);
+    if (!presetRunning || isAborted()) return;
+  }
+  message.value = t(
+    `Heap sort complete: [${sorted.join(', ')}] — each extraction is O(log n).`,
+    `堆排序完成：[${sorted.join(', ')}] — 每次提取 O(log n)。`
+  );
+  presetRunning = false;
 }
 </script>
 
@@ -146,7 +232,6 @@ function delay(ms: number) {
 
     <!-- Tree view -->
     <svg :viewBox="`0 0 ${SVG_W} ${Math.max(SVG_H, (Math.floor(Math.log2(Math.max(heap.length, 1))) + 1) * 50 + 40)}`" class="heap-svg">
-      <!-- Edges -->
       <line
         v-for="e in edges"
         :key="e.key"
@@ -158,7 +243,6 @@ function delay(ms: number) {
         stroke-width="1.5"
       />
 
-      <!-- Nodes -->
       <g v-for="node in treeNodes" :key="node.index" :transform="`translate(${node.pos.x}, ${node.pos.y})`">
         <circle
           r="18"
@@ -179,9 +263,8 @@ function delay(ms: number) {
         </text>
       </g>
 
-      <!-- Empty state -->
       <text v-if="heap.length === 0" :x="SVG_W / 2" :y="SVG_H / 2" text-anchor="middle" fill="var(--viz-muted)" font-size="13">
-        {{ t('Empty — click Insert to add values', '空 — 点击插入来添加值') }}
+        {{ t('Empty — click Insert or pick a scenario', '空 — 点击插入或选择一个场景') }}
       </text>
     </svg>
 
@@ -197,9 +280,19 @@ function delay(ms: number) {
     </div>
 
     <div class="viz-controls">
-      <button class="viz-btn viz-btn--primary" @click="insert">{{ t('Insert Random', '插入随机值') }}</button>
+      <button class="viz-btn viz-btn--primary" @click="insert()">{{ t('Insert Random', '插入随机值') }}</button>
       <button class="viz-btn" @click="extractMin">{{ t('Extract Min', '提取最小值') }}</button>
       <button class="viz-btn viz-btn--danger" @click="reset">{{ t('Reset', '重置') }}</button>
+      <div class="viz-speed">
+        <input type="range" min="0.5" max="3" step="0.5" v-model.number="speed" />
+        <span class="viz-speed-val">{{ speed }}x</span>
+      </div>
+    </div>
+
+    <div class="viz-presets">
+      <span class="viz-label">{{ t('Scenarios:', '场景：') }}</span>
+      <button class="viz-btn" @click="presetScheduler">{{ t('React Scheduler', 'React 调度器') }}</button>
+      <button class="viz-btn" @click="presetHeapSort">{{ t('Heap Sort', '堆排序') }}</button>
     </div>
 
     <div class="viz-status">{{ message }}</div>
@@ -217,7 +310,7 @@ function delay(ms: number) {
 }
 
 .heap-node-pulse {
-  animation: node-pulse 0.4s ease;
+  animation: viz-pulse 0.4s ease;
 }
 
 .heap-array {
@@ -248,10 +341,5 @@ function delay(ms: number) {
   background: var(--viz-warning);
   color: #fff;
   border-color: var(--viz-warning);
-}
-
-@keyframes node-pulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.15); }
 }
 </style>

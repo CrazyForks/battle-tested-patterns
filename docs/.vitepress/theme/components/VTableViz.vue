@@ -1,13 +1,12 @@
 <script setup lang="ts">
-import { ref, computed, reactive, onUnmounted } from 'vue';
+import { ref, computed, reactive } from 'vue';
 import { useI18n } from '../composables/useI18n';
+import { useVizTimers } from '../composables/useVizTimers';
 
 const { t } = useI18n();
+const { delay, clearAll, speed, isAborted } = useVizTimers();
 
-let aborted = false;
-onUnmounted(() => {
-  aborted = true;
-});
+let presetRunning = false;
 
 interface VTableEntry {
   methodName: string;
@@ -66,13 +65,11 @@ const classes: ClassDef[] = [
 
 const subclasses = computed(() => classes.filter(c => c.name !== 'Animal'));
 
-// User selections
 const selectedClassName = ref('Dog');
 const selectedMethod = ref<MethodName>('speak()');
 
-// Animation state
 const dispatching = ref(false);
-const activeStep = ref(0); // 0=idle, 1=obj, 2=vptr, 3=vtable-lookup, 4=result
+const activeStep = ref(0);
 const dispatchResult = ref('');
 const dispatchOutput = ref('');
 const message = ref(
@@ -82,12 +79,7 @@ const message = ref(
   ),
 );
 
-// Dispatch history
 const history = reactive<{ obj: string; method: string; impl: string; output: string }[]>([]);
-
-function delay(ms: number) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
 
 function getClassDef(name: string): ClassDef {
   return classes.find(c => c.name === name)!;
@@ -113,34 +105,30 @@ async function callMethod() {
   const entry = selectedEntry.value;
   const objLabel = selectedClassName.value.toLowerCase() + '1';
 
-  // Step 1: highlight the object
   activeStep.value = 1;
   message.value = t(
     `${objLabel}.${selectedMethod.value} called -- reading vptr from the object...`,
     `${objLabel}.${selectedMethod.value} 被调用 -- 从对象读取 vptr...`,
   );
   await delay(800);
-  if (aborted) return;
+  if (isAborted()) return;
 
-  // Step 2: follow vptr to vtable
   activeStep.value = 2;
   message.value = t(
     `vptr points to ${cls.name}'s vtable`,
     `vptr 指向 ${cls.name} 的 vtable`,
   );
   await delay(800);
-  if (aborted) return;
+  if (isAborted()) return;
 
-  // Step 3: look up method in vtable
   activeStep.value = 3;
   message.value = t(
     `Looking up ${selectedMethod.value} in ${cls.name} vtable...`,
     `在 ${cls.name} vtable 中查找 ${selectedMethod.value}...`,
   );
   await delay(800);
-  if (aborted) return;
+  if (isAborted()) return;
 
-  // Step 4: show the dispatch result
   activeStep.value = 4;
   dispatchResult.value = entry.implLabel;
   dispatchOutput.value = entry.output;
@@ -152,7 +140,6 @@ async function callMethod() {
     `分派到 ${entry.implLabel} ${inheritNote} -- 返回 ${entry.output}`,
   );
 
-  // Record in history
   history.push({
     obj: objLabel,
     method: selectedMethod.value,
@@ -164,14 +151,15 @@ async function callMethod() {
   }
 
   await delay(1500);
-  if (aborted) return;
+  if (isAborted()) return;
 
-  // Reset animation (keep result and history visible)
   activeStep.value = 0;
   dispatching.value = false;
 }
 
 function reset() {
+  clearAll();
+  presetRunning = false;
   dispatching.value = false;
   activeStep.value = 0;
   dispatchResult.value = '';
@@ -183,6 +171,117 @@ function reset() {
     'Select an object and method, then click "Call Method" to see vtable dispatch',
     '选择对象和方法，然后点击「调用方法」查看 vtable 分派',
   );
+}
+
+async function presetPolymorphicDispatch() {
+  if (presetRunning) return;
+  reset();
+  presetRunning = true;
+  message.value = t(
+    'Polymorphic dispatch is the runtime mechanism behind animal.speak() calling Dog::speak or Cat::speak depending on the actual type. This is how C++ virtual functions, Java interface dispatch, and Rust dyn Trait work.',
+    '多态分派是 animal.speak() 在运行时根据实际类型调用 Dog::speak 或 Cat::speak 的机制。C++ 虚函数、Java 接口分派和 Rust dyn Trait 都基于此原理。',
+  );
+  await delay(800);
+  if (!presetRunning || isAborted()) return;
+
+  selectedClassName.value = 'Dog';
+  selectedMethod.value = 'speak()';
+  await callMethod();
+  if (!presetRunning || isAborted()) return;
+  await delay(600);
+  if (!presetRunning || isAborted()) return;
+
+  selectedClassName.value = 'Cat';
+  selectedMethod.value = 'speak()';
+  await callMethod();
+  if (!presetRunning || isAborted()) return;
+  await delay(600);
+  if (!presetRunning || isAborted()) return;
+
+  selectedClassName.value = 'Bird';
+  selectedMethod.value = 'speak()';
+  await callMethod();
+  if (!presetRunning || isAborted()) return;
+
+  message.value = t(
+    'The same method call resolves to different implementations at runtime. C++ stores a vptr in every polymorphic object (8 bytes overhead on x64). Java uses a similar vtable but also has interface method tables (itable). Rust dyn Trait uses fat pointers: (data_ptr, vtable_ptr).',
+    '同一方法调用在运行时解析到不同实现。C++ 在每个多态对象中存储 vptr（x64 上 8 字节开销）。Java 使用类似的 vtable，还有接口方法表（itable）。Rust 的 dyn Trait 使用胖指针：(data_ptr, vtable_ptr)。',
+  );
+  presetRunning = false;
+}
+
+async function presetInheritedVsOverridden() {
+  if (presetRunning) return;
+  reset();
+  presetRunning = true;
+  message.value = t(
+    'Inherited methods reuse the parent\'s function pointer -- the vtable entry points to Animal::eat. Overridden methods replace the pointer -- Dog::speak replaces Animal::speak. The object size doesn\'t change either way.',
+    '继承的方法复用父类的函数指针——vtable 条目指向 Animal::eat。重写的方法替换指针——Dog::speak 替换 Animal::speak。无论哪种方式，对象大小都不变。',
+  );
+  await delay(800);
+  if (!presetRunning || isAborted()) return;
+
+  selectedClassName.value = 'Dog';
+  selectedMethod.value = 'eat()';
+  await callMethod();
+  if (!presetRunning || isAborted()) return;
+  await delay(600);
+  if (!presetRunning || isAborted()) return;
+
+  selectedClassName.value = 'Dog';
+  selectedMethod.value = 'speak()';
+  await callMethod();
+  if (!presetRunning || isAborted()) return;
+  await delay(600);
+  if (!presetRunning || isAborted()) return;
+
+  selectedClassName.value = 'Cat';
+  selectedMethod.value = 'eat()';
+  await callMethod();
+  if (!presetRunning || isAborted()) return;
+
+  message.value = t(
+    'In C++, forgetting `virtual` on the base class makes the method non-virtual -- the vtable entry won\'t exist and dispatch is static (resolved at compile time). Java makes all methods virtual by default; `final` prevents overriding. Rust has no inheritance -- traits provide vtable dispatch via dyn Trait.',
+    '在 C++ 中，基类忘记加 `virtual` 会使方法成为非虚方法——vtable 中不会有该条目，分派是静态的（编译时确定）。Java 默认所有方法都是虚的；`final` 阻止重写。Rust 没有继承——trait 通过 dyn Trait 提供 vtable 分派。',
+  );
+  presetRunning = false;
+}
+
+async function presetSameMethodDifferentImpl() {
+  if (presetRunning) return;
+  reset();
+  presetRunning = true;
+  message.value = t(
+    'Calling the same method on different types shows the Liskov Substitution Principle -- any subtype can be used where the base type is expected. This is the contract of virtual dispatch.',
+    '对不同类型调用相同方法体现了里氏替换原则——任何子类型都可以在期望基类型的地方使用。这是虚分派的契约。',
+  );
+  await delay(800);
+  if (!presetRunning || isAborted()) return;
+
+  selectedClassName.value = 'Dog';
+  selectedMethod.value = 'move()';
+  await callMethod();
+  if (!presetRunning || isAborted()) return;
+  await delay(600);
+  if (!presetRunning || isAborted()) return;
+
+  selectedClassName.value = 'Cat';
+  selectedMethod.value = 'move()';
+  await callMethod();
+  if (!presetRunning || isAborted()) return;
+  await delay(600);
+  if (!presetRunning || isAborted()) return;
+
+  selectedClassName.value = 'Bird';
+  selectedMethod.value = 'move()';
+  await callMethod();
+  if (!presetRunning || isAborted()) return;
+
+  message.value = t(
+    'This is how game engines work -- Entity::update() calls the right update function for each entity type. Unreal Engine uses UObject vtables. Unity uses component vtables. The CPU cost is one extra memory indirection per call (vtable lookup), roughly 1-5ns on modern hardware.',
+    '游戏引擎正是这样工作的——Entity::update() 为每种实体类型调用正确的更新函数。Unreal Engine 使用 UObject vtable。Unity 使用组件 vtable。CPU 开销是每次调用多一次内存间接寻址（vtable 查找），在现代硬件上约 1-5ns。',
+  );
+  presetRunning = false;
 }
 </script>
 
@@ -377,6 +476,17 @@ function reset() {
 
     <div class="viz-controls">
       <button class="viz-btn viz-btn--danger" @click="reset">{{ t('Reset', '重置') }}</button>
+      <div class="viz-speed">
+        <input type="range" min="0.5" max="3" step="0.5" v-model.number="speed" />
+        <span class="viz-speed-val">{{ speed }}x</span>
+      </div>
+    </div>
+
+    <div class="viz-presets">
+      <span class="viz-label">{{ t('Scenarios:', '场景：') }}</span>
+      <button class="viz-btn" @click="presetPolymorphicDispatch">{{ t('Polymorphic Dispatch', '多态分派') }}</button>
+      <button class="viz-btn" @click="presetInheritedVsOverridden">{{ t('Inherited vs Overridden', '继承 vs 重写') }}</button>
+      <button class="viz-btn" @click="presetSameMethodDifferentImpl">{{ t('Same Interface, Different Behavior', '同接口不同行为') }}</button>
     </div>
 
     <div class="viz-status">{{ message }}</div>
@@ -544,7 +654,7 @@ function reset() {
 
 .vt-obj-call {
   margin-top: 4px;
-  animation: vt-flash 0.35s ease;
+  animation: viz-fade 0.35s ease;
 }
 
 .vt-call-text {
@@ -576,7 +686,7 @@ function reset() {
 
 .vt-ptr-lit {
   color: var(--viz-warning);
-  animation: vt-flash 0.5s ease;
+  animation: viz-fade 0.5s ease;
 }
 
 /* --- VTable --- */
@@ -670,7 +780,7 @@ function reset() {
   border-color: var(--viz-success);
   border-style: solid;
   box-shadow: 0 0 14px rgba(34, 197, 94, 0.25);
-  animation: vt-flash 0.4s ease;
+  animation: viz-fade 0.4s ease;
 }
 
 .vt-func-name {
@@ -698,7 +808,7 @@ function reset() {
   border: 2px solid var(--viz-success);
   border-radius: 8px;
   background: var(--vp-c-bg);
-  animation: vt-flash 0.4s ease;
+  animation: viz-fade 0.4s ease;
   flex-wrap: wrap;
 }
 
@@ -837,11 +947,6 @@ function reset() {
 .vt-history-output {
   color: var(--viz-success);
   font-weight: 700;
-}
-
-@keyframes vt-flash {
-  0% { opacity: 0.4; }
-  100% { opacity: 1; }
 }
 
 @media (max-width: 640px) {

@@ -1,7 +1,10 @@
 <script setup lang="ts">
-import { ref, onUnmounted } from 'vue';
+import { ref } from 'vue';
 import { useI18n } from '../composables/useI18n';
+import { useVizTimers } from '../composables/useVizTimers';
+
 const { t } = useI18n();
+const { delay, safeInterval, safeTimeout, clearAll, speed, isAborted } = useVizTimers();
 
 const COLS = 4;
 const ROWS = 3;
@@ -24,24 +27,20 @@ function emptyBuffer(): BufferData {
   return Array(CELL_COUNT).fill(null);
 }
 
-/** Generate a frame pattern — cycles through simple shapes */
 function generateFrame(frame: number): BufferData {
   const buf: BufferData = Array(CELL_COUNT).fill(null);
   const pattern = frame % 5;
 
   if (pattern === 0) {
-    // Diagonal
     for (let i = 0; i < Math.min(ROWS, COLS); i++) {
       buf[i * COLS + i] = PALETTE[frame % PALETTE.length];
     }
   } else if (pattern === 1) {
-    // Top and bottom rows
     for (let c = 0; c < COLS; c++) {
       buf[c] = PALETTE[(frame + 1) % PALETTE.length];
       buf[(ROWS - 1) * COLS + c] = PALETTE[(frame + 2) % PALETTE.length];
     }
   } else if (pattern === 2) {
-    // Checkerboard
     for (let r = 0; r < ROWS; r++) {
       for (let c = 0; c < COLS; c++) {
         if ((r + c) % 2 === 0) {
@@ -50,7 +49,6 @@ function generateFrame(frame: number): BufferData {
       }
     }
   } else if (pattern === 3) {
-    // Border
     for (let r = 0; r < ROWS; r++) {
       for (let c = 0; c < COLS; c++) {
         if (r === 0 || r === ROWS - 1 || c === 0 || c === COLS - 1) {
@@ -59,7 +57,6 @@ function generateFrame(frame: number): BufferData {
       }
     }
   } else {
-    // Columns sweep
     const col = frame % COLS;
     for (let r = 0; r < ROWS; r++) {
       buf[r * COLS + col] = PALETTE[(frame + r) % PALETTE.length];
@@ -75,67 +72,153 @@ const frameCount = ref(0);
 const nextFrame = ref(1);
 const swapping = ref(false);
 const autoMode = ref(false);
-const message = ref(t('Draw a frame in the back buffer, then swap to display it', '在后端缓冲区绘制帧，然后交换以显示'));
-
-let autoTimer: ReturnType<typeof setInterval> | null = null;
+const message = ref(t(
+  'Draw a frame in the back buffer, then swap to display — or pick a scenario below',
+  '在后端缓冲区绘制帧，然后交换以显示 — 或选择下方场景'
+));
+let presetRunning = false;
 
 function drawFrame() {
   const frame = nextFrame.value++;
   backBuffer.value = generateFrame(frame);
   frameCount.value++;
-  message.value = t(`Frame #${frameCount.value} drawn in back buffer`, `帧 #${frameCount.value} 已绘制到后端缓冲区`);
+  message.value = t(
+    `Frame #${frameCount.value} drawn in back buffer — invisible to the user. The front buffer keeps displaying the previous frame with zero tearing.`,
+    `帧 #${frameCount.value} 已绘制到后端缓冲区 — 用户不可见。前端缓冲区继续显示上一帧，零撕裂。`
+  );
 }
 
 function swapBuffers() {
   if (swapping.value) return;
   swapping.value = true;
 
-  setTimeout(() => {
+  safeTimeout(() => {
     const temp = frontBuffer.value;
     frontBuffer.value = backBuffer.value;
     backBuffer.value = temp;
     swapping.value = false;
-    message.value = t(`Buffers swapped — frame now visible on front buffer`, `缓冲区已交换 — 帧现在显示在前端缓冲区`);
+    message.value = t(
+      `Buffers swapped — O(1) pointer swap, not a copy. This is why OpenGL uses glSwapBuffers() and React swaps fiber trees.`,
+      `缓冲区已交换 — O(1) 指针交换，非复制。这就是 OpenGL 使用 glSwapBuffers() 和 React 交换 fiber 树的原因。`
+    );
   }, 300);
 }
 
 function toggleAuto() {
   autoMode.value = !autoMode.value;
   if (autoMode.value) {
-    message.value = t('Auto mode: drawing + swapping every 500ms', '自动模式：每 500ms 绘制 + 交换');
-    autoTimer = setInterval(() => {
+    message.value = t(
+      'Auto mode: continuous draw + swap loop. This is what a GPU does at 60 FPS — draw to back, swap to front, repeat.',
+      '自动模式：连续绘制 + 交换循环。这就是 GPU 以 60 FPS 运行的方式 — 绘制到后端，交换到前端，循环。'
+    );
+    safeInterval(() => {
       drawFrame();
-      setTimeout(() => swapBuffers(), 200);
+      safeTimeout(() => swapBuffers(), 200);
     }, 500);
   } else {
-    if (autoTimer) {
-      clearInterval(autoTimer);
-      autoTimer = null;
-    }
+    clearAll();
     message.value = t('Auto mode stopped', '自动模式已停止');
   }
 }
 
 function reset() {
-  if (autoTimer) {
-    clearInterval(autoTimer);
-    autoTimer = null;
-  }
+  clearAll();
   autoMode.value = false;
   frontBuffer.value = emptyBuffer();
   backBuffer.value = emptyBuffer();
   frameCount.value = 0;
   nextFrame.value = 1;
   swapping.value = false;
+  presetRunning = false;
   message.value = t('Reset! Draw a frame to start.', '已重置！绘制帧以开始。');
 }
 
-onUnmounted(() => {
-  if (autoTimer) {
-    clearInterval(autoTimer);
-    autoTimer = null;
+async function presetTearDemo() {
+  if (presetRunning) return;
+  reset();
+  presetRunning = true;
+  message.value = t(
+    'Without double buffering, drawing directly to the display causes "tearing" — the user sees a half-drawn frame. Watch the back buffer fill first...',
+    '没有双缓冲时，直接绘制到显示器会导致"撕裂" — 用户看到半绘制的帧。观察后端缓冲区先被填充...'
+  );
+  await delay(1000);
+  if (!presetRunning || isAborted()) return;
+  drawFrame();
+  await delay(800);
+  if (!presetRunning || isAborted()) return;
+  message.value = t(
+    'Frame drawn in back buffer — user sees nothing yet. Now swapping atomically...',
+    '帧已绘制到后端缓冲区 — 用户什么都看不到。现在原子交换...'
+  );
+  await delay(600);
+  if (!presetRunning || isAborted()) return;
+  swapBuffers();
+  await delay(600);
+  if (!presetRunning || isAborted()) return;
+  drawFrame();
+  await delay(800);
+  if (!presetRunning || isAborted()) return;
+  swapBuffers();
+  await delay(600);
+  if (!presetRunning || isAborted()) return;
+  message.value = t(
+    'Two frames rendered with zero tearing. The key: users never see incomplete state. React\'s concurrent mode uses the same principle — render to a hidden tree, then commit.',
+    '两帧渲染，零撕裂。关键：用户永远不会看到不完整状态。React 的并发模式使用相同原理 — 渲染到隐藏树，然后提交。'
+  );
+  presetRunning = false;
+}
+
+async function presetHighFPS() {
+  if (presetRunning) return;
+  reset();
+  presetRunning = true;
+  message.value = t(
+    'Simulating 5 rapid frames — each drawn then swapped. In real GPUs, VSYNC synchronizes the swap with the monitor\'s refresh rate to prevent tearing.',
+    '模拟 5 个快速帧 — 每帧绘制后交换。在真实 GPU 中，VSYNC 将交换与显示器刷新率同步以防止撕裂。'
+  );
+  await delay(800);
+  for (let i = 0; i < 5; i++) {
+    if (!presetRunning || isAborted()) return;
+    drawFrame();
+    await delay(400);
+    if (!presetRunning || isAborted()) return;
+    swapBuffers();
+    await delay(400);
+    if (!presetRunning || isAborted()) return;
   }
-});
+  message.value = t(
+    `5 frames rendered at ${frameCount.value} total. Triple buffering adds a third buffer to reduce latency — used by modern game engines like Unreal.`,
+    `5 帧渲染完成，共 ${frameCount.value} 帧。三重缓冲添加第三个缓冲区以减少延迟 — 现代游戏引擎如 Unreal 使用此技术。`
+  );
+  presetRunning = false;
+}
+
+async function presetReactCommit() {
+  if (presetRunning) return;
+  reset();
+  presetRunning = true;
+  message.value = t(
+    'React\'s commit phase is double buffering: the "work-in-progress" fiber tree (back buffer) is built off-screen, then swapped with the "current" tree (front buffer) in one synchronous step.',
+    'React 的提交阶段就是双缓冲："工作中"的 fiber 树（后端缓冲区）在屏幕外构建，然后在一个同步步骤中与"当前"树（前端缓冲区）交换。'
+  );
+  await delay(1200);
+  if (!presetRunning || isAborted()) return;
+  drawFrame();
+  message.value = t(
+    'Step 1: React builds the new fiber tree (back buffer). User sees the old UI.',
+    '步骤 1：React 构建新的 fiber 树（后端缓冲区）。用户看到旧 UI。'
+  );
+  await delay(1000);
+  if (!presetRunning || isAborted()) return;
+  swapBuffers();
+  await delay(800);
+  if (!presetRunning || isAborted()) return;
+  message.value = t(
+    'Step 2: commitRoot() swaps current ↔ workInProgress — the DOM updates atomically. No intermediate states visible. This is React\'s "double buffering of fiber trees".',
+    '步骤 2：commitRoot() 交换 current ↔ workInProgress — DOM 原子更新。没有中间状态可见。这就是 React 的"fiber 树双缓冲"。'
+  );
+  presetRunning = false;
+}
 </script>
 
 <template>
@@ -217,6 +300,17 @@ onUnmounted(() => {
         {{ autoMode ? t('Stop Auto', '停止自动') : t('Auto', '自动') }}
       </button>
       <button class="viz-btn viz-btn--danger" @click="reset">{{ t('Reset', '重置') }}</button>
+      <div class="viz-speed">
+        <input type="range" min="0.5" max="3" step="0.5" v-model.number="speed" />
+        <span class="viz-speed-val">{{ speed }}x</span>
+      </div>
+    </div>
+
+    <div class="viz-presets">
+      <span class="viz-label">{{ t('Scenarios:', '场景：') }}</span>
+      <button class="viz-btn" @click="presetTearDemo">{{ t('Zero Tearing', '零撕裂') }}</button>
+      <button class="viz-btn" @click="presetHighFPS">{{ t('High FPS', '高帧率') }}</button>
+      <button class="viz-btn" @click="presetReactCommit">{{ t('React Commit', 'React 提交') }}</button>
     </div>
 
     <div class="viz-status">{{ message }}</div>
@@ -350,17 +444,6 @@ onUnmounted(() => {
 .db-btn--auto-active:hover {
   opacity: 0.9;
   color: #fff;
-}
-
-.viz-btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-.viz-btn:disabled:hover {
-  border-color: var(--viz-border);
-  color: var(--viz-text);
-  transform: none;
 }
 
 @keyframes db-cell-appear {

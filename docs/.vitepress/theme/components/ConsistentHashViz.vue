@@ -1,11 +1,10 @@
 <script setup lang="ts">
-import { ref, computed, onUnmounted } from 'vue';
+import { ref, computed } from 'vue';
 import { useI18n } from '../composables/useI18n';
+import { useVizTimers } from '../composables/useVizTimers';
 
 const { t } = useI18n();
-
-const pendingTimers = new Set<ReturnType<typeof setTimeout>>();
-onUnmounted(() => { for (const tid of pendingTimers) clearTimeout(tid); });
+const { delay, safeTimeout, clearAll, speed, isAborted } = useVizTimers();
 
 const CX = 150, CY = 150, R = 110;
 
@@ -21,9 +20,13 @@ const nodes = ref<Node[]>([
 ]);
 
 const keys = ref<Key[]>([]);
-const message = ref(t('Add keys to see which node owns them. Try removing a node!', '添加键来查看哪个节点拥有它们。试试删除一个节点！'));
+const message = ref(t(
+  'Add keys to see which node owns them — or pick a scenario to see minimal redistribution',
+  '添加键来查看哪个节点拥有它们 — 或选择场景观看最小重分布'
+));
 const animHash = ref(-1);
 let nextKeyId = 1;
+let presetRunning = false;
 
 function hashPos(h: number) {
   const angle = h * 2 * Math.PI - Math.PI / 2;
@@ -68,26 +71,40 @@ function addKey() {
   keys.value.push({ id, hash: h });
   const owner = findOwner(h);
   animHash.value = h;
-  message.value = t(`Key "${id}" (hash=${h.toFixed(2)}) → owned by node ${owner?.id ?? 'none'}`, `键 "${id}" (hash=${h.toFixed(2)}) → 归属节点 ${owner?.id ?? '无'}`);
-  const tid = setTimeout(() => { pendingTimers.delete(tid); animHash.value = -1; }, 500);
-  pendingTimers.add(tid);
+  message.value = t(
+    `Key "${id}" hashes to ${h.toFixed(2)} → walks clockwise to node ${owner?.id ?? 'none'}. This clockwise walk is O(1) with a sorted node list.`,
+    `键 "${id}" 哈希到 ${h.toFixed(2)} → 顺时针走到节点 ${owner?.id ?? '无'}。通过排序节点列表，顺时针查找是 O(1)。`
+  );
+  safeTimeout(() => { animHash.value = -1; }, 500);
 }
 
 function addNode() {
   if (nodes.value.length >= 6) { message.value = t('Max 6 nodes', '最多 6 个节点'); return; }
   const id = String.fromCharCode(65 + nodes.value.length);
   const h = simpleHash(id + Date.now());
+  const oldOwnership = keys.value.map(k => findOwner(k.hash)?.id);
   nodes.value.push({ id, hash: h, color: COLORS[nodes.value.length] });
-  message.value = t(`Added node ${id} at position ${h.toFixed(2)} — some keys may have moved!`, `已添加节点 ${id}，位置 ${h.toFixed(2)} — 部分键可能已迁移！`);
+  const newOwnership = keys.value.map(k => findOwner(k.hash)?.id);
+  const moved = oldOwnership.filter((old, i) => old !== newOwnership[i]).length;
+  message.value = t(
+    `Added node ${id} at ${h.toFixed(2)}. Only ${moved}/${keys.value.length} keys moved — this is consistent hashing's key property: O(K/N) redistribution.`,
+    `已添加节点 ${id}，位置 ${h.toFixed(2)}。仅 ${moved}/${keys.value.length} 个键迁移 — 这是一致性哈希的核心特性：O(K/N) 重分布。`
+  );
 }
 
 function removeNode() {
   if (nodes.value.length <= 1) { message.value = t('Need at least 1 node', '至少需要 1 个节点'); return; }
-  const removed = nodes.value.pop()!;
-  message.value = t(`Removed node ${removed.id} — only its keys are redistributed (minimal disruption!)`, `已删除节点 ${removed.id} — 仅其键被重新分配（最小影响！）`);
+  const removed = nodes.value[nodes.value.length - 1];
+  const movedKeys = keys.value.filter(k => findOwner(k.hash)?.id === removed.id);
+  nodes.value.pop();
+  message.value = t(
+    `Removed node ${removed.id}. Only ${movedKeys.length} keys redistributed to neighbors — other keys are untouched. Compare with modular hashing where ALL keys would move.`,
+    `已删除节点 ${removed.id}。仅 ${movedKeys.length} 个键重分布到邻居节点 — 其他键不受影响。对比取模哈希，所有键都会移动。`
+  );
 }
 
 function reset() {
+  clearAll();
   nodes.value = [
     { id: 'A', hash: 0.0, color: COLORS[0] },
     { id: 'B', hash: 0.33, color: COLORS[1] },
@@ -95,7 +112,87 @@ function reset() {
   ];
   keys.value = [];
   nextKeyId = 1;
+  presetRunning = false;
   message.value = t('Reset! Add keys to see consistent hashing in action.', '已重置！添加键来查看一致性哈希的效果。');
+}
+
+async function presetScaleOut() {
+  if (presetRunning) return;
+  reset();
+  presetRunning = true;
+  for (let i = 0; i < 8; i++) {
+    if (!presetRunning || isAborted()) return;
+    addKey();
+    await delay(400);
+    if (!presetRunning || isAborted()) return;
+  }
+  message.value = t(
+    '8 keys distributed across 3 nodes. Now adding a 4th node — watch how few keys move...',
+    '8 个键分布在 3 个节点上。现在添加第 4 个节点 — 观察有多少键移动...'
+  );
+  await delay(1200);
+  if (!presetRunning || isAborted()) return;
+  addNode();
+  await delay(1500);
+  if (!presetRunning || isAborted()) return;
+  addNode();
+  message.value = t(
+    'Scale-out complete. Amazon DynamoDB and Cassandra use this to add nodes without reshuffling the entire cluster.',
+    '扩容完成。Amazon DynamoDB 和 Cassandra 使用此方法添加节点而无需重新分布整个集群。'
+  );
+  presetRunning = false;
+}
+
+async function presetNodeFailure() {
+  if (presetRunning) return;
+  reset();
+  presetRunning = true;
+  addNode();
+  await delay(300);
+  if (!presetRunning || isAborted()) return;
+  for (let i = 0; i < 10; i++) {
+    if (!presetRunning || isAborted()) return;
+    addKey();
+    await delay(300);
+    if (!presetRunning || isAborted()) return;
+  }
+  message.value = t(
+    '10 keys across 4 nodes. Simulating node failure — removing the last node...',
+    '10 个键分布在 4 个节点上。模拟节点故障 — 移除最后一个节点...'
+  );
+  await delay(1200);
+  if (!presetRunning || isAborted()) return;
+  removeNode();
+  await delay(1000);
+  if (!presetRunning || isAborted()) return;
+  message.value = t(
+    'Node failure handled gracefully. Only the failed node\'s keys moved to its clockwise neighbor — the rest of the cluster is unaffected.',
+    '节点故障被优雅处理。只有故障节点的键移动到其顺时针邻居 — 集群其余部分不受影响。'
+  );
+  presetRunning = false;
+}
+
+async function presetHotSpot() {
+  if (presetRunning) return;
+  reset();
+  presetRunning = true;
+  for (let i = 0; i < 12; i++) {
+    if (!presetRunning || isAborted()) return;
+    addKey();
+    await delay(300);
+    if (!presetRunning || isAborted()) return;
+  }
+  const distribution = nodes.value.map(n => ({
+    id: n.id,
+    count: keys.value.filter(k => findOwner(k.hash)?.id === n.id).length,
+  }));
+  const max = Math.max(...distribution.map(d => d.count));
+  const min = Math.min(...distribution.map(d => d.count));
+  message.value = t(
+    `Distribution: ${distribution.map(d => `${d.id}=${d.count}`).join(', ')}. Skew: ${max - min}. Virtual nodes (vnodes) solve this — each physical node gets 100+ positions on the ring.`,
+    `分布：${distribution.map(d => `${d.id}=${d.count}`).join(', ')}。偏差：${max - min}。虚拟节点 (vnodes) 解决此问题 — 每个物理节点在环上获得 100+ 个位置。`
+  );
+  presetRunning = false;
 }
 </script>
 
@@ -165,6 +262,17 @@ function reset() {
       <button class="viz-btn" @click="addNode">{{ t('Add Node', '添加节点') }}</button>
       <button class="viz-btn" @click="removeNode">{{ t('Remove Node', '删除节点') }}</button>
       <button class="viz-btn viz-btn--danger" @click="reset">{{ t('Reset', '重置') }}</button>
+      <div class="viz-speed">
+        <input type="range" min="0.5" max="3" step="0.5" v-model.number="speed" />
+        <span class="viz-speed-val">{{ speed }}x</span>
+      </div>
+    </div>
+
+    <div class="viz-presets">
+      <span class="viz-label">{{ t('Scenarios:', '场景：') }}</span>
+      <button class="viz-btn" @click="presetScaleOut">{{ t('Scale Out', '扩容') }}</button>
+      <button class="viz-btn" @click="presetNodeFailure">{{ t('Node Failure', '节点故障') }}</button>
+      <button class="viz-btn" @click="presetHotSpot">{{ t('Hot Spot', '热点') }}</button>
     </div>
 
     <div class="viz-status">{{ message }}</div>
@@ -189,11 +297,6 @@ function reset() {
 }
 
 .ch-key-pop {
-  animation: key-pop 0.5s ease;
-}
-
-@keyframes key-pop {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.8); }
+  animation: viz-pulse 0.5s ease;
 }
 </style>

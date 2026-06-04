@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { useI18n } from '../composables/useI18n';
+import { useVizTimers } from '../composables/useVizTimers';
 
 const { t } = useI18n();
+const { delay, clearAll, speed, isAborted } = useVizTimers();
 
 type State = 'CLOSED' | 'OPEN' | 'HALF_OPEN';
 
@@ -11,10 +13,14 @@ const failureCount = ref(0);
 const successCount = ref(0);
 const threshold = 3;
 const halfOpenMax = 2;
-const message = ref(t('Circuit is CLOSED — all requests pass through. Try sending some failures!', '熔断器已关闭 — 所有请求正常通过。试试发送一些失败请求！'));
+const message = ref(t(
+  'Circuit is CLOSED — all requests pass through. Try sending failures to trip the breaker!',
+  '熔断器已关闭 — 所有请求正常通过。试试发送失败请求来触发熔断！'
+));
 const lastResult = ref<'success' | 'failure' | ''>('');
 const requestLog = ref<{ type: 'success' | 'failure' | 'rejected'; id: number }[]>([]);
 let reqId = 0;
+let presetRunning = false;
 
 const stateColor = computed(() => {
   switch (state.value) {
@@ -29,7 +35,10 @@ const stateLabel = computed(() => state.value.replace('_', '-'));
 function sendSuccess() {
   if (state.value === 'OPEN') {
     requestLog.value.unshift({ type: 'rejected', id: ++reqId });
-    message.value = t('REJECTED — circuit is OPEN, request not sent', '已拒绝 — 熔断器已打开，请求未发送');
+    message.value = t(
+      'REJECTED — circuit is OPEN. In production, this fail-fast saves latency: no waiting for a timeout from a broken service.',
+      '已拒绝 — 熔断器已打开。在生产中，快速失败节省了延迟：无需等待故障服务的超时。'
+    );
     lastResult.value = 'failure';
     cleanLog();
     return;
@@ -44,12 +53,21 @@ function sendSuccess() {
       state.value = 'CLOSED';
       failureCount.value = 0;
       successCount.value = 0;
-      message.value = t(`${halfOpenMax} successes in HALF-OPEN → circuit CLOSED again!`, `HALF-OPEN 中 ${halfOpenMax} 次成功 → 熔断器重新关闭！`);
+      message.value = t(
+        `${halfOpenMax} consecutive successes in HALF-OPEN → CLOSED! Service is healthy again. Traffic resumes.`,
+        `HALF-OPEN 中连续 ${halfOpenMax} 次成功 → 关闭！服务恢复健康，流量恢复。`
+      );
     } else {
-      message.value = t(`Success in HALF-OPEN (${successCount.value}/${halfOpenMax} needed to close)`, `HALF-OPEN 中成功（需 ${successCount.value}/${halfOpenMax} 次关闭）`);
+      message.value = t(
+        `Probe success in HALF-OPEN (${successCount.value}/${halfOpenMax}). Testing if service has truly recovered...`,
+        `HALF-OPEN 中探测成功（${successCount.value}/${halfOpenMax}）。验证服务是否真正恢复...`
+      );
     }
   } else {
-    message.value = t('Request succeeded — circuit stays CLOSED', '请求成功 — 熔断器保持关闭');
+    message.value = t(
+      'Request succeeded — circuit stays CLOSED. Counter stays at ' + failureCount.value + '/' + threshold + '.',
+      '请求成功 — 熔断器保持关闭。计数器保持 ' + failureCount.value + '/' + threshold + '。'
+    );
   }
   cleanLog();
 }
@@ -57,7 +75,10 @@ function sendSuccess() {
 function sendFailure() {
   if (state.value === 'OPEN') {
     requestLog.value.unshift({ type: 'rejected', id: ++reqId });
-    message.value = t('REJECTED — circuit is OPEN, request not sent', '已拒绝 — 熔断器已打开，请求未发送');
+    message.value = t(
+      'REJECTED — circuit is OPEN. Request not even attempted. This prevents cascading failures across microservices.',
+      '已拒绝 — 熔断器已打开。请求甚至未尝试发送。这防止了微服务间的级联故障。'
+    );
     lastResult.value = 'failure';
     cleanLog();
     return;
@@ -69,14 +90,23 @@ function sendFailure() {
   if (state.value === 'HALF_OPEN') {
     state.value = 'OPEN';
     successCount.value = 0;
-    message.value = t('Failure in HALF-OPEN → circuit OPEN again!', 'HALF-OPEN 中失败 → 熔断器重新打开！');
+    message.value = t(
+      'Failure in HALF-OPEN → back to OPEN! One failure is enough to re-trip — the service is still unstable.',
+      'HALF-OPEN 中失败 → 重新打开！一次失败就足以重新触发 — 服务仍不稳定。'
+    );
   } else {
     failureCount.value++;
     if (failureCount.value >= threshold) {
       state.value = 'OPEN';
-      message.value = t(`${threshold} failures reached — circuit OPEN! Requests will be rejected.`, `已达 ${threshold} 次失败 — 熔断器打开！请求将被拒绝。`);
+      message.value = t(
+        `${threshold} failures reached → OPEN! All requests will be rejected instantly. Netflix Hystrix uses this exact pattern.`,
+        `已达 ${threshold} 次失败 → 打开！所有请求将被立即拒绝。Netflix Hystrix 使用完全相同的模式。`
+      );
     } else {
-      message.value = t(`Failure ${failureCount.value}/${threshold} — circuit still CLOSED`, `失败 ${failureCount.value}/${threshold} — 熔断器仍然关闭`);
+      message.value = t(
+        `Failure ${failureCount.value}/${threshold} — still CLOSED. ${threshold - failureCount.value} more failures will trip the circuit.`,
+        `失败 ${failureCount.value}/${threshold} — 仍然关闭。再 ${threshold - failureCount.value} 次失败将触发熔断。`
+      );
     }
   }
   cleanLog();
@@ -84,25 +114,95 @@ function sendFailure() {
 
 function tryReset() {
   if (state.value !== 'OPEN') {
-    message.value = t('Circuit is not OPEN — no timeout needed', '熔断器未打开 — 无需超时重置');
+    message.value = t('Circuit is not OPEN — no timeout needed.', '熔断器未打开 — 无需超时重置。');
     return;
   }
   state.value = 'HALF_OPEN';
   successCount.value = 0;
-  message.value = t('Timeout expired → HALF-OPEN — next request is a probe', '超时到期 → HALF-OPEN — 下一个请求将作为探测');
+  message.value = t(
+    'Timeout expired → HALF-OPEN. Next request is a probe: one success starts recovery, one failure re-trips.',
+    '超时到期 → HALF-OPEN。下一个请求是探测：一次成功开始恢复，一次失败重新触发。'
+  );
 }
 
 function reset() {
+  clearAll();
   state.value = 'CLOSED';
   failureCount.value = 0;
   successCount.value = 0;
   requestLog.value = [];
   lastResult.value = '';
+  presetRunning = false;
   message.value = t('Reset! Circuit is CLOSED.', '已重置！熔断器已关闭。');
 }
 
 function cleanLog() {
   if (requestLog.value.length > 12) requestLog.value = requestLog.value.slice(0, 12);
+}
+
+async function presetCascadingFailure() {
+  if (presetRunning) return;
+  reset();
+  presetRunning = true;
+  const steps: Array<() => void> = [
+    () => sendFailure(),
+    () => sendFailure(),
+    () => sendFailure(),
+    () => sendSuccess(),
+    () => tryReset(),
+    () => sendFailure(),
+    () => sendSuccess(),
+  ];
+  for (const step of steps) {
+    if (!presetRunning || isAborted()) return;
+    await delay(900);
+    if (!presetRunning || isAborted()) return;
+    step();
+  }
+  presetRunning = false;
+}
+
+async function presetRecovery() {
+  if (presetRunning) return;
+  reset();
+  presetRunning = true;
+  const steps: Array<() => void> = [
+    () => sendFailure(),
+    () => sendFailure(),
+    () => sendFailure(),
+    () => tryReset(),
+    () => sendSuccess(),
+    () => sendSuccess(),
+    () => sendSuccess(),
+  ];
+  for (const step of steps) {
+    if (!presetRunning || isAborted()) return;
+    await delay(900);
+    if (!presetRunning || isAborted()) return;
+    step();
+  }
+  presetRunning = false;
+}
+
+async function presetHealthy() {
+  if (presetRunning) return;
+  reset();
+  presetRunning = true;
+  const steps: Array<() => void> = [
+    () => sendSuccess(),
+    () => sendSuccess(),
+    () => sendFailure(),
+    () => sendSuccess(),
+    () => sendSuccess(),
+    () => sendSuccess(),
+  ];
+  for (const step of steps) {
+    if (!presetRunning || isAborted()) return;
+    await delay(700);
+    if (!presetRunning || isAborted()) return;
+    step();
+  }
+  presetRunning = false;
 }
 
 const states: { key: State; label: string; x: number; y: number }[] = [
@@ -118,30 +218,24 @@ const states: { key: State; label: string; x: number; y: number }[] = [
 
     <!-- State machine diagram -->
     <svg viewBox="0 0 300 200" class="cb-svg">
-      <!-- Transition arrows -->
       <defs>
         <marker id="arrow" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
           <path d="M0,0 L8,3 L0,6" fill="var(--viz-muted)" />
         </marker>
       </defs>
 
-      <!-- CLOSED → OPEN -->
       <line x1="95" y1="55" x2="200" y2="55" stroke="var(--viz-muted)" stroke-width="1.5" marker-end="url(#arrow)" stroke-dasharray="4,3" />
       <text x="148" y="46" text-anchor="middle" fill="var(--viz-muted)" font-size="8">{{ threshold }} {{ t('failures', '次失败') }}</text>
 
-      <!-- OPEN → HALF_OPEN -->
       <line x1="225" y1="85" x2="175" y2="140" stroke="var(--viz-muted)" stroke-width="1.5" marker-end="url(#arrow)" stroke-dasharray="4,3" />
       <text x="210" y="118" text-anchor="middle" fill="var(--viz-muted)" font-size="8">{{ t('timeout', '超时') }}</text>
 
-      <!-- HALF_OPEN → CLOSED -->
       <line x1="120" y1="148" x2="72" y2="90" stroke="var(--viz-muted)" stroke-width="1.5" marker-end="url(#arrow)" stroke-dasharray="4,3" />
       <text x="82" y="126" text-anchor="middle" fill="var(--viz-muted)" font-size="8">{{ t('success', '成功') }}</text>
 
-      <!-- HALF_OPEN → OPEN -->
       <line x1="180" y1="148" x2="228" y2="90" stroke="var(--viz-muted)" stroke-width="1.5" marker-end="url(#arrow)" stroke-dasharray="4,3" />
       <text x="218" y="130" text-anchor="middle" fill="var(--viz-muted)" font-size="8">{{ t('failure', '失败') }}</text>
 
-      <!-- State circles -->
       <g v-for="s in states" :key="s.key">
         <circle
           :cx="s.x"
@@ -186,6 +280,17 @@ const states: { key: State; label: string; x: number; y: number }[] = [
       <button class="viz-btn viz-btn--danger" @click="sendFailure">{{ t('Send Failure', '发送失败') }}</button>
       <button class="viz-btn" @click="tryReset" :disabled="state !== 'OPEN'">{{ t('Timeout Reset', '超时重置') }}</button>
       <button class="viz-btn" @click="reset">{{ t('Reset All', '全部重置') }}</button>
+      <div class="viz-speed">
+        <input type="range" min="0.5" max="3" step="0.5" v-model.number="speed" />
+        <span class="viz-speed-val">{{ speed }}x</span>
+      </div>
+    </div>
+
+    <div class="viz-presets">
+      <span class="viz-label">{{ t('Scenarios:', '场景：') }}</span>
+      <button class="viz-btn" @click="presetCascadingFailure">{{ t('Cascading Failure', '级联故障') }}</button>
+      <button class="viz-btn" @click="presetRecovery">{{ t('Recovery', '恢复') }}</button>
+      <button class="viz-btn" @click="presetHealthy">{{ t('Healthy Service', '健康服务') }}</button>
     </div>
 
     <div class="viz-status" :style="{ borderLeft: `3px solid ${stateColor}` }">
@@ -204,7 +309,7 @@ const states: { key: State; label: string; x: number; y: number }[] = [
 }
 
 .cb-active {
-  animation: state-glow 0.5s ease;
+  animation: viz-pulse 0.5s ease;
 }
 
 .cb-log {
@@ -224,9 +329,4 @@ const states: { key: State; label: string; x: number; y: number }[] = [
 .cb-log-dot--success { background: var(--viz-success); }
 .cb-log-dot--failure { background: var(--viz-danger); }
 .cb-log-dot--rejected { background: var(--viz-muted); border: 1px dashed var(--viz-danger); }
-
-@keyframes state-glow {
-  0%, 100% { filter: none; }
-  50% { filter: brightness(1.2); }
-}
 </style>

@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useI18n } from '../composables/useI18n';
+import { useVizTimers } from '../composables/useVizTimers';
+
 const { t } = useI18n();
+const { delay, clearAll, speed, isAborted } = useVizTimers();
 
 interface LogEntry {
   lsn: number;
@@ -19,9 +22,13 @@ let nextLSN = 1;
 
 const log = ref<LogEntry[]>([]);
 const table = ref<TableRow[]>([]);
-const message = ref(t('Write operations go to WAL first, then to the table', '写入操作先进入 WAL，然后再写入表'));
+const message = ref(t(
+  'Write operations go to WAL first, then to the table — or pick a scenario to see crash recovery',
+  '写入操作先进入 WAL，然后再写入表 — 或选择场景观看崩溃恢复'
+));
 const crashed = ref(false);
 const lastAction = ref('');
+let presetRunning = false;
 
 function writeOp(key: string, value: string) {
   if (crashed.value) {
@@ -36,7 +43,10 @@ function writeOp(key: string, value: string) {
   };
   log.value = [...log.value, entry];
   lastAction.value = `write-${entry.lsn}`;
-  message.value = t(`WAL: logged SET ${key}=${value} (LSN ${entry.lsn}) — not yet applied`, `WAL：已记录 SET ${key}=${value} (LSN ${entry.lsn}) — 尚未应用`);
+  message.value = t(
+    `WAL: logged SET ${key}=${value} (LSN ${entry.lsn}). Sequential write to disk — O(1) append, not random I/O. Data is durable even before flush.`,
+    `WAL：已记录 SET ${key}=${value} (LSN ${entry.lsn})。顺序写入磁盘 — O(1) 追加，非随机 I/O。数据在刷写前就已持久化。`
+  );
 }
 
 function flush() {
@@ -61,7 +71,10 @@ function flush() {
     entry.flushed = true;
   }
   lastAction.value = 'flush';
-  message.value = t(`Flushed ${unflushed.length} entries to table`, `已刷写 ${unflushed.length} 条记录到表`);
+  message.value = t(
+    `Flushed ${unflushed.length} entries → table. This is the "checkpoint" — after this, the WAL entries can be garbage collected.`,
+    `已刷写 ${unflushed.length} 条记录到表。这就是"检查点" — 之后，WAL 记录可以被垃圾回收。`
+  );
 }
 
 function simulateCrash() {
@@ -71,7 +84,10 @@ function simulateCrash() {
   });
   crashed.value = true;
   lastAction.value = 'crash';
-  message.value = t(`CRASH! ${unflushed.length} unflushed entries in WAL — data lost from table`, `崩溃！WAL 中有 ${unflushed.length} 条未刷写记录 — 数据从表中丢失`);
+  message.value = t(
+    `CRASH! ${unflushed.length} unflushed entries lost from table — but WAL on disk is intact. This is the key insight: WAL survives crashes because it's append-only on disk.`,
+    `崩溃！${unflushed.length} 条未刷写记录从表中丢失 — 但磁盘上的 WAL 完好无损。核心洞察：WAL 因为是磁盘上的追加写入而能在崩溃中存活。`
+  );
 }
 
 function recover() {
@@ -89,15 +105,20 @@ function recover() {
   }
   crashed.value = false;
   lastAction.value = 'recover';
-  message.value = t(`Recovered! Replayed ${unflushed.length} WAL entries — data restored`, `已恢复！重放了 ${unflushed.length} 条 WAL 记录 — 数据已还原`);
+  message.value = t(
+    `Recovered! Replayed ${unflushed.length} WAL entries — data fully restored. PostgreSQL, SQLite, and etcd all use this exact recovery process.`,
+    `已恢复！重放了 ${unflushed.length} 条 WAL 记录 — 数据完全还原。PostgreSQL、SQLite 和 etcd 都使用完全相同的恢复过程。`
+  );
 }
 
 function reset() {
+  clearAll();
   nextLSN = 1;
   log.value = [];
   table.value = [];
   crashed.value = false;
   lastAction.value = '';
+  presetRunning = false;
   message.value = t('Reset — start writing operations', '已重置 — 开始写入操作');
 }
 
@@ -113,6 +134,91 @@ function autoWrite() {
   const p = presets[presetIdx % presets.length];
   presetIdx++;
   writeOp(p.key, p.value);
+}
+
+async function presetCrashRecovery() {
+  if (presetRunning) return;
+  reset();
+  presetRunning = true;
+  writeOp('name', 'Alice');
+  await delay(600);
+  if (!presetRunning || isAborted()) return;
+  writeOp('age', '30');
+  await delay(600);
+  if (!presetRunning || isAborted()) return;
+  flush();
+  await delay(800);
+  if (!presetRunning || isAborted()) return;
+  writeOp('city', 'NYC');
+  await delay(600);
+  if (!presetRunning || isAborted()) return;
+  writeOp('name', 'Bob');
+  await delay(800);
+  if (!presetRunning || isAborted()) return;
+  message.value = t(
+    '2 flushed + 2 unflushed entries. Now crashing — unflushed data disappears from table but stays in WAL...',
+    '2 条已刷写 + 2 条未刷写记录。现在崩溃 — 未刷写数据从表中消失但保留在 WAL 中...'
+  );
+  await delay(1200);
+  if (!presetRunning || isAborted()) return;
+  simulateCrash();
+  await delay(1500);
+  if (!presetRunning || isAborted()) return;
+  recover();
+  presetRunning = false;
+}
+
+async function presetUpdateInPlace() {
+  if (presetRunning) return;
+  reset();
+  presetRunning = true;
+  writeOp('counter', '1');
+  await delay(600);
+  if (!presetRunning || isAborted()) return;
+  flush();
+  await delay(600);
+  if (!presetRunning || isAborted()) return;
+  writeOp('counter', '2');
+  await delay(600);
+  if (!presetRunning || isAborted()) return;
+  writeOp('counter', '3');
+  await delay(600);
+  if (!presetRunning || isAborted()) return;
+  flush();
+  await delay(800);
+  if (!presetRunning || isAborted()) return;
+  message.value = t(
+    'WAL preserves update history: counter went 1→2→3. Each LSN is immutable. This is why WAL enables point-in-time recovery in databases.',
+    'WAL 保留更新历史：counter 从 1→2→3。每个 LSN 都是不可变的。这就是 WAL 在数据库中实现时间点恢复的原因。'
+  );
+  presetRunning = false;
+}
+
+async function presetBatchFlush() {
+  if (presetRunning) return;
+  reset();
+  presetRunning = true;
+  const ops = [
+    { key: 'a', value: '1' },
+    { key: 'b', value: '2' },
+    { key: 'c', value: '3' },
+    { key: 'd', value: '4' },
+    { key: 'e', value: '5' },
+  ];
+  for (const op of ops) {
+    if (!presetRunning || isAborted()) return;
+    writeOp(op.key, op.value);
+    await delay(400);
+    if (!presetRunning || isAborted()) return;
+  }
+  message.value = t(
+    '5 writes buffered in WAL — all sequential appends. Now flushing in one batch. Batching amortizes disk I/O cost: 1 random write vs 5.',
+    '5 次写入缓存在 WAL 中 — 全部顺序追加。现在批量刷写。批处理分摊了磁盘 I/O 成本：1 次随机写入 vs 5 次。'
+  );
+  await delay(1000);
+  if (!presetRunning || isAborted()) return;
+  flush();
+  presetRunning = false;
 }
 </script>
 
@@ -170,6 +276,17 @@ function autoWrite() {
       <button class="viz-btn viz-btn--danger" @click="simulateCrash" :disabled="crashed || log.length === 0">{{ t('Crash!', '崩溃！') }}</button>
       <button v-if="crashed" class="viz-btn viz-btn--primary" @click="recover">{{ t('Recover', '恢复') }}</button>
       <button class="viz-btn viz-btn--danger" @click="reset">{{ t('Reset', '重置') }}</button>
+      <div class="viz-speed">
+        <input type="range" min="0.5" max="3" step="0.5" v-model.number="speed" />
+        <span class="viz-speed-val">{{ speed }}x</span>
+      </div>
+    </div>
+
+    <div class="viz-presets">
+      <span class="viz-label">{{ t('Scenarios:', '场景：') }}</span>
+      <button class="viz-btn" @click="presetCrashRecovery">{{ t('Crash & Recover', '崩溃恢复') }}</button>
+      <button class="viz-btn" @click="presetUpdateInPlace">{{ t('Update History', '更新历史') }}</button>
+      <button class="viz-btn" @click="presetBatchFlush">{{ t('Batch Flush', '批量刷写') }}</button>
     </div>
 
     <div class="viz-status" :class="{ 'wal-crash-status': crashed }">{{ message }}</div>

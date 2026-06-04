@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import { ref, computed, onUnmounted } from 'vue';
+import { ref, computed } from 'vue';
 import { useI18n } from '../composables/useI18n';
+import { useVizTimers } from '../composables/useVizTimers';
 
 const { t } = useI18n();
+const { delay, clearAll, speed, isAborted } = useVizTimers();
 
 interface KV {
   key: string;
@@ -31,7 +33,11 @@ const highlightLevel = ref<string | null>(null);
 const highlightKey = ref<string | null>(null);
 const flushing = ref(false);
 const compacting = ref(false);
-const message = ref(t('Write key-value pairs. Memtable auto-flushes at 4 entries.', '写入键值对。Memtable 在 4 条时自动刷盘。'));
+const message = ref(t(
+  'Write key-value pairs. Memtable auto-flushes at 4 entries. This is how RocksDB, LevelDB, Cassandra, and HBase store data.',
+  '写入键值对。Memtable 在 4 条时自动刷盘。RocksDB、LevelDB、Cassandra 和 HBase 就是这样存储数据的。'
+));
+let presetRunning = false;
 
 const memtableSorted = computed(() => {
   return [...memtable.value].sort((a, b) => a.key.localeCompare(b.key));
@@ -43,13 +49,6 @@ function insertSorted(arr: KV[], kv: KV): KV[] {
   return filtered.sort((a, b) => a.key.localeCompare(b.key));
 }
 
-let aborted = false;
-onUnmounted(() => { aborted = true; });
-
-async function delay(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
-
 async function write() {
   const k = writeKey.value.trim();
   const v = writeValue.value.trim();
@@ -58,22 +57,22 @@ async function write() {
     return;
   }
 
-  // Clear search state
   searchPath.value = [];
   searchResult.value = null;
   highlightLevel.value = null;
   highlightKey.value = null;
 
-  // Insert into memtable (sorted, overwrite if exists)
   memtable.value = insertSorted(memtable.value, { key: k, value: v });
   writeKey.value = '';
   writeValue.value = '';
-  message.value = t(`Wrote "${k}=${v}" to memtable (${memtable.value.length}/${MEMTABLE_CAPACITY})`, `已写入 "${k}=${v}" 到 Memtable（${memtable.value.length}/${MEMTABLE_CAPACITY}）`);
+  message.value = t(
+    `Wrote "${k}=${v}" to memtable (${memtable.value.length}/${MEMTABLE_CAPACITY}). Writes are always O(log n) to the in-memory sorted structure.`,
+    `已写入 "${k}=${v}" 到 Memtable（${memtable.value.length}/${MEMTABLE_CAPACITY}）。写入总是 O(log n) 到内存排序结构。`
+  );
 
-  // Auto-flush when memtable is full
   if (memtable.value.length >= MEMTABLE_CAPACITY) {
     await delay(400);
-    if (aborted) return;
+    if (isAborted()) return;
     await flush();
   }
 }
@@ -83,7 +82,7 @@ async function flush() {
   flushing.value = true;
   message.value = t('Flushing memtable to Level 0 SSTable...', '正在将 Memtable 刷盘到 Level 0 SSTable...');
   await delay(500);
-  if (aborted) return;
+  if (isAborted()) { flushing.value = false; return; }
 
   const sst: SSTable = {
     id: nextSstId++,
@@ -92,34 +91,36 @@ async function flush() {
   level0.value = [...level0.value, sst];
   memtable.value = [];
   flushing.value = false;
-  message.value = t(`Flushed! Created SSTable #${sst.id} in Level 0 with ${sst.entries.length} entries`, `已刷盘！在 Level 0 创建 SSTable #${sst.id}，含 ${sst.entries.length} 条记录`);
+  message.value = t(
+    `Flushed! Created SSTable #${sst.id} in Level 0 with ${sst.entries.length} entries. SSTables are immutable — once written, never modified.`,
+    `已刷盘！在 Level 0 创建 SSTable #${sst.id}，含 ${sst.entries.length} 条记录。SSTable 是不可变的 — 一旦写入，永不修改。`
+  );
 }
 
 async function compact() {
   if (level0.value.length === 0 || compacting.value) return;
   compacting.value = true;
-  message.value = t('Compacting: merging Level 0 SSTables into Level 1...', '压缩中：将 Level 0 SSTable 合并到 Level 1...');
+  message.value = t(
+    'Compacting: merging Level 0 SSTables into Level 1. This is the background merge that gives LSM trees their name — Log-Structured Merge.',
+    '压缩中：将 Level 0 SSTable 合并到 Level 1。这就是给 LSM 树命名的后台合并 — Log-Structured Merge。'
+  );
   await delay(600);
-  if (aborted) return;
+  if (isAborted()) { compacting.value = false; return; }
 
-  // Merge all L0 SSTables with existing L1 SSTables
   const allEntries: Map<string, string> = new Map();
 
-  // L1 entries first (older)
   for (const sst of level1.value) {
     for (const entry of sst.entries) {
       allEntries.set(entry.key, entry.value);
     }
   }
 
-  // L0 entries override (newer)
   for (const sst of level0.value) {
     for (const entry of sst.entries) {
       allEntries.set(entry.key, entry.value);
     }
   }
 
-  // Create single sorted L1 SSTable
   const merged: KV[] = Array.from(allEntries.entries())
     .map(([key, value]) => ({ key, value }))
     .sort((a, b) => a.key.localeCompare(b.key));
@@ -133,7 +134,10 @@ async function compact() {
   level1.value = [sst];
   level0.value = [];
   compacting.value = false;
-  message.value = t(`Compaction done! Merged ${l0Count} L0 SSTable(s) into Level 1 SSTable #${sst.id} (${merged.length} entries)`, `压缩完成！将 ${l0Count} 个 L0 SSTable 合并为 Level 1 SSTable #${sst.id}（${merged.length} 条记录）`);
+  message.value = t(
+    `Compaction done! Merged ${l0Count} L0 SSTable(s) into Level 1 SSTable #${sst.id} (${merged.length} entries). Newer values override older ones — this is how updates and deletes work.`,
+    `压缩完成！将 ${l0Count} 个 L0 SSTable 合并为 Level 1 SSTable #${sst.id}（${merged.length} 条记录）。新值覆盖旧值 — 更新和删除就是这样工作的。`
+  );
 }
 
 async function read() {
@@ -147,28 +151,29 @@ async function read() {
   searchResult.value = null;
   highlightKey.value = k;
 
-  // Search memtable first
   highlightLevel.value = 'memtable';
   searchPath.value = ['memtable'];
   message.value = t(`Searching memtable for "${k}"...`, `正在 Memtable 中搜索 "${k}"...`);
   await delay(400);
-  if (aborted) return;
+  if (isAborted()) return;
 
   const memEntry = memtable.value.find(e => e.key === k);
   if (memEntry) {
     searchResult.value = { found: true, value: memEntry.value, level: 'Memtable' };
-    message.value = t(`Found "${k}=${memEntry.value}" in Memtable (fastest path!)`, `在 Memtable 中找到 "${k}=${memEntry.value}"（最快路径！）`);
+    message.value = t(
+      `Found "${k}=${memEntry.value}" in Memtable (fastest path!). Reads check memtable first — this is why recent writes are fast.`,
+      `在 Memtable 中找到 "${k}=${memEntry.value}"（最快路径！）。读取首先检查 memtable — 这就是最近写入快速的原因。`
+    );
     return;
   }
 
-  // Search L0 (newest to oldest)
   for (let i = level0.value.length - 1; i >= 0; i--) {
     const sst = level0.value[i];
     highlightLevel.value = `l0-${sst.id}`;
     searchPath.value = [...searchPath.value, `l0-${sst.id}`];
     message.value = t(`Searching L0 SSTable #${sst.id} for "${k}"...`, `正在 L0 SSTable #${sst.id} 中搜索 "${k}"...`);
     await delay(400);
-    if (aborted) return;
+    if (isAborted()) return;
 
     const entry = sst.entries.find(e => e.key === k);
     if (entry) {
@@ -178,13 +183,12 @@ async function read() {
     }
   }
 
-  // Search L1
   for (const sst of level1.value) {
     highlightLevel.value = `l1-${sst.id}`;
     searchPath.value = [...searchPath.value, `l1-${sst.id}`];
     message.value = t(`Searching L1 SSTable #${sst.id} for "${k}"...`, `正在 L1 SSTable #${sst.id} 中搜索 "${k}"...`);
     await delay(400);
-    if (aborted) return;
+    if (isAborted()) return;
 
     const entry = sst.entries.find(e => e.key === k);
     if (entry) {
@@ -196,10 +200,14 @@ async function read() {
 
   searchResult.value = { found: false, value: '', level: '' };
   highlightLevel.value = null;
-  message.value = t(`Key "${k}" not found. Searched ${searchPath.value.length} level(s).`, `未找到键 "${k}"。已搜索 ${searchPath.value.length} 个层级。`);
+  message.value = t(
+    `Key "${k}" not found. Searched ${searchPath.value.length} level(s). Bloom filters (used by RocksDB) skip SSTables that definitely don't contain the key.`,
+    `未找到键 "${k}"。已搜索 ${searchPath.value.length} 个层级。布隆过滤器（RocksDB 使用）跳过肯定不包含该键的 SSTable。`
+  );
 }
 
 function reset() {
+  clearAll();
   memtable.value = [];
   level0.value = [];
   level1.value = [];
@@ -213,6 +221,7 @@ function reset() {
   flushing.value = false;
   compacting.value = false;
   nextSstId = 1;
+  presetRunning = false;
   message.value = t('Reset. Write key-value pairs to begin.', '已重置。写入键值对以开始。');
 }
 
@@ -223,6 +232,96 @@ function isLevelHighlighted(levelId: string): boolean {
 function isInSearchPath(levelId: string): boolean {
   return searchPath.value.includes(levelId);
 }
+
+async function presetWriteHeavy() {
+  if (presetRunning) return;
+  reset();
+  presetRunning = true;
+  message.value = t(
+    'Write-heavy workload: 8 writes trigger 2 flushes. LSM trees optimize for writes — all writes go to memtable (in-memory), then batch-flush to disk. This is why Cassandra handles 100K+ writes/sec.',
+    '写密集型负载：8 次写入触发 2 次刷盘。LSM 树为写入优化 — 所有写入先到 memtable（内存），然后批量刷盘。这就是 Cassandra 处理 10 万+ 次/秒写入的原因。'
+  );
+  await delay(800);
+  if (!presetRunning || isAborted()) return;
+  const data = [['a','1'],['b','2'],['c','3'],['d','4'],['e','5'],['f','6'],['g','7'],['h','8']];
+  for (const [k, v] of data) {
+    if (!presetRunning || isAborted()) return;
+    writeKey.value = k;
+    writeValue.value = v;
+    await write();
+    await delay(400);
+  }
+  if (!presetRunning || isAborted()) return;
+  message.value = t(
+    '8 writes done, 2 SSTables in L0. Without compaction, reads get slower (must check each SSTable). Compaction merges them — the classic write amplification tradeoff.',
+    '8 次写入完成，L0 中有 2 个 SSTable。不压缩的话，读取变慢（必须检查每个 SSTable）。压缩合并它们 — 经典的写放大权衡。'
+  );
+  presetRunning = false;
+}
+
+async function presetCompactionDemo() {
+  if (presetRunning) return;
+  reset();
+  presetRunning = true;
+  message.value = t(
+    'Compaction demo: write 8 entries (2 L0 SSTables), then compact to L1. Compaction merges sorted runs — this is the "merge" in Log-Structured Merge tree.',
+    '压缩演示：写入 8 条记录（2 个 L0 SSTable），然后压缩到 L1。压缩合并排序的运行 — 这就是 Log-Structured Merge 树中的"merge"。'
+  );
+  await delay(800);
+  if (!presetRunning || isAborted()) return;
+  const data = [['a','1'],['c','3'],['e','5'],['g','7'],['b','2'],['d','4'],['f','6'],['h','8']];
+  for (const [k, v] of data) {
+    if (!presetRunning || isAborted()) return;
+    writeKey.value = k;
+    writeValue.value = v;
+    await write();
+    await delay(300);
+  }
+  if (!presetRunning || isAborted()) return;
+  await delay(500);
+  await compact();
+  if (!presetRunning || isAborted()) return;
+  message.value = t(
+    'Compaction merged 2 L0 SSTables into 1 sorted L1 SSTable. Keys a-h now in one place — reads only check 1 SSTable instead of 2. RocksDB does this in background threads.',
+    '压缩将 2 个 L0 SSTable 合并为 1 个排序的 L1 SSTable。键 a-h 现在在一个位置 — 读取只需检查 1 个 SSTable 而非 2 个。RocksDB 在后台线程中执行此操作。'
+  );
+  presetRunning = false;
+}
+
+async function presetUpdateOverwrite() {
+  if (presetRunning) return;
+  reset();
+  presetRunning = true;
+  message.value = t(
+    'Update semantics: write key "x" twice with different values. The newer value wins during compaction — LSM trees never update in place, they append and merge later.',
+    '更新语义：用不同的值写入键 "x" 两次。压缩时新值胜出 — LSM 树从不就地更新，而是追加后合并。'
+  );
+  await delay(800);
+  if (!presetRunning || isAborted()) return;
+  writeKey.value = 'x'; writeValue.value = 'old';
+  await write(); await delay(400);
+  if (!presetRunning || isAborted()) return;
+  writeKey.value = 'y'; writeValue.value = '1';
+  await write(); await delay(400);
+  if (!presetRunning || isAborted()) return;
+  writeKey.value = 'z'; writeValue.value = '1';
+  await write(); await delay(400);
+  if (!presetRunning || isAborted()) return;
+  writeKey.value = 'w'; writeValue.value = '1';
+  await write(); await delay(600);
+  if (!presetRunning || isAborted()) return;
+  writeKey.value = 'x'; writeValue.value = 'NEW';
+  await write(); await delay(600);
+  if (!presetRunning || isAborted()) return;
+  readKey.value = 'x';
+  await read();
+  if (!presetRunning || isAborted()) return;
+  message.value = t(
+    'Reading "x" returns "NEW" from memtable (most recent write). The "old" value in L0 SSTable is shadowed. Compaction will eventually discard the old value.',
+    '读取 "x" 从 memtable 返回 "NEW"（最近的写入）。L0 SSTable 中的 "old" 值被遮蔽。压缩最终会丢弃旧值。'
+  );
+  presetRunning = false;
+}
 </script>
 
 <template>
@@ -231,7 +330,6 @@ function isInSearchPath(levelId: string): boolean {
 
     <!-- Layers -->
     <div class="lsm-layers">
-      <!-- Memtable -->
       <div
         class="lsm-layer"
         :class="{
@@ -258,7 +356,6 @@ function isInSearchPath(levelId: string): boolean {
           </div>
           <div v-if="memtable.length === 0" class="lsm-empty">{{ t('empty', '空') }}</div>
         </div>
-        <!-- Capacity bar -->
         <div class="lsm-capacity-track">
           <div
             class="lsm-capacity-fill"
@@ -268,7 +365,6 @@ function isInSearchPath(levelId: string): boolean {
         </div>
       </div>
 
-      <!-- Flush arrow -->
       <div class="lsm-arrow" :class="{ 'lsm-arrow--active': flushing }">
         <svg width="24" height="28" viewBox="0 0 24 28">
           <path d="M12 2 L12 20 M7 16 L12 22 L17 16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
@@ -276,7 +372,6 @@ function isInSearchPath(levelId: string): boolean {
         <span class="lsm-arrow-label">{{ t('flush', '刷盘') }}</span>
       </div>
 
-      <!-- Level 0 -->
       <div class="lsm-level">
         <div class="lsm-level-header">
           <span class="lsm-level-name">Level 0</span>
@@ -311,7 +406,6 @@ function isInSearchPath(levelId: string): boolean {
         </div>
       </div>
 
-      <!-- Compact arrow -->
       <div class="lsm-arrow" :class="{ 'lsm-arrow--active': compacting }">
         <svg width="24" height="28" viewBox="0 0 24 28">
           <path d="M12 2 L12 20 M7 16 L12 22 L17 16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
@@ -319,7 +413,6 @@ function isInSearchPath(levelId: string): boolean {
         <span class="lsm-arrow-label">{{ t('compact', '压缩') }}</span>
       </div>
 
-      <!-- Level 1 -->
       <div class="lsm-level">
         <div class="lsm-level-header">
           <span class="lsm-level-name">Level 1</span>
@@ -364,39 +457,18 @@ function isInSearchPath(levelId: string): boolean {
 
     <!-- Controls -->
     <div class="lsm-controls-grid">
-      <!-- Write controls -->
       <div class="lsm-control-group">
         <span class="lsm-control-label">{{ t('Write', '写入') }}</span>
         <div class="lsm-input-row">
-          <input
-            v-model="writeKey"
-            class="lsm-input"
-            :placeholder="t('key', '键')"
-            maxlength="6"
-            @keydown.enter="write"
-          />
-          <input
-            v-model="writeValue"
-            class="lsm-input"
-            :placeholder="t('value', '值')"
-            maxlength="6"
-            @keydown.enter="write"
-          />
+          <input v-model="writeKey" class="lsm-input" :placeholder="t('key', '键')" maxlength="6" @keydown.enter="write" />
+          <input v-model="writeValue" class="lsm-input" :placeholder="t('value', '值')" maxlength="6" @keydown.enter="write" />
           <button class="viz-btn viz-btn--primary" @click="write" :disabled="flushing || compacting">{{ t('Write', '写入') }}</button>
         </div>
       </div>
-
-      <!-- Read controls -->
       <div class="lsm-control-group">
         <span class="lsm-control-label">{{ t('Read', '读取') }}</span>
         <div class="lsm-input-row">
-          <input
-            v-model="readKey"
-            class="lsm-input"
-            :placeholder="t('search key', '搜索键')"
-            maxlength="6"
-            @keydown.enter="read"
-          />
+          <input v-model="readKey" class="lsm-input" :placeholder="t('search key', '搜索键')" maxlength="6" @keydown.enter="read" />
           <button class="viz-btn" @click="read">{{ t('Read', '读取') }}</button>
         </div>
       </div>
@@ -405,6 +477,17 @@ function isInSearchPath(levelId: string): boolean {
     <div class="viz-controls">
       <button class="viz-btn" @click="compact" :disabled="level0.length === 0 || compacting || flushing">{{ t('Compact L0 -> L1', '压缩 L0 -> L1') }}</button>
       <button class="viz-btn viz-btn--danger" @click="reset">{{ t('Reset', '重置') }}</button>
+      <div class="viz-speed">
+        <input type="range" min="0.5" max="3" step="0.5" v-model.number="speed" />
+        <span class="viz-speed-val">{{ speed }}x</span>
+      </div>
+    </div>
+
+    <div class="viz-presets">
+      <span class="viz-label">{{ t('Scenarios:', '场景：') }}</span>
+      <button class="viz-btn" @click="presetWriteHeavy">{{ t('Write Heavy', '写密集') }}</button>
+      <button class="viz-btn" @click="presetCompactionDemo">{{ t('Compaction', '压缩') }}</button>
+      <button class="viz-btn" @click="presetUpdateOverwrite">{{ t('Update Key', '更新键') }}</button>
     </div>
 
     <div class="viz-status">{{ message }}</div>
@@ -515,7 +598,7 @@ function isInSearchPath(levelId: string): boolean {
   background: rgba(59, 130, 246, 0.06);
   border: 1px solid var(--viz-border);
   transition: all 0.2s ease;
-  animation: lsm-entry-appear 0.25s ease;
+  animation: viz-slide-in 0.25s ease;
 }
 
 .lsm-entry--small {
@@ -527,7 +610,7 @@ function isInSearchPath(levelId: string): boolean {
   border-color: var(--viz-success);
   background: rgba(16, 185, 129, 0.15);
   box-shadow: 0 0 8px rgba(16, 185, 129, 0.2);
-  animation: lsm-found-pulse 0.4s ease;
+  animation: viz-pulse 0.4s ease;
 }
 
 .lsm-key {
@@ -568,7 +651,6 @@ function isInSearchPath(levelId: string): boolean {
   background: var(--viz-danger);
 }
 
-/* Arrows */
 .lsm-arrow {
   display: flex;
   align-items: center;
@@ -589,7 +671,6 @@ function isInSearchPath(levelId: string): boolean {
   letter-spacing: 0.04em;
 }
 
-/* Levels */
 .lsm-level {
   width: 100%;
 }
@@ -637,7 +718,6 @@ function isInSearchPath(levelId: string): boolean {
   border-radius: 6px;
 }
 
-/* Search result */
 .lsm-search-result {
   display: flex;
   flex-direction: column;
@@ -647,7 +727,7 @@ function isInSearchPath(levelId: string): boolean {
   margin: 0.5rem 0;
   font-size: 0.8125rem;
   font-family: var(--vp-font-family-mono);
-  animation: lsm-entry-appear 0.3s ease;
+  animation: viz-slide-in 0.3s ease;
 }
 
 .lsm-search-result--found {
@@ -667,7 +747,6 @@ function isInSearchPath(levelId: string): boolean {
   color: var(--viz-muted);
 }
 
-/* Controls */
 .lsm-controls-grid {
   display: flex;
   gap: 1rem;
@@ -717,25 +796,9 @@ function isInSearchPath(levelId: string): boolean {
   opacity: 0.6;
 }
 
-.viz-btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-@keyframes lsm-entry-appear {
-  from { opacity: 0; transform: translateY(-4px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
 @keyframes lsm-flush-pulse {
   0%, 100% { border-color: var(--viz-warning); }
   50% { border-color: var(--viz-danger); }
-}
-
-@keyframes lsm-found-pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.08); }
-  100% { transform: scale(1); }
 }
 
 @media (max-width: 640px) {

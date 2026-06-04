@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import { ref, computed, onUnmounted } from 'vue';
+import { ref, computed } from 'vue';
 import { useI18n } from '../composables/useI18n';
+import { useVizTimers } from '../composables/useVizTimers';
 const { t } = useI18n();
+const { safeInterval, delay, clearAll, speed, isAborted } = useVizTimers();
 
 interface Worker {
   id: number;
@@ -14,7 +16,7 @@ const MAX_PERMITS = ref(3);
 const workers = ref<Worker[]>([]);
 const message = ref(t('Click "Acquire" to spawn a worker that claims a permit', '点击"获取"生成一个申请许可的工作线程'));
 let nextId = 1;
-const timers = ref<ReturnType<typeof setInterval>[]>([]);
+let presetRunning = false;
 
 const activeWorkers = computed(() =>
   workers.value.filter((w) => w.state === 'active'),
@@ -63,7 +65,7 @@ function randomDuration(): number {
 
 function startWorkerTimer(w: Worker) {
   const tick = 100;
-  const timer = setInterval(() => {
+  const timer = safeInterval(() => {
     const target = workers.value.find((x) => x.id === w.id);
     if (!target || target.state !== 'active') {
       clearInterval(timer);
@@ -75,7 +77,6 @@ function startWorkerTimer(w: Worker) {
       releaseWorker(target);
     }
   }, tick);
-  timers.value.push(timer);
 }
 
 function releaseWorker(w: Worker) {
@@ -111,8 +112,8 @@ function acquire() {
 }
 
 function reset() {
-  timers.value.forEach((t) => clearInterval(t));
-  timers.value = [];
+  clearAll();
+  presetRunning = false;
   workers.value = [];
   nextId = 1;
   message.value = t('Reset — all workers cleared', '已重置 — 所有工作线程已清除');
@@ -127,9 +128,110 @@ function progressPercent(w: Worker): number {
   return Math.max(0, Math.min(100, ((total - w.remainingMs) / total) * 100));
 }
 
-onUnmounted(() => {
-  timers.value.forEach((t) => clearInterval(t));
-});
+/* ---------- Preset scenarios ---------- */
+
+async function presetSaturation() {
+  if (presetRunning) return;
+  reset();
+  presetRunning = true;
+  MAX_PERMITS.value = 3;
+
+  message.value = t(
+    'Full saturation: all permits claimed, new workers queue. This is PostgreSQL\'s max_connections (default 100) — connection 101 waits in the pg_stat_activity queue until one finishes.',
+    '完全饱和：所有许可已占用，新工作线程排队。这就是 PostgreSQL 的 max_connections（默认 100）— 第 101 个连接在 pg_stat_activity 队列中等待直到有连接释放。',
+  );
+
+  for (let i = 0; i < MAX_PERMITS.value; i++) {
+    acquire();
+    await delay(400);
+    if (!presetRunning || isAborted()) return;
+  }
+
+  await delay(600);
+  if (!presetRunning || isAborted()) return;
+
+  acquire();
+  await delay(400);
+  if (!presetRunning || isAborted()) return;
+
+  acquire();
+  await delay(1500);
+  if (!presetRunning || isAborted()) return;
+
+  message.value = t(
+    'Workers queued. In Java, Semaphore.tryAcquire(timeout) lets callers give up after waiting too long. Go\'s semaphore in sema.go uses a treap-based wait queue for O(log n) priority ordering.',
+    '工作线程已排队。Java 中 Semaphore.tryAcquire(timeout) 允许调用者等待超时后放弃。Go 的 sema.go 使用基于 treap 的等待队列实现 O(log n) 优先级排序。',
+  );
+
+  presetRunning = false;
+}
+
+async function presetQueueDrain() {
+  if (presetRunning) return;
+  reset();
+  presetRunning = true;
+  MAX_PERMITS.value = 3;
+
+  message.value = t(
+    'Queue drain: as active workers complete, queued workers get promoted. This is how thread pool executors (Java ThreadPoolExecutor, .NET ThreadPool) manage bounded concurrency — the work queue absorbs bursts.',
+    '队列排空：当活跃工作线程完成时，排队的工作线程被提升。这就是线程池执行器（Java ThreadPoolExecutor、.NET ThreadPool）管理有界并发的方式 — 工作队列吸收突发流量。',
+  );
+
+  for (let i = 0; i < MAX_PERMITS.value; i++) {
+    acquire();
+    await delay(300);
+    if (!presetRunning || isAborted()) return;
+  }
+
+  await delay(400);
+  if (!presetRunning || isAborted()) return;
+
+  for (let i = 0; i < 3; i++) {
+    acquire();
+    await delay(300);
+    if (!presetRunning || isAborted()) return;
+  }
+
+  await delay(6000);
+  if (!presetRunning || isAborted()) return;
+
+  message.value = t(
+    'All queued workers eventually got permits. If drain rate < arrival rate, the queue grows unbounded — that\'s why Nginx has worker_connections and Java has LinkedBlockingQueue(capacity).',
+    '所有排队的工作线程最终都获得了许可。如果排空速率 < 到达速率，队列将无限增长 — 这就是为什么 Nginx 有 worker_connections，Java 有 LinkedBlockingQueue(capacity)。',
+  );
+
+  presetRunning = false;
+}
+
+async function presetMutex() {
+  if (presetRunning) return;
+  reset();
+  presetRunning = true;
+  MAX_PERMITS.value = 1;
+
+  message.value = t(
+    'Binary semaphore = mutex: with 1 permit, only one worker runs at a time. Dijkstra invented P()/V() in 1965 for THE OS. Today: Go sync.Mutex, POSIX pthread_mutex, Java ReentrantLock — all are semaphore(1).',
+    '二元信号量 = 互斥锁：只有 1 个许可时，同一时间只有一个工作线程运行。Dijkstra 在 1965 年为 THE OS 发明了 P()/V()。如今：Go sync.Mutex、POSIX pthread_mutex、Java ReentrantLock — 都是 semaphore(1)。',
+  );
+
+  await delay(800);
+  if (!presetRunning || isAborted()) return;
+
+  acquire();
+  await delay(1000);
+  if (!presetRunning || isAborted()) return;
+
+  acquire();
+  await delay(4000);
+  if (!presetRunning || isAborted()) return;
+
+  message.value = t(
+    'The second worker had to wait — mutual exclusion enforced. Binary semaphores are the foundation of all locking primitives in modern operating systems.',
+    '第二个工作线程必须等待 — 互斥排他性得到保证。二元信号量是现代操作系统中所有锁原语的基础。',
+  );
+
+  presetRunning = false;
+}
 </script>
 
 <template>
@@ -302,6 +404,17 @@ onUnmounted(() => {
           <option :value="5">5</option>
         </select>
       </label>
+      <div class="viz-speed">
+        <input type="range" min="0.5" max="3" step="0.5" v-model.number="speed" />
+        <span class="viz-speed-val">{{ speed }}x</span>
+      </div>
+    </div>
+
+    <div class="viz-presets">
+      <span class="viz-label">{{ t('Scenarios:', '场景：') }}</span>
+      <button class="viz-btn" @click="presetSaturation">{{ t('Saturation', '饱和') }}</button>
+      <button class="viz-btn" @click="presetQueueDrain">{{ t('Queue Drain', '队列排空') }}</button>
+      <button class="viz-btn" @click="presetMutex">{{ t('Mutex (1 Permit)', '互斥锁') }}</button>
     </div>
 
     <div class="viz-status">{{ message }}</div>
@@ -378,11 +491,11 @@ onUnmounted(() => {
 }
 
 .sem-worker-box {
-  animation: sem-appear 0.2s ease;
+  animation: viz-slide-in 0.2s ease;
 }
 
 .sem-waiting-box {
-  animation: sem-appear 0.2s ease;
+  animation: viz-slide-in 0.2s ease;
 }
 
 .sem-permit-pulse {
@@ -405,17 +518,6 @@ onUnmounted(() => {
   font-size: 0.8125rem;
   font-family: var(--vp-font-family-mono);
   cursor: pointer;
-}
-
-@keyframes sem-appear {
-  from {
-    opacity: 0;
-    transform: scale(0.8);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
 }
 
 @keyframes sem-pulse {
