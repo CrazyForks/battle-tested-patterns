@@ -100,7 +100,6 @@ class ObjectPool:
         self._pool.append(obj)
 ```
 
-
 ```rust [Rust]
 pub struct ObjectPool<T> {
     pool: Vec<T>,
@@ -123,6 +122,7 @@ impl<T> ObjectPool<T> {
     }
 }
 ```
+
 :::
 
 ## 练习

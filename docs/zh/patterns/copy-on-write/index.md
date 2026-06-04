@@ -85,7 +85,6 @@ class Cow:
         return self._data
 ```
 
-
 ```rust [Rust]
 use std::borrow::Cow;
 
@@ -128,6 +127,7 @@ func (c *CowSlice[T]) Write() []T {
 	return c.data
 }
 ```
+
 :::
 
 ## 练习

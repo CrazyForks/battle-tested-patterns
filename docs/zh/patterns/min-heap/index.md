@@ -140,7 +140,6 @@ func (h *MinHeap) Pop() (int, bool) {
 }
 ```
 
-
 ```python [Python]
 import heapq
 
@@ -203,6 +202,7 @@ class MinHeap:
             else:
                 break
 ```
+
 :::
 
 ## 练习

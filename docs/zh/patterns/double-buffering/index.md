@@ -110,7 +110,6 @@ func (db *DoubleBuffer[T]) Swap() {
 }
 ```
 
-
 ```python [Python]
 class DoubleBuffer:
     def __init__(self, create_buffer):
@@ -133,6 +132,7 @@ assert buf.current()["pixels"] == [0, 0]  # front unchanged
 buf.swap()
 assert buf.current()["pixels"] == [255, 128]  # now visible
 ```
+
 :::
 
 ## 练习

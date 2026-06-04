@@ -95,7 +95,6 @@ class RingBuffer:
         return item
 ```
 
-
 ```rust [Rust]
 pub struct RingBuffer<T> {
     buffer: Vec<Option<T>>,
@@ -165,6 +164,7 @@ func (r *RingBuffer[T]) Dequeue() (T, bool) {
 
 func (r *RingBuffer[T]) Len() int { return r.cnt }
 ```
+
 :::
 
 ## 练习

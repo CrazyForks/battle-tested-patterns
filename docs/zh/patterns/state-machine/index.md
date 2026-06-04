@@ -83,7 +83,6 @@ light = StateMachine({
 light.send("TIMER")  # "yellow"
 ```
 
-
 ```rust [Rust]
 use std::collections::HashMap;
 
@@ -150,6 +149,7 @@ func (sm *StateMachine) Send(event string) string {
 
 func (sm *StateMachine) State() string { return sm.current }
 ```
+
 :::
 
 ## 练习

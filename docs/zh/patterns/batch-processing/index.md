@@ -80,7 +80,6 @@ class BatchProcessor:
         return self._process(batch) if batch else []
 ```
 
-
 ```go [Go]
 type BatchProcessor[T any, R any] struct {
 	queue   []batchEntry[T, R]
@@ -113,6 +112,7 @@ func (bp *BatchProcessor[T, R]) flush() {
 	bp.queue = bp.queue[:0]
 }
 ```
+
 :::
 
 ## 练习

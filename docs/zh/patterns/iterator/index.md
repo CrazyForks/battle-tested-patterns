@@ -61,7 +61,6 @@ evens = (x for x in fibonacci() if x % 2 == 0)
 first_10 = [next(evens) for _ in range(10)]
 ```
 
-
 ```rust [Rust]
 // Rust's Iterator trait is built-in. Usage:
 fn example() {
@@ -85,6 +84,7 @@ func Filter[T any](in []T, pred func(T) bool) []T {
 	return out
 }
 ```
+
 :::
 
 ## 练习

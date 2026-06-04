@@ -138,7 +138,6 @@ func (s *Scheduler) WorkLoop() bool {
 }
 ```
 
-
 ```python [Python]
 import time
 
@@ -166,6 +165,7 @@ remaining = work_loop(
 )
 # remaining contains items not yet processed (if any)
 ```
+
 :::
 
 ## 练习

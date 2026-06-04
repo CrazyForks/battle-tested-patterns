@@ -95,7 +95,6 @@ pub fn diff<T: PartialEq + Clone>(old: &[T], new: &[T]) -> Vec<Op<T>> {
 }
 ```
 
-
 ```python [Python]
 from typing import TypeVar, List, Tuple, Literal
 
@@ -128,6 +127,7 @@ def patch(ops: List[Op]) -> List[T]:
 ops = diff(["a", "b", "c", "d"], ["a", "c", "e", "d"])
 assert patch(ops) == ["a", "c", "e", "d"]
 ```
+
 :::
 
 ## 练习

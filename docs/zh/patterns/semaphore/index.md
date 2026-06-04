@@ -64,7 +64,6 @@ async def limited_work():
         await do_work()
 ```
 
-
 ```go [Go]
 // Idiomatic Go: buffered channel as semaphore
 func process(s string) { /* work */ }
@@ -111,6 +110,7 @@ impl Semaphore {
     }
 }
 ```
+
 :::
 
 ## 练习

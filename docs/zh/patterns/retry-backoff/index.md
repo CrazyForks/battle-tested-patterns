@@ -72,7 +72,6 @@ def retry_with_backoff(fn, max_retries=5, base=1.0, cap=30.0):
             time.sleep(delay)
 ```
 
-
 ```rust [Rust]
 use std::time::Duration;
 
@@ -125,6 +124,7 @@ func Retry(fn func() error, cfg Config) error {
 	return lastErr
 }
 ```
+
 :::
 
 ## 练习

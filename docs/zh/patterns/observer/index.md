@@ -78,7 +78,6 @@ emitter.emit("msg", "ignored")
 print(msgs)  # ["hello"]
 ```
 
-
 ```rust [Rust]
 use std::collections::HashMap;
 
@@ -129,6 +128,7 @@ func (e *EventEmitter) Emit(event string, data any) {
 	}
 }
 ```
+
 :::
 
 ## 练习

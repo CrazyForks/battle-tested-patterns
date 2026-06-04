@@ -63,7 +63,6 @@ a = 256; b = 256
 print(a is b)  # True — 享元！
 ```
 
-
 ```rust [Rust]
 use std::collections::HashMap;
 
@@ -117,6 +116,7 @@ func (in *Interner) Resolve(id int) string {
 	return in.data[id]
 }
 ```
+
 :::
 
 ## 练习
