@@ -10,6 +10,76 @@ These patterns don't exist in isolation. The most interesting insight is how pro
 
 <PatternConnectionsViz />
 
+## Composition Chains
+
+The most powerful insight isn't which patterns exist — it's how they **chain together** in real systems.
+
+### React Reconciler: From Flag to Frame
+
+```text
+Bitmask          → flags encode which work is needed
+    ↓
+Dirty Flag       → skip subtrees that haven't changed
+    ↓
+Min Heap         → pick highest-priority work first
+    ↓
+Cooperative Scheduling → yield every 5ms to avoid jank
+    ↓
+Diff / Patch     → compute minimal tree changes
+    ↓
+Double Buffering → build workInProgress tree, swap atomically
+    ↓
+Batch Processing → flush all state updates in one commit
+```
+
+### PostgreSQL: From Write to Recovery
+
+```text
+Write-Ahead Log  → every mutation logged before applying
+    ↓
+Checkpointing    → periodic snapshot bounds replay on crash
+    ↓
+B+ Tree          → disk-optimized index for range queries
+    ↓
+MVCC             → readers see consistent snapshot, never block writers
+    ↓
+LRU Cache        → buffer pool keeps hot pages in memory
+    ↓
+Bloom Filter     → skip index lookups for absent keys
+```
+
+### Kafka Broker: From Producer to Consumer
+
+```text
+Batch Processing → accumulate messages, fsync as a group
+    ↓
+Write-Ahead Log  → append-only log segments on disk
+    ↓
+Ring Buffer      → fixed-size I/O event queue
+    ↓
+Backpressure     → slow consumers signal producers to throttle
+    ↓
+Consistent Hashing → partition assignment across brokers
+    ↓
+Tombstone        → log compaction removes obsolete records
+```
+
+### Go Runtime: Scheduling + Memory
+
+```text
+Work Stealing    → idle P steals goroutines from busy P's queue
+    ↓
+Semaphore        → GOMAXPROCS limits concurrent OS threads
+    ↓
+Object Pool      → sync.Pool recycles frequently allocated objects
+    ↓
+Free List        → mspan tracks free slots in size classes
+    ↓
+Arena Allocator  → stack frames allocated as bump pointer
+    ↓
+Copy-on-Write    → slice append copies only when capacity exceeded
+```
+
 ## The Bigger Picture
 
 Understanding individual patterns is useful. Understanding how they **compose** is what separates a senior engineer from a junior one.
@@ -45,7 +115,14 @@ That's what React's team built. That's what Redis, Go, Linux, PostgreSQL, and Ka
 | **Backpressure** | | | | ✅ | | ✅ |
 | **Vtable** | | | | ✅ | | |
 | **Reference Counting** | | | | ✅ | | |
+| **Copy-on-Write** | | ✅ | ✅ | ✅ | | |
+| **Tombstone** | | ✅ | | | | ✅ |
 | **MVCC** | | | | | ✅ | |
-| **Write-Ahead Log** | | | | | ✅ | |
+| **Write-Ahead Log** | | | | | ✅ | ✅ |
+| **B+ Tree** | | | | ✅ | ✅ | |
+| **Checkpointing** | | | | | ✅ | |
+| **Event Loop** | | ✅ | ✅ | ✅ | | |
+| **Iterator** | ✅ | | ✅ | | | |
+| **Tagged Union** | ✅ | | ✅ | | | |
 | **Retry Backoff** | | | | | | ✅ |
 | **Consistent Hashing** | | | ✅ | | | ✅ |
