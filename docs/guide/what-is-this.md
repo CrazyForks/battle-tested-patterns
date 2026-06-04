@@ -35,6 +35,46 @@ Every pattern in this collection must have:
 
 We never fabricate source links. If we can't find a verifiable reference, we don't include the pattern.
 
+## Recommended Learning Paths
+
+Pick a path based on your background — or just browse freely.
+
+### Frontend Developer
+
+Start with patterns you already use (possibly without realizing it):
+
+1. [Diff / Patch](/patterns/diff-patch/) — React's virtual DOM reconciliation
+2. [Bitmask](/patterns/bitmask/) — React fiber flags
+3. [Cooperative Scheduling](/patterns/cooperative-scheduling/) — why React yields every 5ms
+4. [Observer](/patterns/observer/) — Redux, EventEmitter
+5. [Double Buffering](/patterns/double-buffering/) — React Fiber's `current` / `workInProgress`
+
+Then see them compose: [Patterns from React](/by-project/react)
+
+### Backend / Systems Developer
+
+Start with patterns that appear in databases and distributed systems:
+
+1. [Write-Ahead Log](/patterns/write-ahead-log/) — crash recovery in PostgreSQL, etcd
+2. [MVCC](/patterns/mvcc/) — how readers never block writers
+3. [Circuit Breaker](/patterns/circuit-breaker/) — fail fast in microservices
+4. [Rate Limiter](/patterns/rate-limiter/) — token bucket for throughput control
+5. [Consistent Hashing](/patterns/consistent-hashing/) — distribute keys across nodes
+
+Then see the full picture: [Patterns from Distributed Systems](/by-project/distributed-systems)
+
+### Performance / Low-Level Engineer
+
+Start with memory and concurrency patterns:
+
+1. [Arena Allocator](/patterns/arena-allocator/) — bump allocate, free all at once
+2. [Object Pool](/patterns/object-pool/) — avoid GC pressure
+3. [Free List](/patterns/free-list/) — O(1) alloc/free
+4. [Work Stealing](/patterns/work-stealing/) — Go runtime, Tokio scheduler
+5. [Ring Buffer](/patterns/ring-buffer/) — lock-free queues
+
+Then see how they compose: [Patterns from Go Runtime](/by-project/go-runtime) · [Patterns from Linux](/by-project/linux)
+
 ## How to Use This
 
 - **Play with visualizations** — each pattern page has an interactive SVG visualization — click, drag, and build intuition
