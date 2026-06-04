@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onUnmounted } from 'vue';
 import { useI18n } from '../composables/useI18n';
 
 const { t } = useI18n();
@@ -8,7 +8,6 @@ const heap = ref<number[]>([]);
 const message = ref(t('Insert values to build a min-heap, then extract the minimum', '插入值来构建最小堆，然后提取最小值'));
 const highlightIndices = ref<number[]>([]);
 const animType = ref<'insert' | 'extract' | 'swap' | ''>('');
-let nextVal = 1;
 
 const SVG_W = 400, SVG_H = 200;
 
@@ -127,6 +126,9 @@ function reset() {
   animType.value = '';
   message.value = t('Heap cleared!', '堆已清空！');
 }
+
+let aborted = false;
+onUnmounted(() => { aborted = true; });
 
 function delay(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));

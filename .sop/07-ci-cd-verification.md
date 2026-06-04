@@ -49,3 +49,6 @@ All workflows declare their own `permissions` block — the repository default s
 | Markdown lint errors in `node_modules` | Lint command missing `--ignore` | Use `--ignore docs/node_modules` |
 | `[vite:vue] Unterminated template` | Literal `"` inside backtick template in `:attr="..."` | See [SOP 09](09-vue-build-pitfalls.md) Rule 1 |
 | `[vue-tsc] declared but never read` | Unused variable in `v-for` destructuring | Drop unused binding: `[key]` not `[key, val]` |
+| `MD012 Multiple consecutive blank lines` | Extra blank lines in markdown (common in ZH translations) | Remove duplicate blank lines; run `pnpm lint` locally |
+| `MD031 Fenced code blocks should be surrounded by blank lines` | Missing blank line before/after ` ``` ` fence | Add blank lines around all code fences |
+| `verify-code` failures | TypeScript code blocks in markdown that don't compile | Ensure all `ts` code blocks are valid; see [SOP 09](09-vue-build-pitfalls.md) |

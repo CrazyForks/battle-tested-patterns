@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, reactive } from 'vue';
+import { ref, computed, reactive, onUnmounted } from 'vue';
 import { useI18n } from '../composables/useI18n';
 
 const { t } = useI18n();
@@ -28,6 +28,12 @@ const inputText = ref('');
 let entryIdCounter = 0;
 let varIdCounter = 0;
 let varNameCounter = 0;
+const pendingTimers = new Set<ReturnType<typeof setTimeout | typeof setInterval>>();
+
+onUnmounted(() => {
+  for (const id of pendingTimers) clearTimeout(id);
+  pendingTimers.clear();
+});
 
 const varNames = 'abcdefghijklmnopqrstuvwxyz'.split('');
 
@@ -113,7 +119,10 @@ function intern(str?: string) {
     );
   }
   inputText.value = '';
-  setTimeout(() => { highlightValue.value = ''; highlightAction.value = ''; }, 700);
+  {
+    const tid = setTimeout(() => { pendingTimers.delete(tid); highlightValue.value = ''; highlightAction.value = ''; }, 700);
+    pendingTimers.add(tid);
+  }
 }
 
 function removeVariable(v: VarRef) {
@@ -146,7 +155,10 @@ function removeVariable(v: VarRef) {
       `已移除 ${v.name}。refcount("${v.targetValue}") = ${remaining}`,
     );
   }
-  setTimeout(() => { highlightValue.value = ''; highlightAction.value = ''; }, 700);
+  {
+    const tid = setTimeout(() => { pendingTimers.delete(tid); highlightValue.value = ''; highlightAction.value = ''; }, 700);
+    pendingTimers.add(tid);
+  }
 }
 
 function reset() {
@@ -209,7 +221,8 @@ function runComparison() {
     `步骤 1：指针检查 — ${a.name} 和 ${b.name} 是否引用同一池条目？`,
   ));
 
-  setTimeout(() => {
+  const outerTid = setTimeout(() => {
+    pendingTimers.delete(outerTid);
     if (sameInterned) {
       compareSteps.push(t(
         `-> YES! Both point to "${a.targetValue}" in pool. O(1) — done!`,
@@ -235,7 +248,7 @@ function runComparison() {
       let charIdx = 0;
       const charInterval = setInterval(() => {
         if (charIdx >= maxLen) {
-          clearInterval(charInterval);
+          clearInterval(charInterval); pendingTimers.delete(charInterval);
           comparingCharIdx.value = -1;
           compareResult.value = t(
             `${a.name} !== ${b.name} (different values, needed ${maxLen} char comparisons without interning)`,
@@ -252,7 +265,7 @@ function runComparison() {
             `  [${charIdx}] '${chA}' != '${chB}' -> mismatch found after ${charIdx + 1} comparison(s)`,
             `  [${charIdx}] '${chA}' != '${chB}' -> 在 ${charIdx + 1} 次比较后发现不匹配`,
           ));
-          clearInterval(charInterval);
+          clearInterval(charInterval); pendingTimers.delete(charInterval);
           comparingCharIdx.value = -1;
           compareResult.value = t(
             `${a.name} !== ${b.name} (mismatch at index ${charIdx}, O(n) without interning)`,
@@ -267,8 +280,10 @@ function runComparison() {
         ));
         charIdx++;
       }, 350);
+      pendingTimers.add(charInterval);
     }
   }, 500);
+  pendingTimers.add(outerTid);
 }
 
 function clearCompare() {

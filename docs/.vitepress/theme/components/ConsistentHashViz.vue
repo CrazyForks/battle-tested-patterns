@@ -1,8 +1,11 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onUnmounted } from 'vue';
 import { useI18n } from '../composables/useI18n';
 
 const { t } = useI18n();
+
+const pendingTimers = new Set<ReturnType<typeof setTimeout>>();
+onUnmounted(() => { for (const tid of pendingTimers) clearTimeout(tid); });
 
 const CX = 150, CY = 150, R = 110;
 
@@ -66,7 +69,8 @@ function addKey() {
   const owner = findOwner(h);
   animHash.value = h;
   message.value = t(`Key "${id}" (hash=${h.toFixed(2)}) → owned by node ${owner?.id ?? 'none'}`, `键 "${id}" (hash=${h.toFixed(2)}) → 归属节点 ${owner?.id ?? '无'}`);
-  setTimeout(() => { animHash.value = -1; }, 500);
+  const tid = setTimeout(() => { pendingTimers.delete(tid); animHash.value = -1; }, 500);
+  pendingTimers.add(tid);
 }
 
 function addNode() {

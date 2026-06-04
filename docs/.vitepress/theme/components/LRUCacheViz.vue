@@ -1,8 +1,11 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onUnmounted } from 'vue';
 import { useI18n } from '../composables/useI18n';
 
 const { t } = useI18n();
+
+const pendingTimers = new Set<ReturnType<typeof setTimeout>>();
+onUnmounted(() => { for (const tid of pendingTimers) clearTimeout(tid); });
 
 const CAPACITY = 4;
 
@@ -48,11 +51,13 @@ function put(key?: string, value?: string) {
       message.value = t(`put("${k}", "${val}") → inserted at front`, `put("${k}", "${val}") → 插入头部`);
     }
     entries.value.unshift({ key: k, value: val, id: ++idCounter });
-    setTimeout(() => { animKey.value = k; animAction.value = 'insert'; }, 50);
+    const tid1 = setTimeout(() => { pendingTimers.delete(tid1); animKey.value = k; animAction.value = 'insert'; }, 50);
+    pendingTimers.add(tid1);
   }
   inputKey.value = '';
   inputValue.value = '';
-  setTimeout(() => { animKey.value = ''; animAction.value = ''; }, 500);
+  const tid2 = setTimeout(() => { pendingTimers.delete(tid2); animKey.value = ''; animAction.value = ''; }, 500);
+  pendingTimers.add(tid2);
 }
 
 function get(key?: string) {
@@ -72,7 +77,8 @@ function get(key?: string) {
     message.value = t(`get("${k}") → MISS! key not in cache`, `get("${k}") → 未命中！键不在缓存中`);
   }
   inputKey.value = '';
-  setTimeout(() => { animKey.value = ''; animAction.value = ''; }, 500);
+  const tid3 = setTimeout(() => { pendingTimers.delete(tid3); animKey.value = ''; animAction.value = ''; }, 500);
+  pendingTimers.add(tid3);
 }
 
 function quickPut() {

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onUnmounted } from 'vue';
 import { useI18n } from '../composables/useI18n';
 
 const { t } = useI18n();
@@ -38,6 +38,9 @@ function getNode(id: string) {
   return nodes.value.find(n => n.id === id)!;
 }
 
+let aborted = false;
+onUnmounted(() => { aborted = true; });
+
 function delay(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
@@ -66,6 +69,7 @@ async function topoSort() {
 
   message.value = t(`Starting — zero in-degree: ${queue.join(', ')}`, `开始 - 入度为零: ${queue.join(', ')}`);
   await delay(600);
+  if (aborted) return;
 
   while (queue.length > 0) {
     const id = queue.shift()!;
@@ -73,6 +77,7 @@ async function topoSort() {
     sortedOrder.value = [...sortedOrder.value, id];
     message.value = t(`Processing ${id} (in-degree = 0)`, `处理 ${id}（入度 = 0）`);
     await delay(500);
+    if (aborted) return;
 
     for (const next of adj[id]) {
       inDegree[next]--;

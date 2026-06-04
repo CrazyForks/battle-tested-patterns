@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, onUnmounted } from 'vue';
 import { useI18n } from '../composables/useI18n';
 
 const { t } = useI18n();
@@ -22,6 +22,9 @@ const events = ['click', 'submit', 'error', 'login'];
 const lastEvent = ref('');
 const broadcasting = ref(false);
 const message = ref(t('Click "Emit Event" to broadcast to all subscribers', '点击"发送事件"向所有订阅者广播'));
+
+let aborted = false;
+onUnmounted(() => { aborted = true; });
 
 function delay(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));

@@ -1,8 +1,11 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onUnmounted } from 'vue';
 import { useI18n } from '../composables/useI18n';
 
 const { t } = useI18n();
+
+const pendingTimers = new Set<ReturnType<typeof setTimeout>>();
+onUnmounted(() => { for (const tid of pendingTimers) clearTimeout(tid); });
 
 interface Iterator {
   label: string;
@@ -75,7 +78,10 @@ function autoRun() {
   const step = () => {
     if (!done.value) {
       next();
-      if (!done.value) setTimeout(step, 400);
+      if (!done.value) {
+        const tid = setTimeout(() => { pendingTimers.delete(tid); step(); }, 400);
+        pendingTimers.add(tid);
+      }
     }
   };
   step();

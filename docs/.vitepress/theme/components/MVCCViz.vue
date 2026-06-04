@@ -1,8 +1,11 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onUnmounted } from 'vue';
 import { useI18n } from '../composables/useI18n';
 
 const { t } = useI18n();
+
+const pendingTimers = new Set<ReturnType<typeof setTimeout>>();
+onUnmounted(() => { for (const tid of pendingTimers) clearTimeout(tid); });
 
 interface Version {
   ver: number;
@@ -85,7 +88,8 @@ function readKey(key: string) {
     highlightKey.value = key;
     highlightVer.value = -1;
     message.value = t(`T${txn.id} READ "${key}" -> ${ownWrite.value} (own uncommitted write)`, `T${txn.id} READ "${key}" -> ${ownWrite.value}（自身未提交写入）`);
-    setTimeout(() => { highlightKey.value = ''; }, 600);
+    const tid = setTimeout(() => { pendingTimers.delete(tid); highlightKey.value = ''; }, 600);
+    pendingTimers.add(tid);
     return;
   }
 
@@ -102,7 +106,8 @@ function readKey(key: string) {
   highlightKey.value = key;
   highlightVer.value = found.ver;
   message.value = t(`T${txn.id} READ "${key}" -> ${found.value} (version ${found.ver}). Newer versions invisible to snapshot v${txn.snapshotVer}.`, `T${txn.id} READ "${key}" -> ${found.value}（版本 ${found.ver}）。更新版本对快照 v${txn.snapshotVer} 不可见。`);
-  setTimeout(() => { highlightKey.value = ''; highlightVer.value = -1; }, 800);
+  const tid2 = setTimeout(() => { pendingTimers.delete(tid2); highlightKey.value = ''; highlightVer.value = -1; }, 800);
+  pendingTimers.add(tid2);
 }
 
 function writeToKey() {

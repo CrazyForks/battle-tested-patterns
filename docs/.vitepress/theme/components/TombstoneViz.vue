@@ -1,8 +1,16 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onUnmounted } from 'vue';
 import { useI18n } from '../composables/useI18n';
 
 const { t } = useI18n();
+
+const pendingTimers = new Set<ReturnType<typeof setTimeout>>();
+let aborted = false;
+onUnmounted(() => {
+  aborted = true;
+  pendingTimers.forEach(id => clearTimeout(id));
+  pendingTimers.clear();
+});
 
 interface Entry {
   key: string;
@@ -86,7 +94,8 @@ function doWrite() {
     message.value = t(`Updated "${key}" = "${value}" (overwrite).`, `已更新 "${key}" = "${value}"（覆写）。`);
     writeKey.value = '';
     writeValue.value = '';
-    setTimeout(() => { flashId.value = -1; }, 600);
+    const id = setTimeout(() => { pendingTimers.delete(id); flashId.value = -1; }, 600);
+    pendingTimers.add(id);
     return;
   }
 
@@ -104,7 +113,8 @@ function doWrite() {
   message.value = t(`Wrote "${key}" = "${value}". ${stats.value.free - 1} free slot(s) remaining.`, `已写入 "${key}" = "${value}"。剩余 ${stats.value.free - 1} 个空闲槽位。`);
   writeKey.value = '';
   writeValue.value = '';
-  setTimeout(() => { flashId.value = -1; }, 600);
+  const id2 = setTimeout(() => { pendingTimers.delete(id2); flashId.value = -1; }, 600);
+  pendingTimers.add(id2);
 }
 
 function doDelete(entry: Entry) {
@@ -115,7 +125,8 @@ function doDelete(entry: Entry) {
   if (readResult.value) {
     readResult.value = null;
   }
-  setTimeout(() => { flashId.value = -1; }, 600);
+  const id3 = setTimeout(() => { pendingTimers.delete(id3); flashId.value = -1; }, 600);
+  pendingTimers.add(id3);
 }
 
 function doRead() {
@@ -133,12 +144,14 @@ function doRead() {
     readResult.value = { found: false, tombstoned: true };
     flashId.value = entry.id;
     message.value = t(`Read "${key}": NOT FOUND (tombstoned). Data exists but is logically deleted.`, `读取 "${key}"：未找到（已标记删除）。数据存在但已逻辑删除。`);
-    setTimeout(() => { flashId.value = -1; }, 600);
+    const id4 = setTimeout(() => { pendingTimers.delete(id4); flashId.value = -1; }, 600);
+    pendingTimers.add(id4);
   } else {
     readResult.value = { found: true, value: entry.value };
     flashId.value = entry.id;
     message.value = t(`Read "${key}": FOUND -> "${entry.value}"`, `读取 "${key}"：找到 -> "${entry.value}"`);
-    setTimeout(() => { flashId.value = -1; }, 600);
+    const id5 = setTimeout(() => { pendingTimers.delete(id5); flashId.value = -1; }, 600);
+    pendingTimers.add(id5);
   }
   readKey.value = '';
 }
@@ -160,6 +173,7 @@ async function doCompact() {
   for (const entry of tombstoned) {
     flashId.value = entry.id;
     await new Promise((r) => setTimeout(r, 300));
+    if (aborted) return;
     entry.key = '';
     entry.value = '';
     entry.status = 'free';
@@ -247,7 +261,7 @@ function reset() {
             <button
               v-if="entry.status === 'active'"
               class="ts-delete-btn"
-              title="Delete (tombstone)"
+              :title="t('Delete (tombstone)', '删除（墓碑标记）')"
               @click="doDelete(entry)"
             >x</button>
           </div>

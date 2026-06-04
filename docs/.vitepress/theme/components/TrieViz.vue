@@ -1,8 +1,16 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onUnmounted } from 'vue';
 import { useI18n } from '../composables/useI18n';
 
 const { t } = useI18n();
+
+const pendingTimers = new Set<ReturnType<typeof setTimeout>>();
+let aborted = false;
+onUnmounted(() => {
+  aborted = true;
+  pendingTimers.forEach(id => clearTimeout(id));
+  pendingTimers.clear();
+});
 
 interface TrieNode {
   char: string;
@@ -50,7 +58,8 @@ function insertWord() {
   message.value = t(`Inserted "${word}" (${word.length} nodes traversed)`, `已插入 "${word}"（遍历 ${word.length} 个节点）`);
   inputWord.value = '';
 
-  setTimeout(() => { highlightIds.value = new Set(); }, 800);
+  const id = setTimeout(() => { pendingTimers.delete(id); highlightIds.value = new Set(); }, 800);
+  pendingTimers.add(id);
 }
 
 async function searchWord() {
@@ -66,9 +75,11 @@ async function searchWord() {
   for (const ch of word) {
     highlightIds.value = new Set(path);
     await delay(200);
+    if (aborted) return;
     if (!current.children.has(ch)) {
       message.value = t(`"${word}" not found — no '${ch}' edge from current node`, `未找到 "${word}" — 当前节点无 '${ch}' 边`);
-      setTimeout(() => { highlightIds.value = new Set(); }, 800);
+      const id = setTimeout(() => { pendingTimers.delete(id); highlightIds.value = new Set(); }, 800);
+      pendingTimers.add(id);
       return;
     }
     current = current.children.get(ch)!;
@@ -81,7 +92,8 @@ async function searchWord() {
   } else {
     message.value = t(`"${word}" is a prefix but not a stored word`, `"${word}" 是前缀但不是已存储的单词`);
   }
-  setTimeout(() => { highlightIds.value = new Set(); }, 1200);
+  const id2 = setTimeout(() => { pendingTimers.delete(id2); highlightIds.value = new Set(); }, 1200);
+  pendingTimers.add(id2);
 }
 
 function addPresets() {

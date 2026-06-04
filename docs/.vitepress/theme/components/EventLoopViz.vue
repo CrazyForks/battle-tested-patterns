@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onUnmounted } from 'vue';
 import { useI18n } from '../composables/useI18n';
 
 const { t } = useI18n();
@@ -53,6 +53,9 @@ function loadDemo() {
   message.value = t('Demo loaded — click Step to walk through execution', '示例已加载 - 点击"单步"逐步执行');
 }
 
+let aborted = false;
+onUnmounted(() => { aborted = true; });
+
 function delay(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
@@ -68,6 +71,7 @@ async function step() {
     log.value.push(`▶ ${task.label}`);
     message.value = t(`Executing "${task.label}" from call stack`, `正在执行调用栈中的 "${task.label}"`);
     await delay(400);
+    if (aborted) return;
     running.value = false;
     if (callStack.value.length === 0 && microQueue.value.length === 0 && macroQueue.value.length === 0) {
       currentPhase.value = 'idle';
@@ -83,10 +87,12 @@ async function step() {
       callStack.value.push(task);
       message.value = t(`Microtask "${task.label}" → call stack`, `微任务 "${task.label}" → 调用栈`);
       await delay(300);
+      if (aborted) return;
       callStack.value.pop();
       log.value.push(`▶ ${task.label}`);
       message.value = t(`Executed "${task.label}"`, `已执行 "${task.label}"`);
       await delay(200);
+      if (aborted) return;
     }
     running.value = false;
     if (macroQueue.value.length === 0) currentPhase.value = 'idle';
@@ -100,10 +106,12 @@ async function step() {
     callStack.value.push(task);
     message.value = t(`Macrotask "${task.label}" → call stack`, `宏任务 "${task.label}" → 调用栈`);
     await delay(300);
+    if (aborted) return;
     callStack.value.pop();
     log.value.push(`▶ ${task.label}`);
     message.value = t(`Executed "${task.label}" — check microtasks next`, `已执行 "${task.label}" - 接下来检查微任务`);
     await delay(200);
+    if (aborted) return;
     running.value = false;
     currentPhase.value = 'idle';
     return;
@@ -118,7 +126,9 @@ async function runAll() {
   if (running.value) return;
   while (callStack.value.length > 0 || microQueue.value.length > 0 || macroQueue.value.length > 0) {
     await step();
+    if (aborted) return;
     await delay(100);
+    if (aborted) return;
   }
 }
 

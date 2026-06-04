@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onUnmounted } from 'vue';
 import { useI18n } from '../composables/useI18n';
 
 const { t } = useI18n();
@@ -98,6 +98,7 @@ async function search() {
   while (current) {
     highlightIds.value = new Set([...highlightIds.value, current.id]);
     await delay(400);
+    if (aborted) return;
 
     if (current.isLeaf) {
       if (current.keys.includes(target)) {
@@ -111,6 +112,7 @@ async function search() {
     current = current.children[childIdx];
   }
   await delay(800);
+  if (aborted) return;
   highlightIds.value = new Set();
 }
 
@@ -134,6 +136,9 @@ function loadDemo() {
   }
   message.value = t('Demo loaded: 9 keys inserted', '示例已加载：已插入 9 个键');
 }
+
+let aborted = false;
+onUnmounted(() => { aborted = true; });
 
 function delay(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));

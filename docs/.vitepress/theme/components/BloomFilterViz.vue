@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, reactive } from 'vue';
+import { ref, reactive, onUnmounted } from 'vue';
 import { useI18n } from '../composables/useI18n';
 
 const { t } = useI18n();
@@ -13,6 +13,17 @@ const message = ref(t('Add items to the Bloom filter, then test membership', '�
 const highlightBits = ref<number[]>([]);
 const highlightType = ref<'add' | 'hit' | 'miss' | 'false-positive' | ''>('');
 const inputText = ref('');
+const pendingTimers = new Set<ReturnType<typeof setTimeout>>();
+
+onUnmounted(() => {
+  for (const t of pendingTimers) clearTimeout(t);
+  pendingTimers.clear();
+});
+
+function scheduleTimeout(fn: () => void, ms: number) {
+  const id = setTimeout(() => { pendingTimers.delete(id); fn(); }, ms);
+  pendingTimers.add(id);
+}
 
 function hash(str: string, seed: number): number {
   let h = seed;
@@ -38,7 +49,7 @@ function add(item?: string) {
   highlightType.value = 'add';
   message.value = t(`Added "${val}" → set bits [${hashes.join(', ')}]`, `已添加 "${val}" → 设置位 [${hashes.join(', ')}]`);
   inputText.value = '';
-  setTimeout(() => { highlightBits.value = []; highlightType.value = ''; }, 600);
+  scheduleTimeout(() => { highlightBits.value = []; highlightType.value = ''; }, 600);
 }
 
 function test(item?: string) {
@@ -63,7 +74,7 @@ function test(item?: string) {
     message.value = t(`"${val}" → Definitely NOT in set. bits [${zeroBits.join(', ')}] are 0`, `"${val}" → 确定不在集合中。位 [${zeroBits.join(', ')}] 为 0`);
   }
   inputText.value = '';
-  setTimeout(() => { highlightBits.value = []; highlightType.value = ''; }, 800);
+  scheduleTimeout(() => { highlightBits.value = []; highlightType.value = ''; }, 800);
 }
 
 function reset() {
@@ -76,10 +87,10 @@ function reset() {
 
 function demo() {
   reset();
-  setTimeout(() => add('cat'), 100);
-  setTimeout(() => add('dog'), 500);
-  setTimeout(() => add('bird'), 900);
-  setTimeout(() => {
+  scheduleTimeout(() => add('cat'), 100);
+  scheduleTimeout(() => add('dog'), 500);
+  scheduleTimeout(() => add('bird'), 900);
+  scheduleTimeout(() => {
     message.value = t('Now try: test("cat") = true positive, test("rat") = false positive!', '现在试试：test("cat") = 真阳性，test("rat") = 假阳性！');
   }, 1300);
 }

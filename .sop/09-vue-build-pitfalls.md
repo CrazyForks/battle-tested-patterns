@@ -113,10 +113,81 @@ The `timeline` chart type in Mermaid causes global rendering errors in VitePress
 
 Use a text-based alternative (table, list, or custom Vue component) instead of `mermaid timeline`.
 
+## Rule 5: Always Clean Up Timers with `onUnmounted`
+
+### The Problem
+
+Components using `setTimeout` or `setInterval` without cleanup will leak callbacks when the component unmounts during an animation or delay. This causes writes to stale reactive state and console errors.
+
+### Bad
+
+```ts
+import { ref } from 'vue';
+const highlighted = ref(false);
+function flash() {
+  highlighted.value = true;
+  setTimeout(() => { highlighted.value = false; }, 600);  // leaks if unmounted
+}
+```
+
+### Good (tracked timer set)
+
+```ts
+import { ref, onUnmounted } from 'vue';
+const highlighted = ref(false);
+const pendingTimers = new Set<ReturnType<typeof setTimeout>>();
+
+onUnmounted(() => {
+  for (const id of pendingTimers) clearTimeout(id);
+  pendingTimers.clear();
+});
+
+function flash() {
+  highlighted.value = true;
+  const tid = setTimeout(() => {
+    pendingTimers.delete(tid);
+    highlighted.value = false;
+  }, 600);
+  pendingTimers.add(tid);
+}
+```
+
+### Good (async with abort flag)
+
+For async functions with `await delay()` chains:
+
+```ts
+import { onUnmounted } from 'vue';
+let aborted = false;
+onUnmounted(() => { aborted = true; });
+
+async function animate() {
+  step1();
+  await delay(500);
+  if (aborted) return;
+  step2();
+  await delay(500);
+  if (aborted) return;
+  step3();
+}
+```
+
+### How to Scan
+
+```bash
+# Find components with setTimeout/setInterval but no onUnmounted
+for f in docs/.vitepress/theme/components/*.vue; do
+  if grep -q 'setTimeout\|setInterval' "$f" && ! grep -q 'onUnmounted' "$f"; then
+    echo "MISSING CLEANUP: $f"
+  fi
+done
+```
+
 ## Checklist Before Pushing Vue Changes
 
 - [ ] No literal `"` inside backtick templates within `:attr="..."` bindings
 - [ ] No unused variables in `v-for` destructuring
 - [ ] No Mermaid diagrams with CJK subgraph IDs
 - [ ] No Mermaid `timeline` chart types
+- [ ] All `setTimeout`/`setInterval` cleaned up with `onUnmounted`
 - [ ] `pnpm typecheck` passes (or verify via CI if local Node version differs)

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onUnmounted } from 'vue';
 import { useI18n } from '../composables/useI18n';
 
 const { t } = useI18n();
@@ -117,6 +117,9 @@ function reset() {
   searchTarget.value = null;
   message.value = t('Skip list cleared!', 'Skip List 已清空！');
 }
+
+let aborted = false;
+onUnmounted(() => { aborted = true; });
 
 function delay(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));

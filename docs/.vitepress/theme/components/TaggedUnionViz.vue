@@ -19,10 +19,10 @@ const showMatchResult = ref(false);
 const matchResultText = ref('');
 
 const tagMeta: Record<Tag, { color: string; byte: string; description: string }> = {
-  Number: { color: 'var(--viz-primary)', byte: '0x01', description: 'IEEE 754 double' },
-  String: { color: 'var(--viz-success)', byte: '0x02', description: 'UTF-8 pointer + length' },
-  Bool: { color: 'var(--viz-warning)', byte: '0x03', description: 'Single byte 0/1' },
-  None: { color: 'var(--viz-muted)', byte: '0x00', description: 'No data (unit type)' },
+  Number: { color: 'var(--viz-primary)', byte: '0x01', description: t('IEEE 754 double', 'IEEE 754 双精度') },
+  String: { color: 'var(--viz-success)', byte: '0x02', description: t('UTF-8 pointer + length', 'UTF-8 指针 + 长度') },
+  Bool: { color: 'var(--viz-warning)', byte: '0x03', description: t('Single byte 0/1', '单字节 0/1') },
+  None: { color: 'var(--viz-muted)', byte: '0x00', description: t('No data (unit type)', '无数据（单元类型）') },
 };
 
 const values: Record<Tag, TaggedValue> = {

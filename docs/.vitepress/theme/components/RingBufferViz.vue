@@ -1,8 +1,11 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onUnmounted } from 'vue';
 import { useI18n } from '../composables/useI18n';
 
 const { t } = useI18n();
+
+const pendingTimers = new Set<ReturnType<typeof setTimeout>>();
+onUnmounted(() => { for (const tid of pendingTimers) clearTimeout(tid); });
 const SIZE = 8;
 const buffer = ref<(string | null)[]>(Array(SIZE).fill(null));
 const head = ref(0);
@@ -52,7 +55,8 @@ function enqueue() {
   tail.value = (tail.value + 1) % SIZE;
   count.value++;
   message.value = t(`Enqueued "${val}" → tail moves to ${tail.value}`, `入队 "${val}" → 尾指针移至 ${tail.value}`);
-  setTimeout(() => { animatingIndex.value = -1; animationType.value = ''; }, 400);
+  const tid1 = setTimeout(() => { pendingTimers.delete(tid1); animatingIndex.value = -1; animationType.value = ''; }, 400);
+  pendingTimers.add(tid1);
 }
 
 function dequeue() {
@@ -67,7 +71,8 @@ function dequeue() {
   head.value = (head.value + 1) % SIZE;
   count.value--;
   message.value = t(`Dequeued "${val}" → head moves to ${head.value}`, `出队 "${val}" → 头指针移至 ${head.value}`);
-  setTimeout(() => { animatingIndex.value = -1; animationType.value = ''; }, 400);
+  const tid2 = setTimeout(() => { pendingTimers.delete(tid2); animatingIndex.value = -1; animationType.value = ''; }, 400);
+  pendingTimers.add(tid2);
 }
 
 function reset() {

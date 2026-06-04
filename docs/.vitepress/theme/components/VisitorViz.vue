@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, reactive, computed } from 'vue';
+import { ref, reactive, computed, onUnmounted } from 'vue';
 import { useI18n } from '../composables/useI18n';
 
 const { t } = useI18n();
@@ -44,6 +44,9 @@ const visitorType = ref<'print' | 'count'>('print');
 const output = reactive<string[]>([]);
 const nodeCount = ref(0);
 const message = ref(t('Select a visitor type and click "Visit" to traverse the AST', '选择访问者类型并点击"访问"以遍历 AST'));
+
+let aborted = false;
+onUnmounted(() => { aborted = true; });
 
 function delay(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));

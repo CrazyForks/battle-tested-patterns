@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onUnmounted } from 'vue';
 import { useI18n } from '../composables/useI18n';
 
 const { t } = useI18n();
@@ -42,6 +42,9 @@ function insertSorted(arr: KV[], kv: KV): KV[] {
   filtered.push(kv);
   return filtered.sort((a, b) => a.key.localeCompare(b.key));
 }
+
+let aborted = false;
+onUnmounted(() => { aborted = true; });
 
 async function delay(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));

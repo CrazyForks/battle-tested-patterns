@@ -1,8 +1,11 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onUnmounted } from 'vue';
 import { useI18n } from '../composables/useI18n';
 
 const { t } = useI18n();
+
+const pendingTimers = new Set<ReturnType<typeof setTimeout>>();
+onUnmounted(() => { for (const tid of pendingTimers) clearTimeout(tid); });
 
 interface Item {
   id: number;
@@ -68,7 +71,8 @@ function flushBatch() {
   }
   message.value = t(`Flushing batch of ${items.length} items...`, `正在刷新 ${items.length} 个元素的批次...`);
 
-  setTimeout(() => {
+  const tid = setTimeout(() => {
+    pendingTimers.delete(tid);
     const batch: BatchRecord = {
       id: nextBatchId++,
       size: items.length,
@@ -82,6 +86,7 @@ function flushBatch() {
       `批次 #${batch.id} 已刷新（${batch.size} 个元素）— 缓冲区已清空`
     );
   }, 600);
+  pendingTimers.add(tid);
 }
 
 function reset() {

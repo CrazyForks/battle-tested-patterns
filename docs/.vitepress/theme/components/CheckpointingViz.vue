@@ -1,8 +1,12 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onUnmounted } from 'vue';
 import { useI18n } from '../composables/useI18n';
 
 const { t } = useI18n();
+
+const pendingTimers = new Set<ReturnType<typeof setTimeout>>();
+let aborted = false;
+onUnmounted(() => { aborted = true; for (const tid of pendingTimers) clearTimeout(tid); });
 
 interface LogEntry {
   id: number;
@@ -127,6 +131,7 @@ function recover() {
   let replayIdx = 0;
 
   function replayNext() {
+    if (aborted) return;
     if (replayIdx >= entriesAfterCp.length) {
       recovering.value = false;
       message.value = t(`Recovery complete! Replayed ${replayedCount.value} of ${totalEntries.value} entries from checkpoint #${cp!.id}`, `恢复完成！从 Checkpoint #${cp!.id} 重放了 ${totalEntries.value} 条中的 ${replayedCount.value} 条`);
@@ -137,11 +142,13 @@ function recover() {
     stateValue.value = entry.value;
     message.value = t(`Replaying entry #${entry.id}: ${entry.op} -> state=${entry.value}`, `重放条目 #${entry.id}：${entry.op} -> state=${entry.value}`);
     replayIdx++;
-    setTimeout(replayNext, 400);
+    const tid = setTimeout(() => { pendingTimers.delete(tid); replayNext(); }, 400);
+    pendingTimers.add(tid);
   }
 
   message.value = t(`Restored checkpoint #${cp.id} (state=${cp.stateValue}). Replaying ${entriesAfterCp.length} entries...`, `已恢复 Checkpoint #${cp.id}（state=${cp.stateValue}）。正在重放 ${entriesAfterCp.length} 条记录...`);
-  setTimeout(replayNext, 500);
+  const tid0 = setTimeout(() => { pendingTimers.delete(tid0); replayNext(); }, 500);
+  pendingTimers.add(tid0);
 }
 
 function reset() {

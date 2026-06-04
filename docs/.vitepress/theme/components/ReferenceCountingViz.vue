@@ -1,7 +1,10 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onUnmounted } from 'vue';
 import { useI18n } from '../composables/useI18n';
 const { t } = useI18n();
+
+const pendingTimers = new Set<ReturnType<typeof setTimeout>>();
+onUnmounted(() => { for (const tid of pendingTimers) clearTimeout(tid); });
 
 interface RCObject {
   id: number;
@@ -44,7 +47,8 @@ function dropRef(refIdx: number) {
     obj.freed = true;
     lastFreed.value = obj.id;
     message.value = t(`Dropped ${r.from} → ${obj.name} — rc=0, FREED!`, `已删除 ${r.from} → ${obj.name} — rc=0，已释放！`);
-    setTimeout(() => { lastFreed.value = -1; }, 600);
+    const tid = setTimeout(() => { pendingTimers.delete(tid); lastFreed.value = -1; }, 600);
+    pendingTimers.add(tid);
   } else {
     message.value = t(`Dropped ${r.from} → ${obj.name} — rc=${obj.refCount}`, `已删除 ${r.from} → ${obj.name} — rc=${obj.refCount}`);
   }

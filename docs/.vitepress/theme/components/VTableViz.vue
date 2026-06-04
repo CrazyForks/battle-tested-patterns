@@ -1,8 +1,13 @@
 <script setup lang="ts">
-import { ref, computed, reactive } from 'vue';
+import { ref, computed, reactive, onUnmounted } from 'vue';
 import { useI18n } from '../composables/useI18n';
 
 const { t } = useI18n();
+
+let aborted = false;
+onUnmounted(() => {
+  aborted = true;
+});
 
 interface VTableEntry {
   methodName: string;
@@ -115,6 +120,7 @@ async function callMethod() {
     `${objLabel}.${selectedMethod.value} 被调用 -- 从对象读取 vptr...`,
   );
   await delay(800);
+  if (aborted) return;
 
   // Step 2: follow vptr to vtable
   activeStep.value = 2;
@@ -123,6 +129,7 @@ async function callMethod() {
     `vptr 指向 ${cls.name} 的 vtable`,
   );
   await delay(800);
+  if (aborted) return;
 
   // Step 3: look up method in vtable
   activeStep.value = 3;
@@ -131,6 +138,7 @@ async function callMethod() {
     `在 ${cls.name} vtable 中查找 ${selectedMethod.value}...`,
   );
   await delay(800);
+  if (aborted) return;
 
   // Step 4: show the dispatch result
   activeStep.value = 4;
@@ -156,6 +164,7 @@ async function callMethod() {
   }
 
   await delay(1500);
+  if (aborted) return;
 
   // Reset animation (keep result and history visible)
   activeStep.value = 0;

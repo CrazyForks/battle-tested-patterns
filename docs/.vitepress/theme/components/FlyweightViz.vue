@@ -1,8 +1,11 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onUnmounted } from 'vue';
 import { useI18n } from '../composables/useI18n';
 
 const { t } = useI18n();
+
+const pendingTimers = new Set<ReturnType<typeof setTimeout>>();
+onUnmounted(() => { for (const tid of pendingTimers) clearTimeout(tid); });
 
 /* ── Flyweight data model ── */
 
@@ -92,7 +95,8 @@ function processText(text: string) {
     newIds.add(id);
   }
   lastAddedIds.value = newIds;
-  setTimeout(() => { lastAddedIds.value = new Set(); }, 500);
+  const tid = setTimeout(() => { pendingTimers.delete(tid); lastAddedIds.value = new Set(); }, 500);
+  pendingTimers.add(tid);
 }
 
 /* ── User actions ── */

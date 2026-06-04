@@ -6,13 +6,10 @@ const { t } = useI18n();
 const LABELS = ['READ', 'WRITE', 'EXEC', 'ADMIN', 'LOG', 'NET', 'GPU', 'IO'];
 const bits = ref(0);
 const message = ref(t('Toggle bits to build a permission mask', '切换位来构建权限掩码'));
-const lastOp = ref('');
-
 function toggle(idx: number) {
   bits.value ^= (1 << idx);
   const label = LABELS[idx];
   const on = (bits.value >> idx) & 1;
-  lastOp.value = `toggle-${idx}`;
   message.value = t(
     `${label} ${on ? 'ON' : 'OFF'} — mask is now 0b${bits.value.toString(2).padStart(8, '0')} (${bits.value})`,
     `${label} ${on ? '开启' : '关闭'} — 掩码现为 0b${bits.value.toString(2).padStart(8, '0')} (${bits.value})`

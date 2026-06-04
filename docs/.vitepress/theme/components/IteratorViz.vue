@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, reactive, computed } from 'vue';
+import { ref, reactive, computed, onUnmounted } from 'vue';
 import { useI18n } from '../composables/useI18n';
 
 const { t } = useI18n();
@@ -36,6 +36,9 @@ const animating = ref(false);
 const message = ref(t('Click "Pull Next" to pull one element through the lazy pipeline', '点击"拉取下一个"将一个元素拉过惰性管道'));
 
 const hasNext = computed(() => !state.done && state.sourceIdx < SOURCE.length - 1);
+
+let aborted = false;
+onUnmounted(() => { aborted = true; });
 
 async function delay(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));

@@ -152,7 +152,7 @@ const diffPrefix = (type: string) => {
             <span class="dp-line-text">{{ line }}</span>
           </div>
           <div v-if="originalLines.length === 0" class="dp-empty">
-            (empty)
+            {{ t('(empty)', '（空）') }}
           </div>
         </div>
       </div>
@@ -188,8 +188,8 @@ const diffPrefix = (type: string) => {
 
     <div class="viz-controls">
       <button class="viz-btn" @click="modify">{{ t('Modify', '修改') }}</button>
-      <button class="viz-btn viz-btn--primary" @click="computeDiff">Diff</button>
-      <button class="viz-btn viz-btn--primary" :disabled="!hasDiff || patched" @click="patch">Patch</button>
+      <button class="viz-btn viz-btn--primary" @click="computeDiff">{{ t('Diff', 'Diff') }}</button>
+      <button class="viz-btn viz-btn--primary" :disabled="!hasDiff || patched" @click="patch">{{ t('Patch', 'Patch') }}</button>
       <button class="viz-btn viz-btn--danger" @click="reset">{{ t('Reset', '重置') }}</button>
     </div>
 

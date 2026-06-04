@@ -1,8 +1,11 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onUnmounted } from 'vue';
 import { useI18n } from '../composables/useI18n';
 
 const { t } = useI18n();
+
+const pendingTimers = new Set<ReturnType<typeof setTimeout>>();
+onUnmounted(() => { for (const tid of pendingTimers) clearTimeout(tid); });
 
 interface Handler {
   name: string;
@@ -46,7 +49,8 @@ function registerHandler(pluginName: string) {
   lookupResult.value = null;
   lookupNotFound.value = false;
   message.value = t(`Registered "${plugin.name}" (order #${handler.registeredAt}). Registry now has ${registry.value.length} handler(s).`, `已注册 "${plugin.name}"（顺序 #${handler.registeredAt}）。注册表现有 ${registry.value.length} 个处理器。`);
-  setTimeout(() => { flashId.value = -1; }, 600);
+  const tid = setTimeout(() => { pendingTimers.delete(tid); flashId.value = -1; }, 600);
+  pendingTimers.add(tid);
 }
 
 function unregisterHandler(handler: Handler) {
@@ -71,20 +75,24 @@ function doLookup() {
   const found = registry.value.find(
     (h) => h.name.toLowerCase() === q.toLowerCase(),
   );
-  setTimeout(() => {
+  const tid1 = setTimeout(() => {
+    pendingTimers.delete(tid1);
     if (found) {
       lookupResult.value = found;
       lookupNotFound.value = false;
       flashId.value = found.id;
       message.value = t(`FOUND: "${found.name}" -> ${found.description}`, `已找到："${found.name}" -> ${found.description}`);
-      setTimeout(() => { flashId.value = -1; }, 600);
+      const tid2 = setTimeout(() => { pendingTimers.delete(tid2); flashId.value = -1; }, 600);
+      pendingTimers.add(tid2);
     } else {
       lookupResult.value = null;
       lookupNotFound.value = true;
       message.value = t(`NOT FOUND: No handler registered for "${q}".`, `未找到：没有为 "${q}" 注册的处理器。`);
     }
-    setTimeout(() => { dispatchTarget.value = null; }, 800);
+    const tid3 = setTimeout(() => { pendingTimers.delete(tid3); dispatchTarget.value = null; }, 800);
+    pendingTimers.add(tid3);
   }, 300);
+  pendingTimers.add(tid1);
   lookupQuery.value = '';
 }
 
@@ -182,7 +190,7 @@ const availableCount = computed(() => availablePlugins.value.filter((p) => !p.re
                 <td>
                   <button
                     class="rg-action rg-action--rm"
-                    title="Unregister"
+                    :title="t('Unregister', '注销')"
                     @click="unregisterHandler(handler)"
                   >{{ t('unregister', '注销') }}</button>
                 </td>
