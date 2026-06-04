@@ -41,8 +41,6 @@ const avgPerBatch = computed(() => {
 });
 
 function addItem() {
-  if (flushing.value) return;
-
   const item: Item = {
     id: nextItemId++,
     label: `item-${nextItemId - 1}`,
@@ -55,7 +53,7 @@ function addItem() {
     `已添加 ${item.label} — 缓冲区 ${buffer.value.length}/${BATCH_THRESHOLD}。每个元素单独需要完整的往返；批处理将 N 次调用减少为 1 次。`
   );
 
-  if (buffer.value.length >= BATCH_THRESHOLD) {
+  if (!flushing.value && buffer.value.length >= BATCH_THRESHOLD) {
     flushBatch();
   }
 }
@@ -68,10 +66,8 @@ function flushBatch() {
   if (flushing.value) return;
 
   flushing.value = true;
-  const items = buffer.value;
-  for (const item of items) {
-    item.state = 'flushing';
-  }
+  const items = [...buffer.value];
+  buffer.value = [];
   message.value = t(
     `Flushing batch of ${items.length} items... In databases, this is the difference between INSERT per row vs. INSERT ... VALUES (bulk). 10-100x throughput gain.`,
     `正在刷新 ${items.length} 个元素的批次... 在数据库中，这就是单行 INSERT 与 INSERT ... VALUES（批量）的区别。吞吐量提升 10-100 倍。`
@@ -84,12 +80,14 @@ function flushBatch() {
       items: items.map(i => i.label),
     };
     batches.value = [...batches.value, batch];
-    buffer.value = [];
     flushing.value = false;
     message.value = t(
       `Batch #${batch.id} flushed (${batch.size} items) — buffer cleared. React batches setState calls the same way: multiple updates, one re-render.`,
       `批次 #${batch.id} 已刷新（${batch.size} 个元素）— 缓冲区已清空。React 以相同方式批量处理 setState 调用：多次更新，一次重渲染。`
     );
+    if (buffer.value.length >= BATCH_THRESHOLD) {
+      flushBatch();
+    }
   }, 600);
 }
 
@@ -257,7 +255,7 @@ async function presetMultiBatch() {
     </div>
 
     <div class="viz-controls">
-      <button class="viz-btn viz-btn--primary" @click="addItem" :disabled="flushing">{{ t('Add Item', '添加元素') }}</button>
+      <button class="viz-btn viz-btn--primary" @click="addItem">{{ t('Add Item', '添加元素') }}</button>
       <button class="viz-btn" @click="flushBatch" :disabled="flushing || buffer.length === 0">{{ t('Force Flush', '强制刷新') }}</button>
       <button class="viz-btn viz-btn--danger" @click="reset">{{ t('Reset', '重置') }}</button>
       <div class="viz-speed">

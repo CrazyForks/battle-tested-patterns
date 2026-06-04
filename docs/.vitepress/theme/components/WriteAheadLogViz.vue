@@ -79,9 +79,13 @@ function flush() {
 
 function simulateCrash() {
   const unflushed = log.value.filter(e => !e.flushed);
-  table.value = table.value.filter(r => {
-    return !unflushed.some(e => e.data.startsWith(r.key + '='));
-  });
+  const flushedEntries = log.value.filter(e => e.flushed);
+  const restoredTable = new Map<string, string>();
+  for (const entry of flushedEntries) {
+    const [key, value] = entry.data.split('=');
+    restoredTable.set(key, value);
+  }
+  table.value = Array.from(restoredTable.entries()).map(([key, value]) => ({ key, value }));
   crashed.value = true;
   lastAction.value = 'crash';
   message.value = t(

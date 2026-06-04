@@ -73,8 +73,8 @@ async function startRequest() {
 
     if (i > 0) {
       message.value = t(
-        `Waiting ${totalDelay}ms before attempt #${i + 1} (base ${attemptDelay}ms × 2^${i - 1} + ${jitter >= 0 ? '+' : ''}${jitter}ms jitter). Exponential backoff prevents thundering herd.`,
-        `等待 ${totalDelay}ms 后进行第 ${i + 1} 次尝试（基础 ${attemptDelay}ms × 2^${i - 1} + ${jitter >= 0 ? '+' : ''}${jitter}ms 抖动）。指数退避防止惊群效应。`
+        `Waiting ${totalDelay}ms before attempt #${i + 1} (${BASE_DELAY}ms × 2^${i - 1} = ${attemptDelay}ms ${jitter >= 0 ? '+' : ''}${jitter}ms jitter). Exponential backoff prevents thundering herd.`,
+        `等待 ${totalDelay}ms 后进行第 ${i + 1} 次尝试（${BASE_DELAY}ms × 2^${i - 1} = ${attemptDelay}ms ${jitter >= 0 ? '+' : ''}${jitter}ms 抖动）。指数退避防止惊群效应。`
       );
       const scaledDelay = Math.min(totalDelay / 2, 1500);
       await delay(scaledDelay);

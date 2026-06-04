@@ -10,6 +10,7 @@ interface Worker {
   state: 'active' | 'waiting' | 'done';
   permitIndex: number;
   remainingMs: number;
+  totalMs: number;
 }
 
 const MAX_PERMITS = ref(3);
@@ -54,7 +55,9 @@ function tryPromoteWaiting() {
   if (!next) return;
   next.state = 'active';
   next.permitIndex = slot;
-  next.remainingMs = randomDuration();
+  const dur = randomDuration();
+  next.totalMs = dur;
+  next.remainingMs = dur;
   message.value = t(`Worker #${next.id} acquired permit ${slot + 1} from queue`, `工作线程 #${next.id} 从队列获取了许可 ${slot + 1}`);
   startWorkerTimer(next);
 }
@@ -90,11 +93,13 @@ function acquire() {
   const id = nextId++;
   const slot = findFreePermit();
   if (slot !== -1) {
+    const dur = randomDuration();
     const w: Worker = {
       id,
       state: 'active',
       permitIndex: slot,
-      remainingMs: randomDuration(),
+      totalMs: dur,
+      remainingMs: dur,
     };
     workers.value.push(w);
     message.value = t(`Worker #${id} acquired permit ${slot + 1}`, `工作线程 #${id} 获取了许可 ${slot + 1}`);
@@ -104,6 +109,7 @@ function acquire() {
       id,
       state: 'waiting',
       permitIndex: -1,
+      totalMs: 0,
       remainingMs: 0,
     };
     workers.value.push(w);
@@ -124,8 +130,8 @@ function permitColor(taken: boolean): string {
 }
 
 function progressPercent(w: Worker): number {
-  const total = 3000;
-  return Math.max(0, Math.min(100, ((total - w.remainingMs) / total) * 100));
+  if (w.totalMs <= 0) return 0;
+  return Math.max(0, Math.min(100, ((w.totalMs - w.remainingMs) / w.totalMs) * 100));
 }
 
 /* ---------- Preset scenarios ---------- */

@@ -305,7 +305,7 @@ const edges = computed(() => getEdges(treeLayout.value));
       />
 
       <!-- Nodes -->
-      <g v-for="ln in allLayoutNodes" :key="ln.node.id" :transform="`translate(${ln.x}, ${ln.y})`">
+      <g v-for="ln in allLayoutNodes" v-show="ln.node.keys.length > 0" :key="ln.node.id" :transform="`translate(${ln.x}, ${ln.y})`">
         <rect
           :x="-(ln.node.keys.length * 14 + 5)"
           y="-12"

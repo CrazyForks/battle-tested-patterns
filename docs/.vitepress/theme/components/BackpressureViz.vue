@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import { useI18n } from '../composables/useI18n';
 import { useVizTimers } from '../composables/useVizTimers';
 
 const { t } = useI18n();
-const { safeInterval, clearAll, speed } = useVizTimers();
+const { safeInterval, safeTimeout, clearAll, speed } = useVizTimers();
 
 const QUEUE_CAP = 12;
 const queue = ref<number[]>([]);
@@ -21,53 +21,75 @@ const producerActive = ref(false);
 const consumerActive = ref(false);
 let nextItem = 1;
 let presetRunning = false;
+let producerTimerId: ReturnType<typeof setInterval> | null = null;
+let consumerTimerId: ReturnType<typeof setInterval> | null = null;
+
+function producerTick() {
+  if (!producerActive.value) return;
+  if (queue.value.length >= QUEUE_CAP) {
+    dropped.value++;
+    message.value = t(
+      `BACKPRESSURE! Item #${nextItem} DROPPED — queue full at ${QUEUE_CAP}. In TCP, this triggers window shrinking; in RxJS, this drops or buffers.`,
+      `背压！项目 #${nextItem} 被丢弃 — 队列已满（${QUEUE_CAP}）。在 TCP 中，这会触发窗口收缩；在 RxJS 中，会丢弃或缓冲。`
+    );
+    nextItem++;
+  } else {
+    queue.value.push(nextItem);
+    produced.value++;
+    const fill = Math.round((queue.value.length / QUEUE_CAP) * 100);
+    if (fill >= 80) {
+      message.value = t(
+        `Produced #${nextItem} — queue at ${fill}%! Approaching backpressure threshold.`,
+        `已生产 #${nextItem} — 队列 ${fill}%！即将触发背压阈值。`
+      );
+    } else {
+      message.value = t(`Produced #${nextItem} — queue at ${fill}%`, `已生产 #${nextItem} — 队列 ${fill}%`);
+    }
+    nextItem++;
+  }
+}
+
+function consumerTick() {
+  if (!consumerActive.value) return;
+  if (queue.value.length > 0) {
+    const item = queue.value.shift()!;
+    consumed.value++;
+    message.value = t(`Consumed #${item}`, `已消费 #${item}`);
+  }
+}
 
 function startProducer() {
   if (producerActive.value) return;
   producerActive.value = true;
-  safeInterval(() => {
-    if (!producerActive.value) return;
-    if (queue.value.length >= QUEUE_CAP) {
-      dropped.value++;
-      message.value = t(
-        `BACKPRESSURE! Item #${nextItem} DROPPED — queue full at ${QUEUE_CAP}. In TCP, this triggers window shrinking; in RxJS, this drops or buffers.`,
-        `背压！项目 #${nextItem} 被丢弃 — 队列已满（${QUEUE_CAP}）。在 TCP 中，这会触发窗口收缩；在 RxJS 中，会丢弃或缓冲。`
-      );
-      nextItem++;
-    } else {
-      queue.value.push(nextItem);
-      produced.value++;
-      const fill = Math.round((queue.value.length / QUEUE_CAP) * 100);
-      if (fill >= 80) {
-        message.value = t(
-          `Produced #${nextItem} — queue at ${fill}%! Approaching backpressure threshold.`,
-          `已生产 #${nextItem} — 队列 ${fill}%！即将触发背压阈值。`
-        );
-      } else {
-        message.value = t(`Produced #${nextItem} — queue at ${fill}%`, `已生产 #${nextItem} — 队列 ${fill}%`);
-      }
-      nextItem++;
-    }
-  }, 1000 / producerRate.value);
+  producerTimerId = safeInterval(producerTick, 1000 / producerRate.value);
 }
 
 function startConsumer() {
   if (consumerActive.value) return;
   consumerActive.value = true;
-  safeInterval(() => {
-    if (!consumerActive.value) return;
-    if (queue.value.length > 0) {
-      const item = queue.value.shift()!;
-      consumed.value++;
-      message.value = t(`Consumed #${item}`, `已消费 #${item}`);
-    }
-  }, 1000 / consumerRate.value);
+  consumerTimerId = safeInterval(consumerTick, 1000 / consumerRate.value);
 }
+
+watch(producerRate, () => {
+  if (producerActive.value) {
+    if (producerTimerId !== null) clearInterval(producerTimerId);
+    producerTimerId = safeInterval(producerTick, 1000 / producerRate.value);
+  }
+});
+
+watch(consumerRate, () => {
+  if (consumerActive.value) {
+    if (consumerTimerId !== null) clearInterval(consumerTimerId);
+    consumerTimerId = safeInterval(consumerTick, 1000 / consumerRate.value);
+  }
+});
 
 function stopAll() {
   clearAll();
   producerActive.value = false;
   consumerActive.value = false;
+  producerTimerId = null;
+  consumerTimerId = null;
   presetRunning = false;
   message.value = t('Stopped — producer and consumer paused.', '已停止 — 生产者和消费者已暂停。');
 }
@@ -118,9 +140,17 @@ function presetBurst() {
   consumerRate.value = 3;
   startProducer();
   message.value = t(
-    'Burst: producer running alone, filling the buffer. The queue absorbs the burst — start consumer before overflow!',
-    '突发：生产者独自运行，填充缓冲区。队列吸收突发 — 在溢出前启动消费者！'
+    'Burst: producer fills the buffer alone first. Consumer starts after 2s to drain. The queue absorbs the burst — this is why Kafka partitions act as shock absorbers.',
+    '突发：生产者先独自填充缓冲区。2 秒后消费者启动排空。队列吸收突发 — 这就是 Kafka 分区充当减震器的原因。'
   );
+  safeTimeout(() => {
+    if (!presetRunning) return;
+    startConsumer();
+    message.value = t(
+      'Consumer started! Watch the queue drain. With rate 3/s vs 5/s producer, the consumer can\'t keep up — backpressure will eventually kick in.',
+      '消费者已启动！观察队列排空。消费速率 3/s vs 生产 5/s，消费者跟不上 — 背压最终会触发。'
+    );
+  }, 2000);
 }
 
 function fillPercent() {

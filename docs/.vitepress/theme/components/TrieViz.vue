@@ -113,8 +113,8 @@ async function presetPrefixSharing() {
   reset();
   presetRunning = true;
   message.value = t(
-    "Prefix sharing: 'cat', 'car', 'card', 'care' share the prefix 'ca'. The trie stores shared prefixes once — 4 words but only 7 unique nodes instead of 15 characters.",
-    "前缀共享：'cat'、'car'、'card'、'care' 共享前缀 'ca'。Trie 只存储一次共享前缀 — 4 个单词仅需 7 个唯一节点，而非 15 个字符。"
+    "Prefix sharing: 'cat', 'car', 'card', 'care' share the prefix 'ca'. The trie stores shared prefixes once — 4 words but only 7 unique nodes instead of 14 characters.",
+    "前缀共享：'cat'、'car'、'card'、'care' 共享前缀 'ca'。Trie 只存储一次共享前缀 — 4 个单词仅需 7 个唯一节点，而非 14 个字符。"
   );
   await delay(600);
   if (!presetRunning || isAborted()) return;
@@ -127,8 +127,8 @@ async function presetPrefixSharing() {
   }
 
   message.value = t(
-    "Prefix sharing saved 53% storage. Linux uses LC-trie (fib_trie.c) for IPv4 routing — millions of routes compressed via shared prefixes. Autocomplete systems (Google Search, IDE IntelliSense) use tries for O(k) prefix lookup where k = query length.",
-    "前缀共享节省了 53% 存储。Linux 使用 LC-trie（fib_trie.c）进行 IPv4 路由 — 数百万条路由通过共享前缀压缩。自动补全系统（Google 搜索、IDE IntelliSense）使用 Trie 实现 O(k) 前缀查找，其中 k = 查询长度。"
+    "Prefix sharing saved 50% storage (7 nodes vs 14 characters). Linux uses LC-trie (fib_trie.c) for IPv4 routing — millions of routes compressed via shared prefixes. Autocomplete systems (Google Search, IDE IntelliSense) use tries for O(k) prefix lookup where k = query length.",
+    "前缀共享节省了 50% 存储（7 个节点 vs 14 个字符）。Linux 使用 LC-trie（fib_trie.c）进行 IPv4 路由 — 数百万条路由通过共享前缀压缩。自动补全系统（Google 搜索、IDE IntelliSense）使用 Trie 实现 O(k) 前缀查找，其中 k = 查询长度。"
   );
   presetRunning = false;
 }

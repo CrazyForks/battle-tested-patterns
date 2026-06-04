@@ -67,13 +67,14 @@ function next() {
 
   highlightIdx.value = minIdx;
   pickedValue.value = minVal;
+  const activeHeadCount = heads.value.filter(h => h !== null).length;
   iterators.value[minIdx].pos++;
   output.value.push(minVal);
 
   const remaining = iterators.value.filter((it) => it.pos < it.items.length).length;
   message.value = t(
-    `Picked ${minVal} from ${iterators.value[minIdx].label} (min of ${heads.value.filter(h => h !== null).length + 1} heads). ${remaining} iterator(s) still active.`,
-    `从 ${iterators.value[minIdx].label} 选取 ${minVal}（${heads.value.filter(h => h !== null).length + 1} 个头元素的最小值）。${remaining} 个迭代器仍活跃。`
+    `Picked ${minVal} from ${iterators.value[minIdx].label} (min of ${activeHeadCount} heads). ${remaining} iterator(s) still active.`,
+    `从 ${iterators.value[minIdx].label} 选取 ${minVal}（${activeHeadCount} 个头元素的最小值）。${remaining} 个迭代器仍活跃。`
   );
 
   if (remaining === 0) {

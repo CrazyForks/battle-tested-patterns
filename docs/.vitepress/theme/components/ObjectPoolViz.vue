@@ -12,6 +12,7 @@ interface PoolObject {
   state: 'available' | 'in-use';
   purpose: string;
   remaining: number;
+  timerId: ReturnType<typeof setInterval> | undefined;
 }
 
 const INITIAL_POOL_SIZE = 5;
@@ -30,6 +31,7 @@ function makeObject(): PoolObject {
     state: 'available',
     purpose: '',
     remaining: 0,
+    timerId: undefined,
   };
 }
 
@@ -94,7 +96,7 @@ function checkOut(obj: PoolObject, purpose: string) {
     `${obj.name} 已获取，用途"${purpose}"（${(USE_DURATION / 1000).toFixed(0)}s 后自动归还，或点击归还）`,
   );
 
-  safeInterval(() => {
+  obj.timerId = safeInterval(() => {
     obj.remaining -= TICK;
     if (obj.remaining <= 0) {
       obj.remaining = 0;
@@ -105,6 +107,10 @@ function checkOut(obj: PoolObject, purpose: string) {
 
 function returnObject(obj: PoolObject, auto = false) {
   if (obj.state !== 'in-use') return;
+  if (obj.timerId !== undefined) {
+    clearInterval(obj.timerId);
+    obj.timerId = undefined;
+  }
   const oldPurpose = obj.purpose;
   obj.state = 'available';
   obj.purpose = '';

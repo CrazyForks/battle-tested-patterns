@@ -104,8 +104,8 @@ async function presetCausalChain() {
   receiveMessage(2); await delay(500);
   if (!presetRunning || isAborted()) return;
   message.value = t(
-    'Causal chain complete: P1(1)→P2(2)→P2(3)→P3(4). Each receive\'s clock is strictly greater than the send — this guarantees if A caused B, clock(A) < clock(B). Used by Spanner, CockroachDB, and TiDB.',
-    '因果链完成：P1(1)→P2(2)→P2(3)→P3(4)。每次接收的时钟严格大于发送 — 保证如果 A 导致了 B，则 clock(A) < clock(B)。Spanner、CockroachDB 和 TiDB 使用此原理。'
+    'Causal chain complete: P1 send(2)→P2 recv(3)→P2 send(5)→P3 recv(6). Each receive\'s clock is strictly greater than the send — this guarantees if A caused B, clock(A) < clock(B). Used by Spanner, CockroachDB, and TiDB.',
+    '因果链完成：P1 send(2)→P2 recv(3)→P2 send(5)→P3 recv(6)。每次接收的时钟严格大于发送 — 保证如果 A 导致了 B，则 clock(A) < clock(B)。Spanner、CockroachDB 和 TiDB 使用此原理。'
   );
   presetRunning = false;
 }
@@ -142,8 +142,8 @@ async function presetClockSkew() {
   reset();
   presetRunning = true;
   message.value = t(
-    'Clock synchronization: P1 does 5 local events (clock=5), then sends to P2 (clock=0). P2\'s clock jumps to 6 — the max() rule synchronizes clocks across the system.',
-    '时钟同步：P1 做 5 个本地事件（clock=5），然后发送给 P2（clock=0）。P2 的时钟跳到 6 — max() 规则在系统间同步时钟。'
+    'Clock synchronization: P1 does 5 local events (clock=5), then sends to P2 (clock becomes 6 on send). P2\'s clock jumps to 7 — the max() rule synchronizes clocks across the system.',
+    '时钟同步：P1 做 5 个本地事件（clock=5），发送时 clock 变为 6。P2 的时钟跳到 7 — max() 规则在系统间同步时钟。'
   );
   await delay(800);
   if (!presetRunning || isAborted()) return;
@@ -156,8 +156,8 @@ async function presetClockSkew() {
   receiveMessage(1); await delay(500);
   if (!presetRunning || isAborted()) return;
   message.value = t(
-    'P2 jumped from 0 to 6: max(0, 5) + 1 = 6. This ensures P2\'s future events are ordered after P1\'s message. Without this, a slow process could timestamp events before the cause — violating causality.',
-    'P2 从 0 跳到 6：max(0, 5) + 1 = 6。这确保 P2 的未来事件排在 P1 的消息之后。没有这个，慢进程可能在原因之前标记事件 — 违反因果性。'
+    'P2 jumped from 0 to 7: max(0, 6) + 1 = 7. The send incremented P1\'s clock to 6, and the message carries that value. This ensures P2\'s future events are ordered after P1\'s message.',
+    'P2 从 0 跳到 7：max(0, 6) + 1 = 7。发送时 P1 的时钟递增到 6，消息携带该值。这确保 P2 的未来事件排在 P1 的消息之后。'
   );
   presetRunning = false;
 }

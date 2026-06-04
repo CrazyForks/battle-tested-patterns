@@ -285,8 +285,8 @@ async function presetAuthReject() {
   await delay(500);
   if (!presetRunning || isAborted()) return;
   message.value = t(
-    'Only Auth and Logger ran (Logger sees the error on the way back). Validator and Handler were never invoked — short-circuit saves resources. This is why API gateways put auth before rate limiting.',
-    '只有 Auth 和 Logger 执行了（Logger 在返回时看到错误）。Validator 和 Handler 从未调用 — 短路节省资源。这就是 API 网关将 auth 放在限流之前的原因。'
+    'Only Auth ran — it rejected immediately. RateLimit, Logger, Validator, and Handler were never invoked — short-circuit saves resources. This is why API gateways put auth first.',
+    '只有 Auth 执行了 — 它立即拒绝。RateLimit、Logger、Validator 和 Handler 从未调用 — 短路节省资源。这就是 API 网关将 auth 放在最前面的原因。'
   );
   presetRunning = false;
 }
