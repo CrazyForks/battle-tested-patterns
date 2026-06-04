@@ -41,6 +41,9 @@ Every pattern in `docs/patterns/` **must** contain these sections:
 6. `## Exercises` — links to exercise files, ≥ 2 test cases, difficulty labeled
 7. `## When to Use` — applicable scenarios
 8. `## When NOT to Use` — limitations and alternatives
+9. `## More Production Uses` — bullet list with repo links
+10. `## Related Patterns` — table linking to ≥ 2 related patterns
+11. `## Challenge Questions` — 3-4 scenario-based Q&A using `::: details` syntax
 
 ## Commit Convention
 

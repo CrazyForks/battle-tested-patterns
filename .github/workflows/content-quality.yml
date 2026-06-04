@@ -33,6 +33,9 @@ jobs:
             grep -q "## Exercises" "$file"             || missing="$missing Exercises"
             grep -q "## When to Use" "$file"           || missing="$missing When-to-Use"
             grep -q "## When NOT to Use" "$file"       || missing="$missing When-NOT-to-Use"
+            grep -q "## More Production Uses" "$file"  || missing="$missing More-Production-Uses"
+            grep -q "## Related Patterns" "$file"      || missing="$missing Related-Patterns"
+            grep -q "## Challenge Questions" "$file"   || missing="$missing Challenge-Questions"
 
             if [ -n "$missing" ]; then
               echo "::error file=$file::Missing required sections:$missing"

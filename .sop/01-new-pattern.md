@@ -73,6 +73,7 @@ Create `docs/patterns/<pattern-name>/index.md` following the template:
 ## When to Use        — ≥ 3 concrete scenarios
 ## When NOT to Use    — ≥ 2 concrete alternatives
 ## More Production Uses — bullet list with repo links
+## Related Patterns   — table linking to ≥ 2 related patterns with relationship description
 ## Challenge Questions — 3-4 scenario-based Q&A using ::: details syntax
 ```
 
@@ -106,7 +107,7 @@ Add `## Challenge Questions` section at the end of the pattern doc:
 - [ ] Answers must be factually correct — verify claims about specific technologies
 - [ ] Escape `|` characters in markdown tables (use `\|` or rephrase)
 - [ ] Escape `*` in math expressions (use `×` instead)
-- [ ] Copy the same section to the ZH doc with header `## 挑战题` (content stays in English)
+- [ ] Translate questions and answers to Chinese in the ZH doc with header `## 挑战题` (code snippets in answers stay in English)
 
 ### 6. Create Chinese Translation
 
@@ -114,6 +115,7 @@ Add `## Challenge Questions` section at the end of the pattern doc:
 - [ ] Translate structural content (headings, explanations, When to Use)
 - [ ] Keep code blocks identical to English (code is not translated)
 - [ ] Production Proof links are the same in both languages
+- [ ] Include `运行练习：\`pnpm test\`` after the exercise table (matching EN's `Run exercises: \`pnpm test\``)
 - [ ] If you cannot translate, add `<!-- TODO: translate -->` markers
 
 ### 7. Update Navigation

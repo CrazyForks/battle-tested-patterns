@@ -18,7 +18,8 @@ precise GitHub source links, multi-language implementations, and runnable exerci
 
 Every pattern document must include: One Liner (≤30 words), Core Idea (with diagram),
 Production Proof (≥2 projects with precise URLs), Implementation (TypeScript + ≥1 other),
-Exercises (≥2 tests with difficulty labels), When to Use, When NOT to Use.
+Exercises (≥2 tests with difficulty labels), When to Use, When NOT to Use,
+More Production Uses, Related Patterns, Challenge Questions (3-4 scenario Q&A).
 
 ## Tech Stack
 
