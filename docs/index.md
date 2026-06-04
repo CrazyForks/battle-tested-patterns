@@ -13,24 +13,45 @@ hero:
     - theme: alt
       text: Browse Patterns
       link: /patterns/
+    - theme: alt
+      text: Interview Guide
+      link: /guide/interview
 
 features:
-  - icon: 🎮
+  - icon:
+      src: /images/interactive_visualizations.png
+      width: 80
+      height: 80
     title: Interactive Visualizations
     details: Every pattern has a hands-on SVG visualization. Click, drag, and experiment to build intuition — not just read about it.
-  - icon: 🔗
+  - icon:
+      src: /images/production_proof.png
+      width: 80
+      height: 80
     title: Production Proof
     details: Every pattern comes with precise GitHub source links (down to line numbers) proving it's used in real-world projects.
-  - icon: 🌍
+  - icon:
+      src: /images/multi-language.png
+      width: 80
+      height: 80
     title: Multi-Language
     details: Idiomatic implementations in TypeScript, Rust, Go, and Python — not mechanical translations, but native expressions of each pattern.
-  - icon: 🧪
+  - icon:
+      src: /images/runnable_exercises.png
+      width: 80
+      height: 80
     title: Runnable Exercises
     details: Progressive exercises (basic → intermediate → advanced) with test suites you can run locally.
-  - icon: 🧠
+  - icon:
+      src: /images/challengequestions.png
+      width: 80
+      height: 80
     title: Challenge Questions
     details: Each pattern includes 3-4 scenario-based "guess what happens" questions to test real understanding, not just reading.
-  - icon: 🔀
+  - icon:
+      src: /images/real_system_case.png
+      width: 80
+      height: 80
     title: Real System Case Studies
     details: See how React, Redis, Go runtime, Linux, PostgreSQL, and Kafka compose multiple patterns in production.
 ---
