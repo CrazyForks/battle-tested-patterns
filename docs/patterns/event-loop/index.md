@@ -9,7 +9,7 @@ difficulty: "intermediate"
 
 ## One Liner
 
-A single-threaded loop that multiplexes I/O via epoll/kqueue, dispatching ready events to callbacks -- thousands of connections without threads.
+A single-threaded loop that multiplexes I/O via epoll/kqueue, dispatching ready events to callbacks — thousands of connections without threads.
 
 <DemoBadge />
 

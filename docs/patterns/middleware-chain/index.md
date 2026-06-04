@@ -9,7 +9,7 @@ difficulty: "intermediate"
 
 ## One Liner
 
-Compose handlers where each wraps the next -- pre-process, call next, post-process -- forming a bidirectional pipeline.
+Compose handlers where each wraps the next — pre-process, call next, post-process — forming a bidirectional pipeline.
 
 <DemoBadge />
 

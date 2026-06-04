@@ -9,7 +9,7 @@ difficulty: "beginner"
 
 ## One Liner
 
-Track owners via atomic counter, auto-cleanup at zero -- deterministic resource lifetime without garbage collection.
+Track owners via atomic counter, auto-cleanup at zero — deterministic resource lifetime without garbage collection.
 
 <DemoBadge />
 

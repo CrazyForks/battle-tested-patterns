@@ -9,7 +9,7 @@ difficulty: "advanced"
 
 ## One Liner
 
-A monotonically increasing counter that orders events without wall-clock time -- enabling consistent snapshots and staleness detection.
+A monotonically increasing counter that orders events without wall-clock time — enabling consistent snapshots and staleness detection.
 
 <DemoBadge />
 

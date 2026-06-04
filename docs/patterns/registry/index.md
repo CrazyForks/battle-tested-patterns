@@ -9,7 +9,7 @@ difficulty: "beginner"
 
 ## One Liner
 
-Components register themselves into a global lookup table by name -- consumers discover implementations at runtime without hardcoded dependencies.
+Components register themselves into a global lookup table by name — consumers discover implementations at runtime without hardcoded dependencies.
 
 <DemoBadge />
 
