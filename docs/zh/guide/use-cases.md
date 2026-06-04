@@ -32,6 +32,7 @@ PostgreSQL、Redis、LevelDB 以及所有严肃存储引擎背后的模式。
 | 数据完整性验证 | [Merkle Tree](/zh/patterns/merkle-tree/) | ZFS 块校验和，Git 对象存储 |
 | 有序键合并 | [Merge Iterator](/zh/patterns/merge-iterator/) + [Min Heap](/zh/patterns/min-heap/) | LevelDB compaction |
 | 删除但不立即移除 | [Tombstone](/zh/patterns/tombstone/) | Cassandra tombstone，LevelDB 删除标记 |
+| 内存有序集合 | [Skip List](/zh/patterns/skip-list/) | Redis ZADD/ZRANGE 有序集合 |
 | 内存缓存 | [LRU Cache](/zh/patterns/lru-cache/) | Redis LRU 淘汰，Go groupcache |
 | 无时钟事件排序 | [Logical Clock](/zh/patterns/logical-clock/) | etcd Raft log，DynamoDB 版本向量 |
 

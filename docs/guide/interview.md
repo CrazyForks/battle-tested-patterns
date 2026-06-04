@@ -105,7 +105,7 @@ This is the single most common system design question. You need:
 | "Merge K sorted lists" | [Merge Iterator](/patterns/merge-iterator/) | Min-heap of k heads, extract-min and advance |
 | "Find the median in a stream" | [Min Heap](/patterns/min-heap/) | Two heaps: max-heap for lower half, min-heap for upper |
 | "Implement an iterator that flattens nested lists" | [Iterator](/patterns/iterator/) | Stack-based lazy traversal |
-| "Detect cycle in linked list" | [Reference Counting](/patterns/reference-counting/) | Or use Floyd's — but ref counting explains why cycles are problematic |
+| "Detect cycle in linked list" | [Reference Counting](/patterns/reference-counting/) | Floyd's two-pointer is the standard solve — but cycles break ref counting, understanding why sets you apart |
 | "Serialize/deserialize a tree" | [Visitor](/patterns/visitor/) | Pre-order visit for serialize, recursive rebuild for deserialize |
 | "Compute minimum edit distance" | [Diff / Patch](/patterns/diff-patch/) | Dynamic programming on two sequences |
 
@@ -115,7 +115,7 @@ This is the single most common system design question. You need:
 |---|---|---|
 | "Implement a semaphore" | [Semaphore](/patterns/semaphore/) | Counter + mutex + condition variable |
 | "Design a thread pool" | [Work Stealing](/patterns/work-stealing/) | Per-thread deque, steal from tail |
-| "Implement a read-write lock" | [MVCC](/patterns/mvcc/) | Multiple concurrent readers, exclusive writer |
+| "Implement a read-write lock" | [Semaphore](/patterns/semaphore/) | Counting semaphore for shared readers, mutex for exclusive writer |
 | "Producer-consumer problem" | [Ring Buffer](/patterns/ring-buffer/) + [Backpressure](/patterns/backpressure/) | Bounded buffer with wait/signal |
 | "Dining philosophers" | [Semaphore](/patterns/semaphore/) | Resource ordering prevents deadlock |
 

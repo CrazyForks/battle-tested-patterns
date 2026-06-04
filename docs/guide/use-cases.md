@@ -32,6 +32,7 @@ The patterns behind PostgreSQL, Redis, LevelDB, and every serious storage engine
 | Data integrity verification | [Merkle Tree](/patterns/merkle-tree/) | ZFS block checksums, Git object store |
 | Sorted key merge | [Merge Iterator](/patterns/merge-iterator/) + [Min Heap](/patterns/min-heap/) | LevelDB compaction |
 | Delete without immediate removal | [Tombstone](/patterns/tombstone/) | Cassandra tombstones, LevelDB deletion markers |
+| In-memory sorted set | [Skip List](/patterns/skip-list/) | Redis ZADD/ZRANGE sorted sets |
 | In-memory cache | [LRU Cache](/patterns/lru-cache/) | Redis LRU eviction, Go groupcache |
 | Event ordering without clocks | [Logical Clock](/patterns/logical-clock/) | etcd Raft log, DynamoDB version vectors |
 
