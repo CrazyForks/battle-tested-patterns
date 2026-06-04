@@ -210,10 +210,10 @@ Exercise files: Rust `exercises/rust/src/state_machine.rs` · Go `exercises/go/s
 
 ## 更多生产案例
 
-- Regex engines (NFA/DFA)
+- [RE2](https://github.com/google/re2/blob/main/re2/nfa.cc) — 基于 Thompson 算法的 NFA 正则引擎
 - HTTP/2 stream states ([RFC 7540](https://datatracker.ietf.org/doc/html/rfc7540))
-- [Kubernetes](https://github.com/kubernetes/kubernetes) — pod lifecycle
-- Game AI (behavior trees + FSM)
+- [Kubernetes](https://github.com/kubernetes/kubernetes/blob/master/pkg/kubelet/lifecycle/handlers.go) — Pod 生命周期状态转换
+- [Godot Engine](https://github.com/godotengine/godot/blob/master/scene/animation/animation_tree.cpp) — 游戏角色动画状态机
 
 ## 相关模式
 

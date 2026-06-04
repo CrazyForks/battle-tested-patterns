@@ -186,7 +186,7 @@ Exercise files: Rust `exercises/rust/src/copy_on_write.rs` · Go `exercises/go/c
 
 ## More Production Uses
 
-- Linux `fork()` — page table CoW
+- [Linux fork()](https://github.com/torvalds/linux/blob/master/kernel/fork.c#L580-L620) — page table CoW via `copy_page_range`
 - [Swift](https://github.com/swiftlang/swift) — value types
 - [Redis](https://github.com/redis/redis) — `BGSAVE`
 - [ZFS](https://github.com/openzfs/zfs) / Btrfs — filesystem snapshots

@@ -184,11 +184,11 @@ Exercise files: Rust `exercises/rust/src/flyweight.rs` · Go `exercises/go/flywe
 
 ## More Production Uses
 
-- Java `String.intern()`
-- Python small int cache (-5..256)
-- Rust [string_cache](https://crates.io/crates/string_cache) crate
-- .NET string interning
-- CSS value deduplication in browsers
+- [Java String.intern()](https://github.com/openjdk/jdk/blob/master/src/java.base/share/classes/java/lang/String.java) — JVM string pool deduplicates identical string literals
+- [Python small int cache](https://github.com/python/cpython/blob/main/Objects/longobject.c) — CPython pre-allocates integers -5 to 256
+- [Rust string_cache](https://crates.io/crates/string_cache) crate
+- [.NET string interning](https://github.com/dotnet/runtime/blob/main/src/libraries/System.Private.CoreLib/src/System/String.cs) — `String.Intern()` maintains a CLR-wide intern pool
+- [Chromium CSS](https://github.com/chromium/chromium/blob/main/third_party/blink/renderer/core/css/) — CSS value deduplication in the Blink rendering engine
 
 ## Related Patterns
 

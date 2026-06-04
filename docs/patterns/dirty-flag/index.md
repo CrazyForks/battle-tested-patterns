@@ -252,7 +252,7 @@ Exercise files: Rust `exercises/rust/src/dirty_flag.rs` · Go `exercises/go/dirt
 ## More Production Uses
 
 - [Unity Engine](https://github.com/Unity-Technologies/UnityCsReference) -- `Transform.hasChanged` flag defers world matrix recomputation
-- Qt Framework — `QWidget::update()` marks regions dirty; painting happens in the next event loop iteration
+- [Qt Framework](https://github.com/qt/qtbase/blob/dev/src/widgets/kernel/qwidget.cpp) — `QWidget::update()` marks regions dirty; painting happens in the next event loop iteration
 - [Make](https://www.gnu.org/software/make/) -- file modification times as dirty flags; only rebuild targets newer than sources
 - [Excel/Google Sheets](https://support.google.com) -- cell dependency graph with dirty propagation; only recalculates changed subgraph
 

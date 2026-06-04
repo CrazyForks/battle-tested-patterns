@@ -315,9 +315,9 @@ Exercise files: Rust `exercises/rust/src/min_heap.rs` · Go `exercises/go/min_he
 ## 更多生产案例
 
 - [Node.js libuv](https://github.com/libuv/libuv) — timer queue
-- Java `PriorityQueue`
-- Python [heapq](https://github.com/python/cpython/blob/main/Lib/heapq.py)
-- Dijkstra / Prim graph algorithms
+- [Java PriorityQueue](https://github.com/openjdk/jdk/blob/master/src/java.base/share/classes/java/util/PriorityQueue.java) — 二叉堆支撑的优先队列
+- [Python heapq](https://github.com/python/cpython/blob/main/Lib/heapq.py)
+- [Rust BinaryHeap](https://github.com/rust-lang/rust/blob/main/library/alloc/src/collections/binary_heap/mod.rs) — 标准库最大堆，可通过 `Reverse` 包装为最小堆
 
 ## 相关模式
 

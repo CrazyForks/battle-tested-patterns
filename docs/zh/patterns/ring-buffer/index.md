@@ -220,7 +220,7 @@ Exercise files: Rust `exercises/rust/src/ring_buffer.rs` · Go `exercises/go/rin
 - Linux [io_uring](https://github.com/axboe/liburing)
 - [ZeroMQ](https://github.com/zeromq/libzmq)
 - [Kafka](https://github.com/apache/kafka) — log segments
-- Audio DSP buffers
+- [PortAudio](https://github.com/portaudio/portaudio/blob/master/src/common/pa_ringbuffer.c) — 实时音频无锁 SPSC 环形缓冲区
 
 ## 相关模式
 

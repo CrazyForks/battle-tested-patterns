@@ -209,7 +209,7 @@ Exercise files: Rust `exercises/rust/src/double_buffering.rs` · Go `exercises/g
 
 - [OpenGL](https://www.khronos.org/opengl/) / Vulkan — swap chains
 - [PostgreSQL](https://github.com/postgres/postgres) — MVCC snapshot isolation
-- Unreal Engine — frame rendering
+- [Godot Engine](https://github.com/godotengine/godot/blob/master/servers/rendering/renderer_rd/renderer_scene_render_rd.cpp) — double-buffered frame rendering
 
 ## Related Patterns
 

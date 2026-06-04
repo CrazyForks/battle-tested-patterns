@@ -195,8 +195,8 @@ Exercise files: Rust `exercises/rust/src/observer.rs` · Go `exercises/go/observ
 - [RxJS](https://github.com/ReactiveX/rxjs) — reactive streams
 - [Vue 3](https://github.com/vuejs/core) — reactivity system
 - [MobX](https://github.com/mobxjs/mobx)
-- DOM `addEventListener`
-- C# events
+- [Chromium EventTarget](https://github.com/chromium/chromium/blob/main/third_party/blink/renderer/core/dom/events/event_target.cc) — DOM `addEventListener` implementation in Blink
+- [.NET events](https://github.com/dotnet/runtime/blob/main/src/libraries/System.Private.CoreLib/src/System/EventHandler.cs) — C# `event` keyword delegates
 
 ## Related Patterns
 

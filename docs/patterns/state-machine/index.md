@@ -212,10 +212,10 @@ Exercise files: Rust `exercises/rust/src/state_machine.rs` · Go `exercises/go/s
 
 ## More Production Uses
 
-- Regex engines (NFA/DFA)
+- [RE2](https://github.com/google/re2/blob/main/re2/nfa.cc) — NFA-based regex engine using Thompson's algorithm
 - HTTP/2 stream states ([RFC 7540](https://datatracker.ietf.org/doc/html/rfc7540))
-- [Kubernetes](https://github.com/kubernetes/kubernetes) — pod lifecycle
-- Game AI (behavior trees + FSM)
+- [Kubernetes](https://github.com/kubernetes/kubernetes/blob/master/pkg/kubelet/lifecycle/handlers.go) — pod lifecycle state transitions
+- [Godot Engine](https://github.com/godotengine/godot/blob/master/scene/animation/animation_tree.cpp) — animation state machine for game characters
 
 ## Related Patterns
 

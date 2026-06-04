@@ -224,7 +224,7 @@ Exercise files: Rust `exercises/rust/src/batch_processing.rs` · Go `exercises/g
 
 ## More Production Uses
 
-- React automatic batching (React 18+ batches all state updates by default)
+- [React automatic batching](https://github.com/facebook/react/blob/main/packages/react-reconciler/src/ReactFiberWorkLoop.js#L588-L600) — React 18+ batches all state updates by default
 - [DataLoader](https://github.com/graphql/dataloader) — GraphQL N+1
 - [Redis](https://github.com/redis/redis) — Pipeline
 - [Elasticsearch](https://github.com/elastic/elasticsearch) — Bulk API

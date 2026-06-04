@@ -180,10 +180,10 @@ Exercise files: Rust `exercises/rust/src/object_pool.rs` · Go `exercises/go/obj
 
 ## 更多生产案例
 
-- Java `ThreadPoolExecutor`
-- .NET `ArrayPool<T>`
+- [Java ThreadPoolExecutor](https://github.com/openjdk/jdk/blob/master/src/java.base/share/classes/java/util/concurrent/ThreadPoolExecutor.java) — 带核心/最大线程数和可配置拒绝策略的线程池
+- [.NET ArrayPool\<T\>](https://github.com/dotnet/runtime/blob/main/src/libraries/System.Private.CoreLib/src/System/Buffers/ArrayPool.cs) — 可复用数组的共享池
 - [HikariCP](https://github.com/brettwooldridge/HikariCP) — JDBC connection pool
-- Unity `ObjectPool<T>`
+- [Unity ObjectPool](https://github.com/Unity-Technologies/UnityCsReference) — `ObjectPool<T>` 用于可复用的游戏对象
 
 ## 相关模式
 

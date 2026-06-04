@@ -247,8 +247,8 @@ Exercise files: Rust `exercises/rust/src/cooperative_scheduling.rs` · Go `exerc
 
 - [Lua](https://github.com/lua/lua) — coroutines
 - Python [asyncio](https://github.com/python/cpython/tree/main/Lib/asyncio)
-- Erlang/BEAM VM — reduction counting
-- Unity — coroutines
+- [Erlang/BEAM VM](https://github.com/erlang/otp/blob/master/erts/emulator/beam/beam_emu.c) — reduction counting (yields after ~4000 reductions)
+- [Unity](https://github.com/Unity-Technologies/UnityCsReference/blob/master/Runtime/Export/Scripting/Coroutines.cs) — coroutines with `yield return`
 
 ## Related Patterns
 

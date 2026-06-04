@@ -318,9 +318,9 @@ Exercise files: Rust `exercises/rust/src/min_heap.rs` · Go `exercises/go/min_he
 ## More Production Uses
 
 - [Node.js libuv](https://github.com/libuv/libuv) — timer queue
-- Java `PriorityQueue`
-- Python [heapq](https://github.com/python/cpython/blob/main/Lib/heapq.py)
-- Dijkstra / Prim graph algorithms
+- [Java PriorityQueue](https://github.com/openjdk/jdk/blob/master/src/java.base/share/classes/java/util/PriorityQueue.java) — binary heap backed priority queue
+- [Python heapq](https://github.com/python/cpython/blob/main/Lib/heapq.py)
+- [Rust BinaryHeap](https://github.com/rust-lang/rust/blob/main/library/alloc/src/collections/binary_heap/mod.rs) — max-heap in std, wrappable as min-heap via `Reverse`
 
 ## Related Patterns
 

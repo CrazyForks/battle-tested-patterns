@@ -192,11 +192,11 @@ Exercise files: Rust `exercises/rust/src/iterator.rs` · Go `exercises/go/iterat
 
 ## More Production Uses
 
-- Java Streams
-- C# LINQ
-- Haskell lazy lists
-- [Kotlin](https://github.com/JetBrains/kotlin) Sequences
-- Swift `LazySequence`
+- [Java Streams](https://github.com/openjdk/jdk/blob/master/src/java.base/share/classes/java/util/stream/Stream.java) — lazy pipeline with intermediate/terminal operations
+- [C# LINQ](https://github.com/dotnet/runtime/blob/main/src/libraries/System.Linq/src/System/Linq/Enumerable.cs) — deferred query execution over `IEnumerable<T>`
+- [GHC Haskell](https://github.com/ghc/ghc) — lazy lists are the default; every `[a]` is an iterator
+- [Kotlin Sequences](https://github.com/JetBrains/kotlin/blob/master/libraries/stdlib/src/kotlin/collections/Sequences.kt) — lazy evaluation analogous to Java Streams
+- [Swift LazySequence](https://github.com/swiftlang/swift/blob/main/stdlib/public/core/LazySequence.swift) — `.lazy` adapter for deferred computation
 
 ## Related Patterns
 

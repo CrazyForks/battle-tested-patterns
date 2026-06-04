@@ -208,7 +208,7 @@ Exercise files: Rust `exercises/rust/src/tagged_union.rs` · Go `exercises/go/ta
 
 ## 更多生产案例
 
-- V8 Engine — JavaScript 值使用标签指针区分 Smi（小整数）和堆对象
+- [V8 Engine](https://github.com/v8/v8/blob/main/src/objects/tagged-value.h) — JavaScript 值使用标签指针区分 Smi（小整数）和堆对象
 - [SQLite Value](https://github.com/sqlite/sqlite) — 内部 `Mem` 结构体存储类型标签 + 值 union
 - [Lua TValue](https://github.com/lua/lua) — 每个 Lua 值都是带类型标签的 `TValue` + `Value` union
 - [GHC Haskell](https://github.com/ghc/ghc) — 代数数据类型编译为标签化的堆对象

@@ -174,8 +174,8 @@ Exercise files: Rust `exercises/rust/src/semaphore.rs` · Go `exercises/go/semap
 
 ## More Production Uses
 
-- Java `Semaphore`
-- Python `threading.Semaphore`
+- [Java Semaphore](https://github.com/openjdk/jdk/blob/master/src/java.base/share/classes/java/util/concurrent/Semaphore.java) — fair/nonfair counting semaphore
+- [Python threading.Semaphore](https://github.com/python/cpython/blob/main/Lib/threading.py) — condition-variable-based semaphore
 - [Nginx](https://github.com/nginx/nginx) — worker connections
 - [PostgreSQL](https://github.com/postgres/postgres) — `max_connections`
 

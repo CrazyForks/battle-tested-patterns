@@ -171,8 +171,8 @@ Exercise files: Rust `exercises/rust/src/semaphore.rs` · Go `exercises/go/semap
 
 ## 更多生产案例
 
-- Java `Semaphore`
-- Python `threading.Semaphore`
+- [Java Semaphore](https://github.com/openjdk/jdk/blob/master/src/java.base/share/classes/java/util/concurrent/Semaphore.java) — 公平/非公平计数信号量
+- [Python threading.Semaphore](https://github.com/python/cpython/blob/main/Lib/threading.py) — 基于条件变量的信号量
 - [Nginx](https://github.com/nginx/nginx) — worker connections
 - [PostgreSQL](https://github.com/postgres/postgres) — `max_connections`
 

@@ -208,7 +208,7 @@ Exercise files: Rust `exercises/rust/src/tagged_union.rs` · Go `exercises/go/ta
 
 ## More Production Uses
 
-- V8 Engine — JavaScript values use tagged pointers to distinguish Smis (small integers) from heap objects
+- [V8 Engine](https://github.com/v8/v8/blob/main/src/objects/tagged-value.h) — JavaScript values use tagged pointers to distinguish Smis (small integers) from heap objects
 - [SQLite](https://github.com/sqlite/sqlite) — internal `Mem` struct stores type tag + value union for all SQL types
 - [Lua TValue](https://github.com/lua/lua) — every Lua value is a `TValue` with a type tag and `Value` union
 - [GHC Haskell](https://github.com/ghc/ghc) — algebraic data types compile to tagged heap objects

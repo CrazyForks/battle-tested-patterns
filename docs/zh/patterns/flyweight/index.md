@@ -177,11 +177,11 @@ Exercise files: Rust `exercises/rust/src/flyweight.rs` · Go `exercises/go/flywe
 
 ## 更多生产案例
 
-- Java `String.intern()`
-- Python small int cache (-5..256)
-- Rust [string_cache](https://crates.io/crates/string_cache) crate
-- .NET string interning
-- CSS value deduplication in browsers
+- [Java String.intern()](https://github.com/openjdk/jdk/blob/master/src/java.base/share/classes/java/lang/String.java) — JVM 字符串池去重相同的字符串字面量
+- [Python small int cache](https://github.com/python/cpython/blob/main/Objects/longobject.c) — CPython 预分配 -5 到 256 的整数
+- [Rust string_cache](https://crates.io/crates/string_cache) crate
+- [.NET string interning](https://github.com/dotnet/runtime/blob/main/src/libraries/System.Private.CoreLib/src/System/String.cs) — `String.Intern()` 维护 CLR 级别的驻留池
+- [Chromium CSS](https://github.com/chromium/chromium/blob/main/third_party/blink/renderer/core/css/) — Blink 渲染引擎中的 CSS 值去重
 
 ## 相关模式
 

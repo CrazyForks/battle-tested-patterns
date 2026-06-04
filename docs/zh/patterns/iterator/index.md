@@ -188,11 +188,11 @@ Exercise files: Rust `exercises/rust/src/iterator.rs` · Go `exercises/go/iterat
 
 ## 更多生产案例
 
-- Java Streams
-- C# LINQ
-- Haskell lazy lists
-- [Kotlin](https://github.com/JetBrains/kotlin) Sequences
-- Swift `LazySequence`
+- [Java Streams](https://github.com/openjdk/jdk/blob/master/src/java.base/share/classes/java/util/stream/Stream.java) — 惰性管线，中间/终端操作
+- [C# LINQ](https://github.com/dotnet/runtime/blob/main/src/libraries/System.Linq/src/System/Linq/Enumerable.cs) — 基于 `IEnumerable<T>` 的延迟查询执行
+- [GHC Haskell](https://github.com/ghc/ghc) — 惰性列表是默认方式；每个 `[a]` 都是迭代器
+- [Kotlin Sequences](https://github.com/JetBrains/kotlin/blob/master/libraries/stdlib/src/kotlin/collections/Sequences.kt) — 类似 Java Streams 的惰性求值
+- [Swift LazySequence](https://github.com/swiftlang/swift/blob/main/stdlib/public/core/LazySequence.swift) — `.lazy` 延迟计算适配器
 
 ## 相关模式
 

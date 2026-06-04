@@ -221,7 +221,7 @@ Exercise files: Rust `exercises/rust/src/batch_processing.rs` · Go `exercises/g
 
 ## 更多生产案例
 
-- React 自动批处理（React 18+ 默认批处理所有状态更新）
+- [React 自动批处理](https://github.com/facebook/react/blob/main/packages/react-reconciler/src/ReactFiberWorkLoop.js#L588-L600) — React 18+ 默认批处理所有状态更新
 - [DataLoader](https://github.com/graphql/dataloader) — GraphQL N+1
 - [Redis](https://github.com/redis/redis) — Pipeline
 - [Elasticsearch](https://github.com/elastic/elasticsearch) — Bulk API

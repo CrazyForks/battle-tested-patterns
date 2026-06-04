@@ -228,8 +228,8 @@ Exercise files: Rust `exercises/rust/src/bitmask.rs` · Go `exercises/go/bitmask
 - [Chromium](https://chromium.googlesource.com/chromium/src) — layer compositing flags
 - [SQLite](https://www.sqlite.org/src) — VFS flags
 - [Nginx](https://github.com/nginx/nginx) — event flags
-- Most ECS game engines — component membership masks
-- Unix `fcntl` flags
+- [Bevy ECS](https://github.com/bevyengine/bevy/blob/main/crates/bevy_ecs/src/archetype.rs) — component membership masks in archetype-based ECS
+- [Linux fcntl](https://github.com/torvalds/linux/blob/master/include/uapi/asm-generic/fcntl.h#L5-L30) — `O_RDONLY`, `O_WRONLY`, `O_CREAT` file control flags
 
 ## Related Patterns
 

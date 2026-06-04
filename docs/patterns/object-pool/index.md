@@ -182,10 +182,10 @@ Exercise files: Rust `exercises/rust/src/object_pool.rs` · Go `exercises/go/obj
 
 ## More Production Uses
 
-- Java `ThreadPoolExecutor`
-- .NET `ArrayPool<T>`
+- [Java ThreadPoolExecutor](https://github.com/openjdk/jdk/blob/master/src/java.base/share/classes/java/util/concurrent/ThreadPoolExecutor.java) — thread pool with core/max size and configurable rejection
+- [.NET ArrayPool\<T\>](https://github.com/dotnet/runtime/blob/main/src/libraries/System.Private.CoreLib/src/System/Buffers/ArrayPool.cs) — shared pool of reusable arrays
 - [HikariCP](https://github.com/brettwooldridge/HikariCP) — JDBC connection pool
-- Unity `ObjectPool<T>`
+- [Unity ObjectPool](https://github.com/Unity-Technologies/UnityCsReference) — `ObjectPool<T>` for reusable game objects
 
 ## Related Patterns
 

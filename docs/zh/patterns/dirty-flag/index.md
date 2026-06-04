@@ -252,7 +252,7 @@ Exercise files: Rust `exercises/rust/src/dirty_flag.rs` · Go `exercises/go/dirt
 ## 更多生产案例
 
 - [Unity Engine](https://github.com/Unity-Technologies/UnityCsReference) -- `Transform.hasChanged` 标记延迟世界矩阵重计算
-- Qt Framework -- `QWidget::update()` 标记区域为脏；绘制在下一次事件循环迭代中发生
+- [Qt Framework](https://github.com/qt/qtbase/blob/dev/src/widgets/kernel/qwidget.cpp) -- `QWidget::update()` 标记区域为脏；绘制在下一次事件循环迭代中发生
 - [Make](https://www.gnu.org/software/make/) -- 文件修改时间作为脏标记；仅重建源文件更新的目标
 - [Excel/Google Sheets](https://support.google.com) -- 带脏传播的单元格依赖图；仅重计算变化的子图
 
