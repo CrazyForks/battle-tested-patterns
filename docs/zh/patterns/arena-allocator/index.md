@@ -188,6 +188,7 @@ Exercise files: Rust `exercises/rust/src/arena_allocator.rs` · Go `exercises/go
 ## 更多生产案例
 
 - [Go arena](https://github.com/golang/go/blob/master/src/arena/arena.go) — Go 标准库中的实验性 arena API
+- [V8 Engine](https://chromium.googlesource.com/v8/v8/+/refs/heads/main/src/zone/zone.h) — `Zone` 分配器为编译器临时对象提供 arena 风格的 bump 分配
 - [Zig](https://github.com/ziglang/zig) — `std.mem.ArenaAllocator` 作为核心分配器模式
 - [ECS 游戏引擎](https://github.com/SanderMertens/flecs) — 使用 arena 风格分配的组件存储
 

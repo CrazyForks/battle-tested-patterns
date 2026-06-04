@@ -192,7 +192,7 @@ Exercise files: Rust `exercises/rust/src/interning.rs` · Go `exercises/go/inter
 ## More Production Uses
 
 - [Java String.intern()](https://github.com/openjdk/jdk) — JVM-level string interning in the string pool
-- V8 Internalized Strings — V8 interns strings used as property names for O(1) property lookup
+- [V8 Internalized Strings](https://chromium.googlesource.com/v8/v8/+/refs/heads/main/src/objects/string.h) — V8 interns strings used as property names for O(1) property lookup
 - [Ruby Symbol](https://github.com/ruby/ruby) — `Symbol` is an interned string that's never garbage-collected
 - [LLVM StringPool](https://github.com/llvm/llvm-project) — interned strings for identifiers across the compiler pipeline
 

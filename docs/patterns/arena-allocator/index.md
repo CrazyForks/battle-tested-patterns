@@ -188,7 +188,7 @@ Exercise files: Rust `exercises/rust/src/arena_allocator.rs` · Go `exercises/go
 ## More Production Uses
 
 - [Go arena](https://github.com/golang/go/blob/master/src/arena/arena.go) — experimental arena API in Go standard library
-- V8 Engine — `Zone` allocator in `src/zone/zone.h` provides arena-style bump allocation for compiler temporaries
+- [V8 Engine](https://chromium.googlesource.com/v8/v8/+/refs/heads/main/src/zone/zone.h) — `Zone` allocator provides arena-style bump allocation for compiler temporaries
 - [Zig](https://github.com/ziglang/zig) — `std.mem.ArenaAllocator` as a core allocator pattern
 - [ECS game engines](https://github.com/SanderMertens/flecs) — component storage with arena-style allocation
 

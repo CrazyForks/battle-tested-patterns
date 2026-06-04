@@ -192,7 +192,7 @@ Exercise files: Rust `exercises/rust/src/interning.rs` · Go `exercises/go/inter
 ## 更多生产案例
 
 - [Java String.intern()](https://github.com/openjdk/jdk) — JVM 级别的字符串池驻留
-- V8 Internalized Strings — V8 驻留用作属性名的字符串以实现 O(1) 属性查找
+- [V8 Internalized Strings](https://chromium.googlesource.com/v8/v8/+/refs/heads/main/src/objects/string.h) — V8 驻留用作属性名的字符串以实现 O(1) 属性查找
 - [Ruby Symbol](https://github.com/ruby/ruby) — `Symbol` 是永不被垃圾回收的驻留字符串
 - [LLVM StringPool](https://github.com/llvm/llvm-project) — 编译器管线中标识符的驻留字符串
 
