@@ -8,6 +8,8 @@ description: "A fixed-size buffer that wraps around using modular arithmetic, en
 
 A fixed-size buffer that wraps around using modular arithmetic, enabling constant-time enqueue and dequeue without memory allocation.
 
+<DemoBadge />
+
 ## Core Idea
 
 A ring buffer uses a fixed array with two pointers — `head` (next read position) and `tail` (next write position). When either pointer reaches the end, it wraps to the beginning. No shifting, no resizing, no allocation.

@@ -8,6 +8,8 @@ description: "Stop calling a failing service by tracking errors and tripping ope
 
 Stop calling a failing service by tracking errors and tripping open — fail fast instead of piling up timeouts.
 
+<DemoBadge />
+
 ## Core Idea
 
 A circuit breaker wraps remote calls with a state machine that has three states. In the **closed** state, calls pass through normally. After a threshold of consecutive failures, the breaker **trips open** and all calls fail immediately without attempting the operation. After a cooldown period, the breaker enters the **half-open** state, allowing one probe call to test if the downstream service has recovered.

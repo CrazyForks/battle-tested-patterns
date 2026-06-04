@@ -8,6 +8,8 @@ description: "Accumulate individual operations and execute them together as a gr
 
 Accumulate individual operations and execute them together as a group, amortizing per-operation overhead across the batch.
 
+<DemoBadge />
+
 ## Core Idea
 
 Instead of processing each item individually (N round-trips, N context switches), batch processing collects items and processes them in one go. The trade-off: slightly higher latency for individual items, dramatically higher throughput overall.

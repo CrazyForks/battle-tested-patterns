@@ -8,6 +8,8 @@ description: "Distribute keys across nodes on a virtual ring so that adding or r
 
 Distribute keys across nodes on a virtual ring so that adding or removing a node only remaps ~1/n of the keys.
 
+<DemoBadge />
+
 ## Core Idea
 
 Traditional modular hashing (`hash(key) % n`) remaps almost every key when `n` changes. Consistent hashing places both nodes and keys on a circular ring. Each key maps to the first node clockwise from its position. Adding or removing a node only affects keys in the arc between it and its predecessor.

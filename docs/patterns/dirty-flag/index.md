@@ -8,6 +8,8 @@ description: 'Mark objects as "dirty" on mutation, defer expensive recomputation
 
 Mark objects as "dirty" on mutation, defer expensive recomputation until the value is actually needed, then clear the flag.
 
+<DemoBadge />
+
 ## Core Idea
 
 The dirty flag pattern avoids redundant computation by tracking whether derived state is out of date. When a source value changes, instead of immediately recomputing all dependent values, we simply set a "dirty" flag. The expensive recomputation only happens when the derived value is actually requested. After recomputation, the flag is cleared. This trades a boolean check on every read for potentially expensive computations that may never be needed.

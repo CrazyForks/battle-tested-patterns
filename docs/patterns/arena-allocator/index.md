@@ -8,6 +8,8 @@ description: "Allocate objects by bumping a pointer in a pre-allocated region �
 
 Allocate objects by bumping a pointer in a pre-allocated region — free everything at once when the region is no longer needed.
 
+<DemoBadge />
+
 ## Core Idea
 
 An arena (or bump allocator) pre-allocates a contiguous block of memory and hands out chunks by advancing a pointer. Individual allocations cannot be freed — the entire arena is freed at once. This eliminates per-object allocation overhead, fragmentation, and GC pressure.

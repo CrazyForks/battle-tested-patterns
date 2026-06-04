@@ -8,6 +8,8 @@ description: "Evict the least recently used entry when the cache is full — O(1
 
 Evict the least recently used entry when the cache is full — O(1) get and put using a hash map plus a doubly linked list.
 
+<DemoBadge />
+
 ## Core Idea
 
 An LRU cache combines a hash map (for O(1) key lookup) with a doubly linked list (for O(1) recency tracking). On every access, the entry moves to the front. When the cache exceeds capacity, the entry at the back (least recently used) is evicted.

@@ -8,6 +8,8 @@ description: "Break long-running work into small chunks, yielding control back t
 
 Break long-running work into small chunks, yielding control back to the host between each chunk to keep the system responsive.
 
+<DemoBadge />
+
 ## Core Idea
 
 In cooperative scheduling, a task voluntarily checks whether it should pause and let other work run. Unlike preemptive scheduling (where the OS forcibly interrupts), cooperative scheduling relies on the task itself to yield at safe points.

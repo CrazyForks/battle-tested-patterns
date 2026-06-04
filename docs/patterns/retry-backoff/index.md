@@ -8,6 +8,8 @@ description: "When an operation fails, retry it with progressively longer delays
 
 When an operation fails, retry it with progressively longer delays plus random jitter to avoid thundering herd.
 
+<DemoBadge />
+
 ## Core Idea
 
 Instead of retrying immediately (which overloads the failing service) or giving up (which loses the request), exponential backoff doubles the wait time on each retry. Adding jitter randomizes the delay so thousands of clients don't retry simultaneously.

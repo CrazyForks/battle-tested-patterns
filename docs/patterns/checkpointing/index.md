@@ -8,6 +8,8 @@ description: "Periodically snapshot consistent state so recovery replays only fr
 
 Periodically snapshot consistent state so recovery replays only from the checkpoint -- not from the beginning of time.
 
+<DemoBadge />
+
 ## Core Idea
 
 Checkpointing captures a consistent snapshot of the current system state at a known point. On crash, recovery loads the last checkpoint and replays only the operations logged after it. Without checkpointing, a WAL-based system must replay its entire history on every restart -- which grows unbounded. Checkpointing bounds recovery time to the interval since the last checkpoint.

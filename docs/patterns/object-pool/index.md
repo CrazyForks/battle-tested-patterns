@@ -8,6 +8,8 @@ description: "Pre-allocate a set of reusable objects to avoid the cost of repeat
 
 Pre-allocate a set of reusable objects to avoid the cost of repeated allocation and garbage collection on hot paths.
 
+<DemoBadge />
+
 ## Core Idea
 
 Creating and destroying objects is expensive — memory allocation, constructor logic, GC pressure. An object pool maintains a collection of pre-initialized objects. When you need one, you "get" it from the pool; when done, you "put" it back instead of discarding it.

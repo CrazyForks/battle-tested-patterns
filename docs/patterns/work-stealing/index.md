@@ -8,6 +8,8 @@ description: "Idle threads steal tasks from busy threads' queues — balancing l
 
 Idle threads steal tasks from busy threads' queues — balancing load dynamically without central coordination.
 
+<DemoBadge />
+
 ## Core Idea
 
 Each worker owns a local deque (double-ended queue). Workers push/pop tasks from their own deque's top (LIFO for cache locality). When a worker's deque is empty, it steals from another worker's deque bottom (FIFO for fairness). This achieves automatic load balancing without a central scheduler bottleneck.

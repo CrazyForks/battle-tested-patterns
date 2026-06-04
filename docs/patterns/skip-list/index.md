@@ -8,6 +8,8 @@ description: "A probabilistic sorted data structure with O(log n) search, insert
 
 A probabilistic sorted data structure with O(log n) search, insert, and delete — simpler to implement than balanced trees with comparable performance.
 
+<DemoBadge />
+
 ## Core Idea
 
 A skip list is a multi-level linked list where each level skips over more elements. The bottom level is a regular sorted linked list. Higher levels act as "express lanes" that allow binary-search-like behavior. Each node is randomly promoted to higher levels with probability p (typically 0.5).

@@ -8,6 +8,8 @@ description: 'Combine K sorted streams into one sorted output using a min-heap â
 
 Combine K sorted streams into one sorted output using a min-heap -- the universal "unified view" over multiple data sources.
 
+<DemoBadge />
+
 ## Core Idea
 
 A merge iterator maintains a min-heap of size K, where each entry tracks the current element and which stream it came from. On each `next()` call, it pops the smallest element, advances that stream, and pushes the next element from that stream back into the heap. This produces a globally sorted output in O(n log K) time, where n is the total number of elements.

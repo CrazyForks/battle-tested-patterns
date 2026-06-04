@@ -8,6 +8,8 @@ description: "Process sequences one element at a time without materializing the 
 
 Process sequences one element at a time without materializing the entire collection, enabling composable transformations with zero intermediate allocations.
 
+<DemoBadge />
+
 ## Core Idea
 
 An iterator is an object that produces values one at a time via a `next()` method. Transformations (map, filter, fold) are chained lazily — nothing executes until a terminal operation (collect, for-each) drives the chain.

@@ -8,6 +8,8 @@ description: "Keep multiple timestamped versions of each value so readers never 
 
 Keep multiple timestamped versions of each value so readers never block writers — each transaction sees a consistent snapshot without locks.
 
+<DemoBadge />
+
 ## Core Idea
 
 MVCC stores every write as a new version tagged with a timestamp or transaction ID. Readers see the latest version visible to their snapshot, ignoring concurrent writes. This eliminates read-write contention: readers never block writers, writers never block readers.

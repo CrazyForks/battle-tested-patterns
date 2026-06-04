@@ -8,6 +8,8 @@ description: "Group function pointers into a struct to achieve runtime polymorph
 
 Group function pointers into a struct to achieve runtime polymorphism — the manual foundation behind interfaces, traits, and virtual methods.
 
+<DemoBadge />
+
 ## Core Idea
 
 A vtable (virtual function table) is a struct of function pointers that defines the operations available on a type. Each "object" stores a pointer to its vtable alongside its data. To call a method, you indirect through the vtable pointer — this is how C achieves polymorphism without classes, and how compilers implement interfaces and virtual methods under the hood.

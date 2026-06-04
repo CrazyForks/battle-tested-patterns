@@ -8,6 +8,8 @@ description: "Mark deleted entries with a tombstone marker instead of removing t
 
 Mark deleted entries with a tombstone marker instead of removing them -- a background process reclaims space later.
 
+<DemoBadge />
+
 ## Core Idea
 
 Instead of immediately removing data, write a special "tombstone" record that shadows the original. Reads check for tombstones and treat marked entries as deleted. A background compaction process later reclaims space by physically removing both the tombstone and the shadowed data. This decouples the fast path (mark deleted) from the slow path (reclaim space).

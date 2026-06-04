@@ -8,6 +8,8 @@ description: "Buffer writes in memory, flush to sorted files on disk, merge file
 
 Buffer writes in memory, flush to sorted files on disk, merge files in background -- trading read amplification for fast writes.
 
+<DemoBadge />
+
 ## Core Idea
 
 An LSM tree absorbs writes into an in-memory sorted structure (the memtable). When the memtable reaches a size threshold, it is flushed to disk as an immutable sorted run (SSTable). Background compaction merges multiple sorted runs to bound the number of files and reclaim space from deleted/overwritten keys. Reads check the memtable first, then each level of sorted runs.

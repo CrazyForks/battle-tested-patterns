@@ -8,6 +8,8 @@ description: "Components register themselves into a global lookup table by name 
 
 Components register themselves into a global lookup table by name -- consumers discover implementations at runtime without hardcoded dependencies.
 
+<DemoBadge />
+
 ## Core Idea
 
 A registry is a central map from names (strings) to implementations (functions, classes, factories). Producers register themselves at startup -- often via decorators, macros, or init functions. Consumers look up implementations by name at runtime, eliminating compile-time coupling. This enables plugin architectures where new functionality can be added without modifying existing code.

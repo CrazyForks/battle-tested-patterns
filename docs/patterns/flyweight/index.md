@@ -8,6 +8,8 @@ description: "Share identical immutable objects instead of creating duplicates, 
 
 Share identical immutable objects instead of creating duplicates, trading a lookup cost for massive memory savings when many instances have the same value.
 
+<DemoBadge />
+
 ## Core Idea
 
 When thousands of objects have the same value (strings, small integers, colors), allocating each separately wastes memory. Flyweight/interning maintains a pool of canonical instances and returns the same reference for equal values.

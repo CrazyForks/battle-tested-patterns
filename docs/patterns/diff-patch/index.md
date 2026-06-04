@@ -8,6 +8,8 @@ description: "Compare two sequences to compute the minimal set of operations (in
 
 Compare two sequences to compute the minimal set of operations (insert, delete, move) needed to transform one into the other.
 
+<DemoBadge />
+
 ## Core Idea
 
 Given an old list and a new list, the diff algorithm determines which items were added, removed, or moved. The result is a "patch" — a minimal set of mutations to apply.

@@ -8,6 +8,8 @@ description: "Protect services from overload by draining tokens from a bucket th
 
 Protect services from overload by draining tokens from a bucket that refills at a fixed rate — reject requests when empty.
 
+<DemoBadge />
+
 ## Core Idea
 
 A token bucket starts full with `capacity` tokens and refills at `rate` tokens per second. Each request consumes one token. If the bucket is empty, the request is either rejected or delayed. This naturally allows bursts (up to capacity) while enforcing an average rate.

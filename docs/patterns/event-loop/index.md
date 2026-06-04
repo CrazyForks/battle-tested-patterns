@@ -8,6 +8,8 @@ description: "A single-threaded loop that multiplexes I/O via epoll/kqueue, disp
 
 A single-threaded loop that multiplexes I/O via epoll/kqueue, dispatching ready events to callbacks -- thousands of connections without threads.
 
+<DemoBadge />
+
 ## Core Idea
 
 Instead of dedicating one thread per connection (expensive context switches, high memory), the reactor pattern uses a single thread that blocks on an OS polling mechanism (`epoll`, `kqueue`, `IOCP`). When any registered file descriptor becomes ready, the loop dispatches to the associated callback. This is how Node.js handles 10,000+ concurrent connections on a single thread.

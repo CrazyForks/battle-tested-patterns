@@ -8,6 +8,8 @@ description: "Compose handlers where each wraps the next — pre-process, call n
 
 Compose handlers where each wraps the next -- pre-process, call next, post-process -- forming a bidirectional pipeline.
 
+<DemoBadge />
+
 ## Core Idea
 
 Each middleware receives a context and a `next()` function. Calling `next()` passes control to the next middleware in the chain. After `next()` returns, the middleware can run post-processing logic. Not calling `next()` short-circuits the chain. This creates an "onion model" where the request flows inward and the response flows outward.

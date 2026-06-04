@@ -8,6 +8,8 @@ description: "Model dependencies as a directed acyclic graph and topologically s
 
 Model dependencies as a directed acyclic graph and topologically sort to determine a valid execution order — detecting cycles before they deadlock.
 
+<DemoBadge />
+
 ## Core Idea
 
 A dependency graph represents items as nodes and ordering constraints as directed edges. `addEdge(A, B)` means "A must come before B" — A is a prerequisite of B. Topological sort (Kahn's algorithm) repeatedly removes zero-in-degree nodes, producing an ordering where every prerequisite appears before its dependents.

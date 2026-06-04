@@ -8,6 +8,8 @@ description: "Decouple producers from consumers by letting objects subscribe to 
 
 Decouple producers from consumers by letting objects subscribe to events and get notified when something happens, without the source knowing who's listening.
 
+<DemoBadge />
+
 ## Core Idea
 
 The Observer pattern creates a one-to-many dependency: when the subject changes state, all registered observers are notified. The subject doesn't know what the observers do — it just calls them.

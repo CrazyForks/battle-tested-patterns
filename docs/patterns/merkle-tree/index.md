@@ -8,6 +8,8 @@ description: "Hash leaves, then hash pairs upward to a root — verify any leaf'
 
 Hash leaves, then hash pairs upward to a root -- verify any leaf's integrity in O(log n) without re-hashing the entire dataset.
 
+<DemoBadge />
+
 ## Core Idea
 
 A Merkle tree is a binary tree of hashes. Each leaf node contains the hash of a data block. Each internal node contains the hash of its two children concatenated. The root hash is a fingerprint of the entire dataset. To verify a single leaf, you only need the "proof path" -- the sibling hashes along the path from the leaf to the root -- giving O(log n) verification.

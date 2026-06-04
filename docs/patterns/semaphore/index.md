@@ -8,6 +8,8 @@ description: "Limit the number of concurrent operations by maintaining a counter
 
 Limit the number of concurrent operations by maintaining a counter — acquire before work, release after, block when the limit is reached.
 
+<DemoBadge />
+
 ## Core Idea
 
 A semaphore is a counter with two atomic operations: `acquire` (decrement, block if zero) and `release` (increment). It controls how many concurrent tasks can access a shared resource.

@@ -8,6 +8,8 @@ description: "Test set membership in O(k) time with zero false negatives — at 
 
 Test set membership in O(k) time with zero false negatives — at the cost of a tunable false positive rate.
 
+<DemoBadge />
+
 ## Core Idea
 
 A bloom filter is a space-efficient probabilistic data structure. It uses a bit array of size `m` and `k` independent hash functions. To **add** an element, hash it `k` times and set those bit positions. To **test**, hash it `k` times and check if all positions are set.

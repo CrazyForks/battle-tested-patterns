@@ -8,6 +8,8 @@ description: "Track owners via atomic counter, auto-cleanup at zero — determin
 
 Track owners via atomic counter, auto-cleanup at zero -- deterministic resource lifetime without garbage collection.
 
+<DemoBadge />
+
 ## Core Idea
 
 Reference counting assigns each shared resource a counter. Every new owner (clone) increments it; every release (drop) decrements it. When the counter reaches zero, the resource is immediately cleaned up -- no GC pause, no finalizer queue, fully deterministic.

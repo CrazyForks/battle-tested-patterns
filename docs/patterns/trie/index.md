@@ -8,6 +8,8 @@ description: "Store strings in a tree where each edge represents a character —
 
 Store strings in a tree where each edge represents a character — shared prefixes share nodes, enabling O(k) lookup by key length.
 
+<DemoBadge />
+
 ## Core Idea
 
 A trie (pronounced "try") is a tree where each path from root to node spells a prefix. Nodes branch on characters. This makes prefix queries trivial and key lookup proportional to key length, not the number of stored keys.

@@ -8,6 +8,8 @@ description: "Pack multiple boolean flags into a single integer and manipulate t
 
 Pack multiple boolean flags into a single integer and manipulate them with bitwise operators for constant-time set operations.
 
+<DemoBadge />
+
 ## Core Idea
 
 Instead of using an array of booleans or an object with multiple fields, a bitmask encodes each flag as a single bit in an integer. This gives you O(1) set/check/clear/toggle and trivial combination of multiple flags.

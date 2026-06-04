@@ -8,6 +8,8 @@ description: "A binary tree stored in an array where the smallest element is alw
 
 A binary tree stored in an array where the smallest element is always at the root, enabling O(1) peek and O(log n) insert/remove.
 
+<DemoBadge />
+
 ## Core Idea
 
 A min heap is a complete binary tree where every parent is smaller than its children. By storing it in a flat array (parent at `i`, children at `2i+1` and `2i+2`), you avoid pointer overhead and get cache-friendly access.

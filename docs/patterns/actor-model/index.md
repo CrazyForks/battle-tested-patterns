@@ -8,6 +8,8 @@ description: "Each actor has a mailbox and processes messages sequentially — n
 
 Each actor has a mailbox and processes messages sequentially — no shared state, no locks, just message passing for safe concurrency.
 
+<DemoBadge />
+
 ## Core Idea
 
 An actor is a lightweight process with private state and a mailbox (message queue). Actors communicate exclusively by sending asynchronous messages. Each actor processes one message at a time, updating its state and optionally sending messages to other actors. This eliminates shared-state concurrency bugs by design.

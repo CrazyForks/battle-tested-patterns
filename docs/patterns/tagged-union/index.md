@@ -8,6 +8,8 @@ description: "Store a type tag alongside a value union so one variable safely ho
 
 Store a type tag alongside a value union so one variable safely holds different types, dispatching behavior via the tag.
 
+<DemoBadge />
+
 ## Core Idea
 
 A tagged union (also called a variant, discriminated union, or sum type) pairs a type discriminator with a value payload. At runtime, code inspects the tag to determine which type the value actually is, then dispatches to the correct handler. This is the manual foundation behind TypeScript discriminated unions, Rust enums, and algebraic data types.

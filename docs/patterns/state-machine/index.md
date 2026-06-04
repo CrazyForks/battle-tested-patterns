@@ -8,6 +8,8 @@ description: "Model an entity's lifecycle as a set of states with explicit trans
 
 Model an entity's lifecycle as a set of states with explicit transitions, making impossible states unrepresentable and every state change auditable.
 
+<DemoBadge />
+
 ## Core Idea
 
 A state machine defines a finite set of states an entity can be in, and the transitions between them. At any point, the entity is in exactly one state. Transitions are triggered by events and can have guard conditions.

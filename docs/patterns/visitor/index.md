@@ -8,6 +8,8 @@ description: "Decouple tree traversal from operations by dispatching to type-spe
 
 Decouple tree traversal from operations by dispatching to type-specific callbacks — enabling new operations without modifying the tree.
 
+<DemoBadge />
+
 ## Core Idea
 
 The visitor pattern separates "how to walk a tree" from "what to do at each node." The tree defines an `accept(visitor)` method that dispatches to the visitor's type-specific callback (e.g., `visitAdd`, `visitMultiply`). To add a new operation (evaluation, printing, optimization), you create a new visitor — no tree node classes need to change.

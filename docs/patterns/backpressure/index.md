@@ -8,6 +8,8 @@ description: "Slow down producers when consumers can't keep up — use bounded b
 
 Slow down producers when consumers can't keep up — use bounded buffers and demand signals to prevent resource exhaustion.
 
+<DemoBadge />
+
 ## Core Idea
 
 Backpressure is a flow control mechanism where the consumer signals the producer to slow down or stop. Without it, a fast producer overwhelms a slow consumer, causing unbounded memory growth, dropped messages, or system crashes. The key: **bounded buffers** + **blocking/signaling when full**.

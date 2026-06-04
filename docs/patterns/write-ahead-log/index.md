@@ -8,6 +8,8 @@ description: "Log every mutation to durable storage before applying it — repla
 
 Log every mutation to durable storage before applying it — replay the log to recover from crashes without data loss.
 
+<DemoBadge />
+
 ## Core Idea
 
 A write-ahead log records every state change as a sequential append before the actual state is modified. If the system crashes mid-operation, the log survives and can be replayed to reconstruct the exact state. The key insight: **sequential writes are fast** (disk-friendly), and **replay is idempotent** (safe to redo).

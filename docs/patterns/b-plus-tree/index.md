@@ -8,6 +8,8 @@ description: "Self-balancing tree with high branching factor — internal nodes 
 
 Self-balancing tree with high branching factor -- internal nodes guide, leaf nodes store, all leaves linked for efficient range scans.
 
+<DemoBadge />
+
 ## Core Idea
 
 A B+ tree separates routing from storage. Internal nodes hold only keys and child pointers to guide searches down the tree. Leaf nodes hold actual key-value pairs and are linked together, enabling efficient sequential scans. The high branching factor (hundreds of keys per node) keeps the tree shallow -- typically 3-4 levels for billions of records -- minimizing disk I/O.

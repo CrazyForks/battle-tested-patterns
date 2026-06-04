@@ -8,6 +8,8 @@ description: "A monotonically increasing counter that orders events without wall
 
 A monotonically increasing counter that orders events without wall-clock time -- enabling consistent snapshots and staleness detection.
 
+<DemoBadge />
+
 ## Core Idea
 
 Wall clocks are unreliable in distributed systems -- they drift, jump on NTP sync, and differ across machines. A logical clock is a simple integer that only goes up. Lamport's rule: increment on local event, take `max(local, remote) + 1` on message receive. This guarantees: if event A causally precedes event B, then `clock(A) < clock(B)`.

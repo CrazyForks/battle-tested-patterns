@@ -8,6 +8,8 @@ description: "Deduplicate immutable values through a canonical lookup table — 
 
 Deduplicate immutable values through a canonical lookup table — O(1) equality by pointer comparison instead of O(n) content comparison.
 
+<DemoBadge />
+
 ## Core Idea
 
 Interning stores each unique value exactly once in a table and hands out lightweight identifiers (symbols, IDs, or interned pointers) that refer to the canonical copy. Two values that are structurally equal get the same identifier, so equality checks become O(1) pointer/integer comparisons instead of O(n) content comparisons. This trades upfront deduplication cost for massive savings on repeated equality checks.

@@ -8,6 +8,8 @@ description: "Maintain two copies of state and atomically swap between them so r
 
 Maintain two copies of state and atomically swap between them so readers always see a consistent snapshot.
 
+<DemoBadge />
+
 ## Core Idea
 
 Double buffering keeps two versions of a data structure: one "current" (being read) and one "work-in-progress" (being written). When the write is complete, the two are swapped atomically. This avoids tearing — readers never see a half-updated state.
