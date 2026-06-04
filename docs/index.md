@@ -20,38 +20,38 @@ hero:
 features:
   - icon:
       src: /images/interactive_visualizations.png
-      width: 120
-      height: 120
+      width: 100
+      height: 100
     title: Interactive Visualizations
     details: Every pattern has a hands-on SVG visualization. Click, drag, and experiment to build intuition — not just read about it.
   - icon:
       src: /images/production_proof.png
-      width: 120
-      height: 120
+      width: 100
+      height: 100
     title: Production Proof
     details: Every pattern comes with precise GitHub source links (down to line numbers) proving it's used in real-world projects.
   - icon:
       src: /images/multi-language.png
-      width: 120
-      height: 120
+      width: 100
+      height: 100
     title: Multi-Language
     details: Idiomatic implementations in TypeScript, Rust, Go, and Python — not mechanical translations, but native expressions of each pattern.
   - icon:
       src: /images/runnable_exercises.png
-      width: 120
-      height: 120
+      width: 100
+      height: 100
     title: Runnable Exercises
     details: Progressive exercises (basic → intermediate → advanced) with test suites you can run locally.
   - icon:
       src: /images/challengequestions.png
-      width: 120
-      height: 120
+      width: 100
+      height: 100
     title: Challenge Questions
     details: Each pattern includes 3-4 scenario-based "guess what happens" questions to test real understanding, not just reading.
   - icon:
       src: /images/real_system_case.png
-      width: 120
-      height: 120
+      width: 100
+      height: 100
     title: Real System Case Studies
     details: See how React, Redis, Go runtime, Linux, PostgreSQL, and Kafka compose multiple patterns in production.
 ---
