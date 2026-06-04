@@ -222,6 +222,8 @@ Exercise files: Rust `exercises/rust/src/lru_cache.rs` · Go `exercises/go/lru_c
 | [Flyweight](/patterns/flyweight/) | Both reduce memory — LRU limits cache size, flyweight shares identical objects |
 | [Consistent Hashing](/patterns/consistent-hashing/) | Distributed caches use consistent hashing to route keys to the right LRU instance |
 | [Tombstone](/patterns/tombstone/) | Tombstones mark deleted cache entries in distributed LRU caches |
+| [Bloom Filter](/patterns/bloom-filter/) | Bloom filters pre-check before expensive LRU cache lookups to avoid cache misses |
+| [Interning / Symbol Table](/patterns/interning/) | Intern tables can use LRU eviction to bound memory usage |
 
 ## Challenge Questions
 

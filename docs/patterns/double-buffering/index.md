@@ -218,6 +218,8 @@ Exercise files: Rust `exercises/rust/src/double_buffering.rs` · Go `exercises/g
 | [Copy-on-Write (CoW)](/patterns/copy-on-write/) | Both defer mutation costs — double buffering swaps whole copies, CoW copies on write |
 | [Ring Buffer (Circular Buffer)](/patterns/ring-buffer/) | Ring buffers can be seen as multi-slot generalizations of double buffering |
 | [Dirty Flag](/patterns/dirty-flag/) | Dirty flags track which buffer has changed and needs to be swapped |
+| [Bitmask](/patterns/bitmask/) | Bitmasks can track which buffer is active in a double-buffering scheme |
+| [Diff & Patch](/patterns/diff-patch/) | Diff-patch can compute the delta between the front and back buffer |
 
 ## Challenge Questions
 

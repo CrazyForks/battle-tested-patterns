@@ -216,6 +216,7 @@ Exercise files: Rust `exercises/rust/src/middleware_chain.rs` · Go `exercises/g
 | [迭代器 / 惰性求值 (Iterator)](/zh/patterns/iterator/) | 中间件链像迭代器遍历序列一样遍历处理器 |
 | [观察者 / 发布-订阅 (Observer / Pub-Sub)](/zh/patterns/observer/) | 中间件可以观察和修改流经管道的请求/响应 |
 | [虚函数表 / 操作分发 (Vtable / Ops Dispatch)](/zh/patterns/vtable/) | 每个中间件是实现通用接口的函数指针，类似虚函数表条目 |
+| [注册表 (Registry)](/zh/patterns/registry/) | 注册表可以存储和管理链中的中间件组件 |
 
 ## 挑战题
 

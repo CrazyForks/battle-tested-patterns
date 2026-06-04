@@ -269,6 +269,7 @@ Exercise files: Rust `exercises/rust/src/registry.rs` · Go `exercises/go/regist
 | [Middleware](/patterns/middleware-chain/) | Middleware handlers often register themselves into a registry |
 | [Dependency Graph](/patterns/dependency-graph/) | Registries can track dependencies between registered components |
 | [Consistent Hashing](/patterns/consistent-hashing/) | Service registries feed consistent hashing with available node lists |
+| [Trie (Prefix Tree)](/patterns/trie/) | Tries can serve as the underlying lookup structure for prefix-based registry queries |
 
 ## Challenge Questions
 

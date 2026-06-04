@@ -537,6 +537,7 @@ Exercise files: Rust `exercises/rust/src/b_plus_tree.rs` · Go `exercises/go/b_p
 | [LSM Tree (Log-Structured Merge Tree)](/patterns/lsm-tree/) | LSM trees buffer writes for speed; B+ trees optimize reads with balanced structure |
 | [Merkle Tree](/patterns/merkle-tree/) | Both are tree structures — Merkle for integrity verification, B+ for ordered storage |
 | [Merge Iterator (K-Way Merge)](/patterns/merge-iterator/) | B+ tree range scans use iterator patterns similar to merge iterators |
+| [Min-Heap / Priority Queue](/patterns/min-heap/) | Both are tree-based structures — B+ trees optimize range queries, min-heaps optimize priority extraction |
 
 ## Challenge Questions
 

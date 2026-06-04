@@ -280,6 +280,7 @@ Exercise files: Rust `exercises/rust/src/write_ahead_log.rs` · Go `exercises/go
 | [LSM Tree (Log-Structured Merge Tree)](/patterns/lsm-tree/) | LSM trees use WAL to ensure memtable writes survive crashes before flushing |
 | [Merkle Tree](/patterns/merkle-tree/) | Merkle trees verify the state that WAL helps reconstruct after recovery |
 | [Logical Clock](/patterns/logical-clock/) | WAL entries are sequenced by logical clock for ordering guarantees |
+| [MVCC](/patterns/mvcc/) | WAL records all mutations that MVCC versions are based on, enabling crash recovery |
 
 ## Challenge Questions
 

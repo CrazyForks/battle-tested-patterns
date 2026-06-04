@@ -294,6 +294,7 @@ Exercise files: Rust `exercises/rust/src/reference_counting.rs` · Go `exercises
 | [Copy-on-Write (CoW)](/patterns/copy-on-write/) | Reference counting determines when a CoW value needs to be copied |
 | [Object Pool](/patterns/object-pool/) | Pools provide an alternative to reference counting — return objects instead of freeing |
 | [Tombstone](/patterns/tombstone/) | Tombstones defer cleanup like reference counting defers deallocation |
+| [Arena Allocator](/patterns/arena-allocator/) | Arenas avoid per-object reference counting by freeing everything at scope end |
 
 ## Challenge Questions
 

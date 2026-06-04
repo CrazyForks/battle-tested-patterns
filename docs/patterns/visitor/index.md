@@ -229,6 +229,7 @@ Exercise files: Rust `exercises/rust/src/visitor.rs` · Go `exercises/go/visitor
 | [Vtable](/patterns/vtable/) | Visitor's dispatch table is conceptually a vtable indexed by node type |
 | [Dependency Graph](/patterns/dependency-graph/) | Visitors walk dependency graphs to process nodes in correct order |
 | [Tagged Union](/patterns/tagged-union/) | Visitor dispatch matches on tagged union's type tag |
+| [State Machine](/patterns/state-machine/) | Visitors can traverse state machine nodes; state machines can drive visitor dispatch |
 
 ## Challenge Questions
 

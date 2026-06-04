@@ -256,6 +256,7 @@ Exercise files: Rust `exercises/rust/src/event_loop.rs` · Go `exercises/go/even
 | [Observer](/patterns/observer/) | Event loops dispatch events to registered observers/callbacks |
 | [Ring Buffer (Circular Buffer)](/patterns/ring-buffer/) | Event queues are typically implemented as ring buffers |
 | [Actor Model](/patterns/actor-model/) | Each actor is essentially a single-threaded event loop over its mailbox |
+| [Min-Heap / Priority Queue](/patterns/min-heap/) | Event loops use min-heaps to schedule timer callbacks by earliest deadline |
 
 ## Challenge Questions
 

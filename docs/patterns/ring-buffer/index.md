@@ -232,6 +232,7 @@ Exercise files: Rust `exercises/rust/src/ring_buffer.rs` · Go `exercises/go/rin
 | [Event Loop](/patterns/event-loop/) | Event loops use ring buffers for I/O event queues |
 | [Double Buffering](/patterns/double-buffering/) | Both avoid allocation — ring buffers reuse slots, double buffering swaps pointers |
 | [Batch Processing](/patterns/batch-processing/) | Ring buffers accumulate events for batch consumption |
+| [Free List](/patterns/free-list/) | Both provide O(1) slot management — ring buffers via modular index, free lists via linked chain |
 
 ## Challenge Questions
 

@@ -306,6 +306,7 @@ Exercise files: Rust `exercises/rust/src/dependency_graph.rs` · Go `exercises/g
 | [Visitor](/patterns/visitor/) | Tree traversal over dependency graphs dispatches to type-specific handlers |
 | [Iterator](/patterns/iterator/) | Topological iteration produces a lazy sequence of nodes in dependency order |
 | [Dirty Flag](/patterns/dirty-flag/) | Dirty propagation follows dependency edges to mark downstream nodes for recomputation |
+| [Registry](/patterns/registry/) | Registries track component metadata; dependency graphs track their relationships |
 
 ## Challenge Questions
 

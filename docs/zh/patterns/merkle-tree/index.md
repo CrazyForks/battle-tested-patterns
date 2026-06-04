@@ -410,6 +410,7 @@ Exercise files: Rust `exercises/rust/src/merkle_tree.rs` · Go `exercises/go/mer
 | [预写日志 (Write-Ahead Log)](/zh/patterns/write-ahead-log/) | WAL 记录变更；Merkle 树验证结果状态的一致性 |
 | [检查点 (Checkpointing)](/zh/patterns/checkpointing/) | Merkle 根作为检查点快照的完整性证明 |
 | [B+ 树 (B+ Tree)](/zh/patterns/b-plus-tree/) | 两者都是树结构——Merkle 用于验证，B+ 用于有序访问 |
+| [差分与补丁 (Diff & Patch)](/zh/patterns/diff-patch/) | Merkle 树实现高效的差异检测——只需重新哈希从变更节点到根的路径 |
 
 ## 挑战题
 

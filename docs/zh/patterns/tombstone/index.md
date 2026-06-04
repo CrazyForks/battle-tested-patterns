@@ -356,6 +356,8 @@ Exercise files: Rust `exercises/rust/src/tombstone.rs` · Go `exercises/go/tombs
 | [LSM 树 (Log-Structured Merge Tree)](/zh/patterns/lsm-tree/) | LSM 树大量使用墓碑——在压缩时清理 |
 | [MVCC 多版本并发控制](/zh/patterns/mvcc/) | MVCC 用墓碑标记旧版本以供垃圾回收 |
 | [空闲链表 (Free List)](/zh/patterns/free-list/) | 墓碑清理后，释放的槽位可以由空闲链表管理 |
+| [LRU 缓存 (LRU Cache)](/zh/patterns/lru-cache/) | LRU 缓存在分布式场景中使用墓碑标记已删除的条目 |
+| [引用计数 (Reference Counting)](/zh/patterns/reference-counting/) | 引用计数确定何时可以安全回收被墓碑标记的对象 |
 
 ## 挑战题
 

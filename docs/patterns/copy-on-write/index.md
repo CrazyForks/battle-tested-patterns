@@ -199,6 +199,9 @@ Exercise files: Rust `exercises/rust/src/copy_on_write.rs` · Go `exercises/go/c
 | [Flyweight](/patterns/flyweight/) | Flyweight shares immutable data; CoW shares mutable data until modification |
 | [Merkle Tree](/patterns/merkle-tree/) | Merkle trees enable efficient CoW — only rehash the path from changed node to root |
 | [Reference Counting](/patterns/reference-counting/) | Reference counting tracks CoW sharing — copy when ref count > 1 and writing |
+| [Checkpointing](/patterns/checkpointing/) | Checkpointing captures CoW snapshots — CoW makes snapshot creation O(1) |
+| [Diff & Patch](/patterns/diff-patch/) | Diff-patch computes changes between CoW snapshots for incremental updates |
+| [MVCC](/patterns/mvcc/) | MVCC uses CoW to create version snapshots for concurrent readers |
 
 ## Challenge Questions
 

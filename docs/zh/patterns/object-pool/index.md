@@ -192,6 +192,8 @@ Exercise files: Rust `exercises/rust/src/object_pool.rs` · Go `exercises/go/obj
 | [空闲链表 (Free List)](/zh/patterns/free-list/) | 空闲链表管理池内部的槽位分配 |
 | [Arena 分配器 (Arena Allocator)](/zh/patterns/arena-allocator/) | Arena 分配器为池对象批量分配；两者都避免逐对象 malloc |
 | [信号量 / 有界并发 (Semaphore)](/zh/patterns/semaphore/) | 池大小充当信号量限制并发对象使用 |
+| [引用计数 (Reference Counting)](/zh/patterns/reference-counting/) | 引用计数追踪何时可以将池化对象归还到池中 |
+| [工作窃取 (Work Stealing)](/zh/patterns/work-stealing/) | 工作窃取队列可以池化任务对象以减少分配开销 |
 
 ## 挑战题
 

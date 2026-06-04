@@ -220,6 +220,8 @@ Exercise files: Rust `exercises/rust/src/lru_cache.rs` · Go `exercises/go/lru_c
 | [享元 / 驻留 (Flyweight / Interning)](/zh/patterns/flyweight/) | 两者都减少内存——LRU 限制缓存大小，享元共享相同对象 |
 | [一致性哈希 (Consistent Hashing)](/zh/patterns/consistent-hashing/) | 分布式缓存使用一致性哈希将键路由到正确的 LRU 实例 |
 | [墓碑 / 延迟删除 (Tombstone)](/zh/patterns/tombstone/) | 墓碑在分布式 LRU 缓存中标记已删除的条目 |
+| [布隆过滤器 (Bloom Filter)](/zh/patterns/bloom-filter/) | 布隆过滤器在昂贵的 LRU 缓存查找前做预检查以避免缓存未命中 |
+| [驻留 / 符号表 (Interning)](/zh/patterns/interning/) | 驻留表可以使用 LRU 淘汰来限制内存使用 |
 
 ## 挑战题
 

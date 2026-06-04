@@ -201,6 +201,7 @@ Exercise files: Rust `exercises/rust/src/iterator.rs` · Go `exercises/go/iterat
 | [归并迭代器 (Merge Iterator / K-Way Merge)](/zh/patterns/merge-iterator/) | 归并迭代器将多个迭代器组合为一个有序输出 |
 | [访问者 / 树遍历器 (Visitor / Tree Walker)](/zh/patterns/visitor/) | 两者都遍历数据结构——迭代器产出元素，访问者分发回调 |
 | [中间件 / 管道链 (Middleware / Pipeline Chain)](/zh/patterns/middleware-chain/) | 中间件链遍历处理器序列 |
+| [依赖图 (Dependency Graph)](/zh/patterns/dependency-graph/) | 依赖图的拓扑遍历使用迭代器模式进行 |
 
 ## 挑战题
 

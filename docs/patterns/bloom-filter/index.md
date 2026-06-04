@@ -235,6 +235,8 @@ Exercise files: Rust `exercises/rust/src/bloom_filter.rs` · Go `exercises/go/bl
 | [LSM Tree (Log-Structured Merge Tree)](/patterns/lsm-tree/) | LSM trees attach bloom filters to each SSTable to avoid unnecessary disk reads |
 | [Trie (Prefix Tree)](/patterns/trie/) | Bloom filter pre-screens before expensive trie traversal |
 | [LRU Cache](/patterns/lru-cache/) | Both speed up lookups — bloom filters eliminate negatives, LRU caches store positives |
+| [Interning / Symbol Table](/patterns/interning/) | Bloom filters can pre-check before expensive intern table lookups |
+| [Skip List](/patterns/skip-list/) | Bloom filters can reduce unnecessary disk reads in skip-list-based storage |
 
 ## Challenge Questions
 

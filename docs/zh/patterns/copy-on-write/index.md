@@ -197,6 +197,9 @@ Exercise files: Rust `exercises/rust/src/copy_on_write.rs` · Go `exercises/go/c
 | [享元 / 驻留 (Flyweight / Interning)](/zh/patterns/flyweight/) | 享元共享不可变数据；CoW 共享可变数据直到修改 |
 | [Merkle 树 (Merkle Tree)](/zh/patterns/merkle-tree/) | Merkle 树实现高效 CoW——只需重新哈希从变更节点到根的路径 |
 | [引用计数 (Reference Counting)](/zh/patterns/reference-counting/) | 引用计数追踪 CoW 共享——当引用计数 > 1 且写入时复制 |
+| [检查点 (Checkpointing)](/zh/patterns/checkpointing/) | 检查点捕获 CoW 快照——CoW 使快照创建为 O(1) |
+| [差分与补丁 (Diff & Patch)](/zh/patterns/diff-patch/) | 差分补丁计算 CoW 快照之间的变更以实现增量更新 |
+| [多版本并发控制 (MVCC)](/zh/patterns/mvcc/) | MVCC 使用 CoW 为并发读者创建版本快照 |
 
 ## 挑战题
 

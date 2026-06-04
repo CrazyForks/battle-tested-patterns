@@ -229,6 +229,7 @@ Exercise files: Rust `exercises/rust/src/visitor.rs` · Go `exercises/go/visitor
 | [虚函数表 / 操作分发 (Vtable / Ops Dispatch)](/zh/patterns/vtable/) | 访问者的分发表在概念上是按节点类型索引的虚函数表 |
 | [依赖图 (Dependency Graph)](/zh/patterns/dependency-graph/) | 访问者遍历依赖图以正确顺序处理节点 |
 | [标签联合体 (Tagged Union / Variant)](/zh/patterns/tagged-union/) | 访问者分发匹配标签联合的类型标签 |
+| [状态机 (State Machine)](/zh/patterns/state-machine/) | 访问者可以遍历状态机节点；状态机可以驱动访问者分发 |
 
 ## 挑战题
 

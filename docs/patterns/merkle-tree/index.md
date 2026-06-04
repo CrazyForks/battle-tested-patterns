@@ -410,6 +410,7 @@ Exercise files: Rust `exercises/rust/src/merkle_tree.rs` · Go `exercises/go/mer
 | [Write-Ahead Log (WAL)](/patterns/write-ahead-log/) | WAL records changes; Merkle trees verify the resulting state is consistent |
 | [Checkpointing](/patterns/checkpointing/) | Merkle roots serve as integrity proofs for checkpoint snapshots |
 | [B+ Tree](/patterns/b-plus-tree/) | Both are tree structures — Merkle for verification, B+ for ordered access |
+| [Diff & Patch](/patterns/diff-patch/) | Merkle trees enable efficient diff detection — only rehash paths to changed nodes |
 
 ## Challenge Questions
 

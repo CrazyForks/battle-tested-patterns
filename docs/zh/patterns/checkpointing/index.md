@@ -428,6 +428,7 @@ Exercise files: Rust `exercises/rust/src/checkpointing.rs` · Go `exercises/go/c
 | [预写日志 (Write-Ahead Log)](/zh/patterns/write-ahead-log/) | 检查点截断 WAL——恢复只从最新检查点重放 |
 | [写时复制 (Copy-on-Write)](/zh/patterns/copy-on-write/) | 写时复制在不停止写入的情况下实现一致快照 |
 | [逻辑时钟 / Epoch (Logical Clock)](/zh/patterns/logical-clock/) | 检查点与逻辑时钟位置关联以保证一致性 |
+| [Merkle 树 (Merkle Tree)](/zh/patterns/merkle-tree/) | Merkle 树通过检测哪些子树发生变化来验证检查点完整性 |
 
 ## 挑战题
 

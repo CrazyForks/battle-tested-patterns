@@ -216,6 +216,8 @@ Exercise files: Rust `exercises/rust/src/rate_limiter.rs` · Go `exercises/go/ra
 | [Semaphore](/patterns/semaphore/) | Semaphore limits concurrency; rate limiter limits throughput over time |
 | [Backpressure](/patterns/backpressure/) | Rate limiting is a form of backpressure applied at system boundaries |
 | [Circuit Breaker](/patterns/circuit-breaker/) | Circuit breaker stops all traffic on failure; rate limiter controls healthy traffic volume |
+| [Consistent Hashing](/patterns/consistent-hashing/) | Consistent hashing distributes rate limit state across nodes |
+| [Retry with Backoff](/patterns/retry-backoff/) | Retry-backoff adapts client behavior to rate limiter feedback |
 
 ## Challenge Questions
 

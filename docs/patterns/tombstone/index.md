@@ -356,6 +356,8 @@ Exercise files: Rust `exercises/rust/src/tombstone.rs` · Go `exercises/go/tombs
 | [LSM Tree (Log-Structured Merge Tree)](/patterns/lsm-tree/) | LSM trees use tombstones extensively — they're cleaned up during compaction |
 | [MVCC (Multi-Version Concurrency Control)](/patterns/mvcc/) | MVCC marks old versions with tombstones for garbage collection |
 | [Free List](/patterns/free-list/) | After tombstone cleanup, freed slots can be managed by a free list |
+| [LRU Cache](/patterns/lru-cache/) | LRU caches use tombstones to mark deleted entries in distributed scenarios |
+| [Reference Counting](/patterns/reference-counting/) | Reference counting determines when tombstoned objects can be safely reclaimed |
 
 ## Challenge Questions
 

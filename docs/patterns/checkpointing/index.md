@@ -428,6 +428,7 @@ Exercise files: Rust `exercises/rust/src/checkpointing.rs` · Go `exercises/go/c
 | [Write-Ahead Log (WAL)](/patterns/write-ahead-log/) | Checkpoints truncate the WAL — recovery replays only from the latest checkpoint |
 | [Copy-on-Write (CoW)](/patterns/copy-on-write/) | Copy-on-write enables consistent snapshots without stopping writes |
 | [Logical Clock](/patterns/logical-clock/) | Checkpoints are associated with logical clock positions for consistency |
+| [Merkle Tree](/patterns/merkle-tree/) | Merkle trees verify checkpoint integrity by detecting which subtrees changed |
 
 ## Challenge Questions
 

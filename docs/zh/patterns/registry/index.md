@@ -269,6 +269,7 @@ Exercise files: Rust `exercises/rust/src/registry.rs` · Go `exercises/go/regist
 | [中间件 / 管道链 (Middleware / Pipeline Chain)](/zh/patterns/middleware-chain/) | 中间件处理器通常将自身注册到注册表中 |
 | [依赖图 (Dependency Graph)](/zh/patterns/dependency-graph/) | 注册表可以追踪已注册组件之间的依赖关系 |
 | [一致性哈希 (Consistent Hashing)](/zh/patterns/consistent-hashing/) | 服务注册表为一致性哈希提供可用节点列表 |
+| [字典树 (Trie)](/zh/patterns/trie/) | 字典树可以作为基于前缀的注册表查询的底层查找结构 |
 
 ## 挑战题
 

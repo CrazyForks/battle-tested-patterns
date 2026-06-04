@@ -306,6 +306,7 @@ Exercise files: Rust `exercises/rust/src/dependency_graph.rs` · Go `exercises/g
 | [访问者 / 树遍历器 (Visitor / Tree Walker)](/zh/patterns/visitor/) | 依赖图上的树遍历分发到类型特定的处理器 |
 | [迭代器 / 惰性求值 (Iterator)](/zh/patterns/iterator/) | 拓扑迭代生成按依赖顺序的惰性节点序列 |
 | [脏标记 (Dirty Flag)](/zh/patterns/dirty-flag/) | 脏传播沿依赖边标记下游节点以进行重计算 |
+| [注册表 (Registry)](/zh/patterns/registry/) | 注册表追踪组件元数据；依赖图追踪它们之间的关系 |
 
 ## 挑战题
 

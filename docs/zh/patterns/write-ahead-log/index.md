@@ -280,6 +280,7 @@ Exercise files: Rust `exercises/rust/src/write_ahead_log.rs` · Go `exercises/go
 | [LSM 树 (Log-Structured Merge Tree)](/zh/patterns/lsm-tree/) | LSM 树使用 WAL 确保 memtable 写入在刷盘前幸存崩溃 |
 | [Merkle 树 (Merkle Tree)](/zh/patterns/merkle-tree/) | Merkle 树验证 WAL 在恢复后帮助重建的状态 |
 | [逻辑时钟 / Epoch (Logical Clock)](/zh/patterns/logical-clock/) | WAL 条目按逻辑时钟排序以保证顺序 |
+| [多版本并发控制 (MVCC)](/zh/patterns/mvcc/) | WAL 记录 MVCC 版本所基于的所有变更，实现崩溃恢复 |
 
 ## 挑战题
 

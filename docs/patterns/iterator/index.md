@@ -205,6 +205,7 @@ Exercise files: Rust `exercises/rust/src/iterator.rs` · Go `exercises/go/iterat
 | [Merge Iterator (K-Way Merge)](/patterns/merge-iterator/) | Merge iterator composes multiple iterators into one sorted output |
 | [Visitor](/patterns/visitor/) | Both traverse data structures — iterators yield elements, visitors dispatch callbacks |
 | [Middleware](/patterns/middleware-chain/) | Middleware chains iterate through handler sequences |
+| [Dependency Graph](/patterns/dependency-graph/) | Topological iteration over dependency graphs uses the iterator pattern for traversal |
 
 ## Challenge Questions
 

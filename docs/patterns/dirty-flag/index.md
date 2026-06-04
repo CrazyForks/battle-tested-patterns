@@ -263,6 +263,7 @@ Exercise files: Rust `exercises/rust/src/dirty_flag.rs` · Go `exercises/go/dirt
 | [Observer](/patterns/observer/) | Observer notifies when state changes; dirty flag defers the reaction until needed |
 | [Bitmask](/patterns/bitmask/) | Dirty flags are efficiently stored as bits in a bitmask |
 | [Dependency Graph](/patterns/dependency-graph/) | Dirty propagation follows dependency graph edges to mark downstream nodes |
+| [Double Buffering](/patterns/double-buffering/) | Dirty flags track which buffer has changed and needs to be swapped |
 
 ## Challenge Questions
 

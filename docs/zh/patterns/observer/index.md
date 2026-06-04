@@ -200,6 +200,7 @@ Exercise files: Rust `exercises/rust/src/observer.rs` · Go `exercises/go/observ
 | [事件循环 / 反应器 (Event Loop / Reactor)](/zh/patterns/event-loop/) | 事件循环将事件分发给为特定事件类型注册的观察者 |
 | [脏标记 (Dirty Flag)](/zh/patterns/dirty-flag/) | 观察者触发通知；脏标记延迟昂贵的反应 |
 | [中间件 / 管道链 (Middleware / Pipeline Chain)](/zh/patterns/middleware-chain/) | 中间件观察和转换流经管道的数据 |
+| [Actor 模型 (Actor Model)](/zh/patterns/actor-model/) | 两者都解耦生产者和消费者——观察者通过回调，Actor 通过消息传递 |
 
 ## 挑战题
 

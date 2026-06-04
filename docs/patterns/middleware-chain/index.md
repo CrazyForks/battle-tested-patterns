@@ -216,6 +216,7 @@ Exercise files: Rust `exercises/rust/src/middleware_chain.rs` · Go `exercises/g
 | [Iterator](/patterns/iterator/) | Middleware chain iterates through handlers like an iterator over a sequence |
 | [Observer](/patterns/observer/) | Middleware can observe and modify requests/responses flowing through the pipeline |
 | [Vtable](/patterns/vtable/) | Each middleware is a function pointer implementing a common interface, like a vtable entry |
+| [Registry](/patterns/registry/) | Registries can store and manage middleware components in the chain |
 
 ## Challenge Questions
 

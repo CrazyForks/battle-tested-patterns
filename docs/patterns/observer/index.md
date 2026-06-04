@@ -205,6 +205,7 @@ Exercise files: Rust `exercises/rust/src/observer.rs` · Go `exercises/go/observ
 | [Event Loop](/patterns/event-loop/) | Event loops dispatch events to observers registered for specific event types |
 | [Dirty Flag](/patterns/dirty-flag/) | Observer triggers notification; dirty flag defers the expensive reaction |
 | [Middleware](/patterns/middleware-chain/) | Middleware observes and transforms data flowing through a pipeline |
+| [Actor Model](/patterns/actor-model/) | Both decouple producers from consumers — observer via callbacks, actors via message passing |
 
 ## Challenge Questions
 

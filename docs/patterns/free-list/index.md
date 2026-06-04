@@ -232,6 +232,10 @@ Exercise files: Rust `exercises/rust/src/free_list.rs` · Go `exercises/go/free_
 | [Arena Allocator](/patterns/arena-allocator/) | Arena bulk-frees; free lists recycle individual slots for O(1) reuse |
 | [Object Pool](/patterns/object-pool/) | Object pools use free lists internally to track available objects |
 | [Ring Buffer (Circular Buffer)](/patterns/ring-buffer/) | Both provide O(1) slot management — ring buffers via modular index, free lists via linked chain |
+| [LRU Cache](/patterns/lru-cache/) | LRU caches use free lists to recycle evicted node slots for O(1) reuse |
+| [Skip List](/patterns/skip-list/) | Skip lists can use free lists to recycle deleted node slots |
+| [Tombstone / Soft Delete](/patterns/tombstone/) | Tombstone-based deletion defers slot recycling; free lists reclaim those slots |
+| [Work Stealing](/patterns/work-stealing/) | Work-stealing queues can use free lists to manage task node allocation |
 
 ## Challenge Questions
 

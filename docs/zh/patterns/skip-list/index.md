@@ -339,6 +339,8 @@ Exercise files: Rust `exercises/rust/src/skip_list.rs` · Go `exercises/go/skip_
 | [B+ 树 (B+ Tree)](/zh/patterns/b-plus-tree/) | B+ 树保证 O(log n)；跳表以更简单的代码概率性地实现 |
 | [布隆过滤器 (Bloom Filter)](/zh/patterns/bloom-filter/) | 两者都是概率性的——布隆过滤器用于成员判定，跳表用于排序 |
 | [空闲链表 (Free List)](/zh/patterns/free-list/) | 跳表节点需要分配管理；空闲链表为固定大小节点提供 O(1) 分配 |
+| [合并迭代器 (Merge Iterator)](/zh/patterns/merge-iterator/) | 合并迭代器组合来自多个跳表层级或实例的有序输出 |
+| [字典树 (Trie)](/zh/patterns/trie/) | 两者都提供有序键遍历——跳表通过概率平衡，字典树通过前缀结构 |
 
 ## 挑战题
 

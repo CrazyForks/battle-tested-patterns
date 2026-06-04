@@ -339,6 +339,8 @@ Exercise files: Rust `exercises/rust/src/skip_list.rs` · Go `exercises/go/skip_
 | [B+ Tree](/patterns/b-plus-tree/) | B+ trees guarantee O(log n); skip lists achieve it probabilistically with simpler code |
 | [Bloom Filter](/patterns/bloom-filter/) | Both are probabilistic — bloom filters for membership, skip lists for ordering |
 | [Free List](/patterns/free-list/) | Skip list nodes need allocation management; free lists provide O(1) alloc for fixed-size nodes |
+| [Merge Iterator](/patterns/merge-iterator/) | Merge iterators combine sorted output from multiple skip list levels or instances |
+| [Trie (Prefix Tree)](/patterns/trie/) | Both provide ordered key traversal — skip lists via probabilistic balance, tries via prefix structure |
 
 ## Challenge Questions
 

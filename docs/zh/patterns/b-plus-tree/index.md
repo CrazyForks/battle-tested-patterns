@@ -537,6 +537,7 @@ Exercise files: Rust `exercises/rust/src/b_plus_tree.rs` · Go `exercises/go/b_p
 | [LSM 树 (Log-Structured Merge Tree)](/zh/patterns/lsm-tree/) | LSM 树缓冲写入以提高速度；B+ 树通过平衡结构优化读取 |
 | [Merkle 树 (Merkle Tree)](/zh/patterns/merkle-tree/) | 两者都是树结构——Merkle 用于完整性验证，B+ 用于有序存储 |
 | [归并迭代器 (Merge Iterator / K-Way Merge)](/zh/patterns/merge-iterator/) | B+ 树范围扫描使用类似归并迭代器的迭代模式 |
+| [最小堆 / 优先队列 (Min-Heap)](/zh/patterns/min-heap/) | 两者都是基于树的结构——B+ 树优化范围查询，最小堆优化优先级提取 |
 
 ## 挑战题
 

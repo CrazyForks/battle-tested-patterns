@@ -194,6 +194,8 @@ Exercise files: Rust `exercises/rust/src/object_pool.rs` · Go `exercises/go/obj
 | [Free List](/patterns/free-list/) | Free lists manage the pool's internal allocation of slots |
 | [Arena Allocator](/patterns/arena-allocator/) | Arena allocators batch-allocate for pool objects; both avoid per-object malloc |
 | [Semaphore](/patterns/semaphore/) | Pool size acts as a semaphore limiting concurrent object usage |
+| [Reference Counting](/patterns/reference-counting/) | Reference counting tracks when pooled objects can be returned to the pool |
+| [Work Stealing](/patterns/work-stealing/) | Work-stealing queues can pool task objects to reduce allocation overhead |
 
 ## Challenge Questions
 

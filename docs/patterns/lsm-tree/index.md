@@ -593,6 +593,7 @@ Exercise files: Rust `exercises/rust/src/lsm_tree.rs` · Go `exercises/go/lsm_tr
 | [Merge Iterator (K-Way Merge)](/patterns/merge-iterator/) | Compaction merges multiple sorted SSTables using merge iterators |
 | [Write-Ahead Log (WAL)](/patterns/write-ahead-log/) | WAL ensures memtable writes survive crashes before flushing to SSTables |
 | [Tombstone](/patterns/tombstone/) | LSM trees use tombstones to mark deletions that are cleaned up during compaction |
+| [B+ Tree](/patterns/b-plus-tree/) | B+ trees provide read-optimized indexing; LSM trees optimize for write-heavy workloads |
 
 ## Challenge Questions
 

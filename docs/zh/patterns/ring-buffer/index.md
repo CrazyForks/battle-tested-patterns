@@ -230,6 +230,7 @@ Exercise files: Rust `exercises/rust/src/ring_buffer.rs` · Go `exercises/go/rin
 | [事件循环 / 反应器 (Event Loop / Reactor)](/zh/patterns/event-loop/) | 事件循环使用环形缓冲区作为 I/O 事件队列 |
 | [双缓冲 (Double Buffering)](/zh/patterns/double-buffering/) | 两者都避免分配——环形缓冲区复用槽位，双缓冲交换指针 |
 | [批处理 (Batch Processing)](/zh/patterns/batch-processing/) | 环形缓冲区累积事件供批量消费 |
+| [空闲链表 (Free List)](/zh/patterns/free-list/) | 两者都提供 O(1) 的槽位管理——环形缓冲区通过模索引，空闲链表通过链式链接 |
 
 ## 挑战题
 

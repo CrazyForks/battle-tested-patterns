@@ -593,6 +593,7 @@ Exercise files: Rust `exercises/rust/src/lsm_tree.rs` · Go `exercises/go/lsm_tr
 | [归并迭代器 (Merge Iterator / K-Way Merge)](/zh/patterns/merge-iterator/) | 压缩使用归并迭代器合并多个有序 SSTable |
 | [预写日志 (Write-Ahead Log)](/zh/patterns/write-ahead-log/) | WAL 确保 memtable 写入在刷盘到 SSTable 前幸存崩溃 |
 | [墓碑 / 延迟删除 (Tombstone)](/zh/patterns/tombstone/) | LSM 树使用墓碑标记删除，在压缩时清理 |
+| [B+ 树 (B+ Tree)](/zh/patterns/b-plus-tree/) | B+ 树提供读优化的索引；LSM 树针对写密集型工作负载优化 |
 
 ## 挑战题
 

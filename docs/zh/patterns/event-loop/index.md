@@ -256,6 +256,7 @@ Exercise files: Rust `exercises/rust/src/event_loop.rs` · Go `exercises/go/even
 | [观察者 / 发布-订阅 (Observer / Pub-Sub)](/zh/patterns/observer/) | 事件循环将事件分发给注册的观察者/回调 |
 | [环形缓冲区 (Ring Buffer)](/zh/patterns/ring-buffer/) | 事件队列通常实现为环形缓冲区 |
 | [Actor 模型](/zh/patterns/actor-model/) | 每个 Actor 本质上是其信箱上的单线程事件循环 |
+| [最小堆 / 优先队列 (Min-Heap)](/zh/patterns/min-heap/) | 事件循环使用最小堆按最早截止时间调度定时器回调 |
 
 ## 挑战题
 

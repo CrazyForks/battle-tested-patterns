@@ -294,6 +294,7 @@ Exercise files: Rust `exercises/rust/src/reference_counting.rs` · Go `exercises
 | [写时复制 (Copy-on-Write)](/zh/patterns/copy-on-write/) | 引用计数决定何时需要复制 CoW 值 |
 | [对象池 (Object Pool)](/zh/patterns/object-pool/) | 池提供引用计数的替代方案——归还对象而不是释放 |
 | [墓碑 / 延迟删除 (Tombstone)](/zh/patterns/tombstone/) | 墓碑延迟清理，类似引用计数延迟释放 |
+| [Arena 分配器 (Arena Allocator)](/zh/patterns/arena-allocator/) | Arena 通过在作用域结束时释放所有内容来避免逐对象引用计数 |
 
 ## 挑战题
 

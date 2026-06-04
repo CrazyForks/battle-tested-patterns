@@ -304,6 +304,7 @@ Exercise files: Rust `exercises/rust/src/merge_iterator.rs` · Go `exercises/go/
 | [LSM 树 (Log-Structured Merge Tree)](/zh/patterns/lsm-tree/) | LSM 压缩使用归并迭代器合并多个有序 SSTable |
 | [迭代器 / 惰性求值 (Iterator)](/zh/patterns/iterator/) | 归并迭代器是迭代器模式在多个源上的组合 |
 | [跳表 (Skip List)](/zh/patterns/skip-list/) | 跳表提供归并迭代器消费的有序输入流 |
+| [B+ 树 (B+ Tree)](/zh/patterns/b-plus-tree/) | 合并迭代器组合来自多个 B+ 树叶子扫描的有序范围 |
 
 ## 挑战题
 

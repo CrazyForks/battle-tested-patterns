@@ -232,6 +232,10 @@ Exercise files: Rust `exercises/rust/src/free_list.rs` · Go `exercises/go/free_
 | [Arena 分配器 (Arena Allocator)](/zh/patterns/arena-allocator/) | Arena 批量释放；空闲链表回收单个槽位实现 O(1) 复用 |
 | [对象池 (Object Pool)](/zh/patterns/object-pool/) | 对象池内部使用空闲链表追踪可用对象 |
 | [环形缓冲区 (Ring Buffer)](/zh/patterns/ring-buffer/) | 两者都提供 O(1) 槽位管理——环形缓冲区通过模索引，空闲链表通过链表 |
+| [LRU 缓存 (LRU Cache)](/zh/patterns/lru-cache/) | LRU 缓存使用空闲链表回收被淘汰的节点槽位以实现 O(1) 复用 |
+| [跳表 (Skip List)](/zh/patterns/skip-list/) | 跳表可以使用空闲链表回收已删除节点的槽位 |
+| [墓碑 / 软删除 (Tombstone)](/zh/patterns/tombstone/) | 墓碑式删除推迟槽位回收；空闲链表负责回收这些槽位 |
+| [工作窃取 (Work Stealing)](/zh/patterns/work-stealing/) | 工作窃取队列可以使用空闲链表管理任务节点分配 |
 
 ## 挑战题
 

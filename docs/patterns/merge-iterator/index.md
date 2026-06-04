@@ -304,6 +304,7 @@ Exercise files: Rust `exercises/rust/src/merge_iterator.rs` · Go `exercises/go/
 | [LSM Tree (Log-Structured Merge Tree)](/patterns/lsm-tree/) | LSM compaction merges multiple sorted SSTables using merge iterators |
 | [Iterator](/patterns/iterator/) | Merge iterator is a composition of the iterator pattern across multiple sources |
 | [Skip List](/patterns/skip-list/) | Skip lists provide the sorted input streams that merge iterators consume |
+| [B+ Tree](/patterns/b-plus-tree/) | Merge iterators combine sorted ranges from multiple B+ tree leaf scans |
 
 ## Challenge Questions
 

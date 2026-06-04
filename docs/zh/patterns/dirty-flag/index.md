@@ -263,6 +263,7 @@ Exercise files: Rust `exercises/rust/src/dirty_flag.rs` · Go `exercises/go/dirt
 | [观察者 / 发布-订阅 (Observer / Pub-Sub)](/zh/patterns/observer/) | 观察者在状态变更时通知；脏标记将反应延迟到需要时 |
 | [位掩码 (Bitmask)](/zh/patterns/bitmask/) | 脏标记作为位掩码中的位高效存储 |
 | [依赖图 (Dependency Graph)](/zh/patterns/dependency-graph/) | 脏传播沿依赖图边标记下游节点 |
+| [双缓冲 (Double Buffering)](/zh/patterns/double-buffering/) | 脏标记追踪哪个缓冲区已更改并需要交换 |
 
 ## 挑战题
 
