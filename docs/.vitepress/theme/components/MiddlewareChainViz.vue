@@ -115,7 +115,6 @@ async function sendRequest() {
     if (!m.enabled) continue;
 
     activeIdx.value = i;
-    const mLabel = t(m.label.en, m.label.zh);
     message.value = t(
       `>> ${m.name}: processing request...`,
       `>> ${m.name}: 正在处理请求...`
@@ -531,7 +530,6 @@ function clearLog() {
 }
 
 .mw-behavior-reject {
-  color: var(--viz-danger);
   border-color: var(--viz-danger);
   background: var(--viz-danger);
   color: #fff;
