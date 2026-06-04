@@ -15,7 +15,7 @@ A single-threaded loop that multiplexes I/O via epoll/kqueue, dispatching ready 
 
 ## Real-World Analogy
 
-A single receptionist handling a busy office. She can't talk to two callers simultaneously, but she puts each on hold, handles quick tasks, and cycles through callbacks. Nothing blocks — if a task takes time, she notes it and moves on.
+A single receptionist handling a busy office. She can't talk to two callers simultaneously, but she puts each on hold, handles quick tasks, and circles back to each caller in turn. Nothing stalls — if a task takes time, she notes it and moves on.
 
 ## Core Idea
 

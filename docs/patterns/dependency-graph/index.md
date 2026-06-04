@@ -15,7 +15,7 @@ Model dependencies as a directed acyclic graph and topologically sort to determi
 
 ## Real-World Analogy
 
-A course prerequisite chart in a university catalog. You can't take Algorithms without Intro to CS first. The chart is a DAG — you follow it from prerequisites to advanced courses, ensuring you never skip a required step.
+A course prerequisite chart in a university catalog. You can't take Advanced Physics without Intro to Physics first. You follow the chart from prerequisites to advanced courses, ensuring you never skip a required step.
 
 ## Core Idea
 
