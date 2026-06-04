@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
+import { useI18n } from '../composables/useI18n';
 
+const { t } = useI18n();
 const SIZE = 8;
 const buffer = ref<(string | null)[]>(Array(SIZE).fill(null));
 const head = ref(0);
 const tail = ref(0);
 const count = ref(0);
-const message = ref('Click Enqueue to add items');
+const message = ref(t('Click Enqueue to add items', '点击"入队"添加元素'));
 const nextValue = ref(1);
 const animatingIndex = ref(-1);
 const animationType = ref<'enqueue' | 'dequeue' | ''>('');
@@ -40,7 +42,7 @@ const tailLabelPos = computed(() => pointerPos(tail.value, 158));
 
 function enqueue() {
   if (count.value >= SIZE) {
-    message.value = 'Buffer full! Dequeue first.';
+    message.value = t('Buffer full! Dequeue first.', '缓冲区已满！请先出队。');
     return;
   }
   const val = `${nextValue.value++}`;
@@ -49,13 +51,13 @@ function enqueue() {
   animationType.value = 'enqueue';
   tail.value = (tail.value + 1) % SIZE;
   count.value++;
-  message.value = `Enqueued "${val}" → tail moves to ${tail.value}`;
+  message.value = t(`Enqueued "${val}" → tail moves to ${tail.value}`, `入队 "${val}" → 尾指针移至 ${tail.value}`);
   setTimeout(() => { animatingIndex.value = -1; animationType.value = ''; }, 400);
 }
 
 function dequeue() {
   if (count.value <= 0) {
-    message.value = 'Buffer empty! Enqueue first.';
+    message.value = t('Buffer empty! Enqueue first.', '缓冲区为空！请先入队。');
     return;
   }
   const val = buffer.value[head.value];
@@ -64,7 +66,7 @@ function dequeue() {
   buffer.value[head.value] = null;
   head.value = (head.value + 1) % SIZE;
   count.value--;
-  message.value = `Dequeued "${val}" → head moves to ${head.value}`;
+  message.value = t(`Dequeued "${val}" → head moves to ${head.value}`, `出队 "${val}" → 头指针移至 ${head.value}`);
   setTimeout(() => { animatingIndex.value = -1; animationType.value = ''; }, 400);
 }
 
@@ -76,13 +78,13 @@ function reset() {
   nextValue.value = 1;
   animatingIndex.value = -1;
   animationType.value = '';
-  message.value = 'Reset! Click Enqueue to start.';
+  message.value = t('Reset! Click Enqueue to start.', '已重置！点击"入队"开始。');
 }
 </script>
 
 <template>
   <div class="viz-container">
-    <div class="viz-title">Interactive Ring Buffer · size={{ SIZE }}</div>
+    <div class="viz-title">{{ t('Interactive Ring Buffer', '交互式环形缓冲区') }} · size={{ SIZE }}</div>
     <div class="ringbuf-layout">
       <svg viewBox="0 0 280 280" class="ringbuf-svg">
         <circle :cx="CX" :cy="CY" :r="R" fill="none" stroke="var(--viz-border)" stroke-width="1" stroke-dasharray="4,4" />

@@ -6,6 +6,12 @@ description: "Timeline of programming patterns: 80 years of computing history fr
 
 These patterns span 80+ years of computing history — from the earliest stored-program computers to modern distributed systems.
 
+**Explore interactively** — filter by category, click any card to jump to the pattern:
+
+<PatternTimelineViz />
+
+## Text Overview
+
 ```text
   1943 ━━━━ State Machine
   1945 ━━━━ Bitmask
