@@ -2,9 +2,12 @@
 import { ref, computed, reactive } from 'vue';
 import { useI18n } from '../composables/useI18n';
 import { useVizTimers } from '../composables/useVizTimers';
+import { useVizLog } from '../composables/useVizLog';
+import VizLog from './VizLog.vue';
 
 const { t } = useI18n();
 const { delay, clearAll, speed, isAborted } = useVizTimers();
+const { entries: logEntries, log: vizLog, clear: clearLog } = useVizLog();
 
 type MiddlewareBehavior = 'pass' | 'reject';
 
@@ -74,25 +77,12 @@ const rejectAt = ref(-1);
 const requestCount = ref(0);
 let presetRunning = false;
 
-interface LogEntry {
-  text: string;
-  type: 'info' | 'success' | 'error' | 'warn';
-}
-
-const log = ref<LogEntry[]>([]);
 const message = ref(t(
   'Configure middleware and click "Send Request" — this is how Express, Koa, and ASP.NET Core process HTTP requests',
   '配置 Middleware 后点击"发送请求" — Express、Koa 和 ASP.NET Core 就是这样处理 HTTP 请求的'
 ));
 
 const enabledCount = computed(() => middlewares.filter(m => m.enabled).length);
-
-function addLog(text: string, type: LogEntry['type'] = 'info') {
-  log.value.push({ text, type });
-  if (log.value.length > 30) {
-    log.value = log.value.slice(-30);
-  }
-}
 
 async function sendRequest() {
   if (running.value) return;
@@ -103,7 +93,7 @@ async function sendRequest() {
   phase.value = 'forward';
 
   const reqNum = requestCount.value;
-  addLog(t(`[#${reqNum}] Request entering chain...`, `[#${reqNum}] 请求进入链...`), 'info');
+  vizLog(t(`[#${reqNum}] Request entering chain...`, `[#${reqNum}] 请求进入链...`), 'info');
   message.value = t('Request entering middleware chain...', '请求正在进入 Middleware 链...');
 
   for (let i = 0; i < middlewares.length; i++) {
@@ -121,7 +111,7 @@ async function sendRequest() {
     if (m.behavior === 'reject') {
       rejected.value = true;
       rejectAt.value = i;
-      addLog(
+      vizLog(
         t(`[#${reqNum}] ${m.name}: REJECTED`, `[#${reqNum}] ${m.name}: 已拒绝`),
         'error'
       );
@@ -135,12 +125,12 @@ async function sendRequest() {
     }
 
     if (m.name === 'Logger') {
-      addLog(
+      vizLog(
         t(`[#${reqNum}] ${m.name}: logged request`, `[#${reqNum}] ${m.name}: 已记录请求`),
-        'warn'
+        'warning'
       );
     } else {
-      addLog(
+      vizLog(
         t(`[#${reqNum}] ${m.name}: passed`, `[#${reqNum}] ${m.name}: 通过`),
         'success'
       );
@@ -149,7 +139,7 @@ async function sendRequest() {
 
   phase.value = 'backward';
   if (!rejected.value) {
-    addLog(
+    vizLog(
       t(`[#${reqNum}] Handler done — response flowing back`, `[#${reqNum}] 处理完成 — 响应返回中`),
       'info'
     );
@@ -165,12 +155,12 @@ async function sendRequest() {
     activeIdx.value = i;
 
     if (m.name === 'Logger') {
-      addLog(
+      vizLog(
         t(
           `[#${reqNum}] ${m.name}: logged response (${rejected.value ? 'error' : 'ok'})`,
           `[#${reqNum}] ${m.name}: 已记录响应 (${rejected.value ? '错误' : '正常'})`
         ),
-        'warn'
+        'warning'
       );
     }
 
@@ -190,7 +180,7 @@ async function sendRequest() {
       `Request #${reqNum} rejected by ${rejectedName}`,
       `请求 #${reqNum} 被 ${rejectedName} 拒绝`
     );
-    addLog(
+    vizLog(
       t(`[#${reqNum}] DONE — rejected by ${rejectedName}`, `[#${reqNum}] 完成 — 被 ${rejectedName} 拒绝`),
       'error'
     );
@@ -199,7 +189,7 @@ async function sendRequest() {
       `Request #${reqNum} completed successfully`,
       `请求 #${reqNum} 成功完成`
     );
-    addLog(
+    vizLog(
       t(`[#${reqNum}] DONE — 200 OK`, `[#${reqNum}] 完成 — 200 OK`),
       'success'
     );
@@ -241,7 +231,7 @@ function reset() {
   rejectAt.value = -1;
   requestCount.value = 0;
   presetRunning = false;
-  log.value = [];
+  clearLog();
   middlewares.forEach(m => {
     m.enabled = true;
     m.behavior = 'pass';
@@ -250,10 +240,6 @@ function reset() {
     'Reset — configure middleware and send a request',
     '已重置 — 配置 Middleware 后发送请求'
   );
-}
-
-function clearLog() {
-  log.value = [];
 }
 
 async function presetHappyPath() {
@@ -267,6 +253,8 @@ async function presetHappyPath() {
   await delay(800);
   if (!presetRunning || isAborted()) return;
   await sendRequest();
+  if (!presetRunning || isAborted()) return;
+  vizLog(t('Onion model: forward through chain, backward with response', '洋葱模型：正向通过链，反向携带响应'), 'highlight');
   presetRunning = false;
 }
 
@@ -288,6 +276,7 @@ async function presetAuthReject() {
     'Only Auth ran — it rejected immediately. RateLimit, Logger, Validator, and Handler were never invoked — short-circuit saves resources. This is why API gateways put auth first.',
     '只有 Auth 执行了 — 它立即拒绝。RateLimit、Logger、Validator 和 Handler 从未调用 — 短路节省资源。这就是 API 网关将 auth 放在最前面的原因。'
   );
+  vizLog(t('Fail fast: auth at the edge saves downstream CPU', '快速失败：边缘 auth 节省下游 CPU'), 'highlight');
   presetRunning = false;
 }
 
@@ -310,6 +299,7 @@ async function presetSkipMiddleware() {
     'Only 3 middleware ran instead of 5. Per-route middleware selection is how frameworks keep internal APIs fast while public APIs get full auth + rate limiting + validation.',
     '只有 3 个 Middleware 执行而不是 5 个。按路由选择 Middleware 是框架保持内部 API 快速而公共 API 获得完整 auth + 限流 + 验证的方式。'
   );
+  vizLog(t('Composable: per-route middleware selection', '可组合：按路由选择 Middleware'), 'highlight');
   presetRunning = false;
 }
 </script>
@@ -419,9 +409,6 @@ async function presetSkipMiddleware() {
       <button class="viz-btn viz-btn--danger" @click="reset">
         {{ t('Reset', '重置') }}
       </button>
-      <button v-if="log.length > 0" class="viz-btn" @click="clearLog">
-        {{ t('Clear Log', '清除日志') }}
-      </button>
       <div class="viz-speed">
         <input type="range" min="0.5" max="3" step="0.5" v-model.number="speed" />
         <span class="viz-speed-val">{{ speed }}x</span>
@@ -436,21 +423,7 @@ async function presetSkipMiddleware() {
     </div>
 
     <div class="viz-status">{{ message }}</div>
-
-    <!-- Execution log -->
-    <div v-if="log.length > 0" class="mw-log">
-      <div class="mw-log-header">
-        <span class="viz-label">{{ t('Execution Log', '执行日志') }}</span>
-      </div>
-      <div class="mw-log-entries" ref="logContainer">
-        <div
-          v-for="(entry, i) in log"
-          :key="i"
-          class="mw-log-entry"
-          :class="'mw-log-' + entry.type"
-        >{{ entry.text }}</div>
-      </div>
-    </div>
+    <VizLog :entries="logEntries" @clear="clearLog" />
   </div>
 </template>
 
@@ -735,41 +708,6 @@ async function presetSkipMiddleware() {
   background: var(--viz-danger);
   border-radius: 3px;
 }
-
-.mw-log {
-  border: 1px solid var(--viz-border);
-  border-radius: 6px;
-  margin-top: 0.6rem;
-  overflow: hidden;
-}
-
-.mw-log-header {
-  padding: 0.3rem 0.6rem;
-  border-bottom: 1px solid var(--viz-border);
-  background: var(--viz-bg);
-}
-
-.mw-log-entries {
-  max-height: 140px;
-  overflow-y: auto;
-  padding: 0.3rem 0.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-}
-
-.mw-log-entry {
-  font-size: 0.65rem;
-  font-family: var(--vp-font-family-mono);
-  padding: 1px 4px;
-  border-radius: 2px;
-  line-height: 1.5;
-}
-
-.mw-log-info { color: var(--viz-text); }
-.mw-log-success { color: var(--viz-success); }
-.mw-log-error { color: var(--viz-danger); font-weight: 600; }
-.mw-log-warn { color: var(--viz-warning); }
 
 @keyframes mw-shake {
   0%, 100% { transform: translateX(0) scale(1.08); }
