@@ -417,7 +417,7 @@ Exercise files: Rust `exercises/rust/src/merkle_tree.rs` · Go `exercises/go/mer
 ::: details Q1: Your Merkle tree has 1 million leaves. A client wants to verify that leaf #500,000 is authentic. How many hashes does the client need to receive and compute?
 **Answer:** About 20 hashes (log2(1,000,000) ~ 20). The client receives ~20 sibling hashes (the proof path) and computes ~20 hash operations to walk from the leaf to the root.
 
-This is the core value proposition of Merkle trees: verification cost is logarithmic in the dataset size. The client needs the leaf data, the proof path (one sibling hash per tree level), and the known root hash. For 1 million leaves, that's roughly 20 * 32 bytes = 640 bytes of proof data -- trivial compared to re-downloading and hashing all 1 million leaves.
+This is the core value proposition of Merkle trees: verification cost is logarithmic in the dataset size. The client needs the leaf data, the proof path (one sibling hash per tree level), and the known root hash. For 1 million leaves, that's roughly 20 × 32 bytes = 640 bytes of proof data -- trivial compared to re-downloading and hashing all 1 million leaves.
 :::
 
 ::: details Q2: Git uses SHA-1 for its Merkle DAG. If you change a single character in a file deep in the repository, what exactly changes in the object database?
