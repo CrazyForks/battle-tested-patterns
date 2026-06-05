@@ -196,6 +196,35 @@ async function presetSplitDemo() {
     await delay(800);
     if (!presetRunning || isAborted()) return;
   }
+  log(t('Node split: B+ tree grows from root — the only way height increases, guaranteeing balance', '节点分裂：B+ 树从根生长 — 高度增加的唯一方式，保证平衡'), 'highlight');
+  presetRunning = false;
+}
+
+async function presetSequentialInsert() {
+  if (presetRunning) return;
+  reset();
+  presetRunning = true;
+  message.value = t(
+    'Sequential insert: keys 1-12 in order. This is the worst case for naive BSTs (O(n) depth), but B+ trees stay balanced via splits.',
+    '顺序插入：按顺序插入 1-12。这是朴素 BST 的最坏情况（O(n) 深度），但 B+ 树通过分裂保持平衡。'
+  );
+  await delay(800);
+  for (let k = 1; k <= 12; k++) {
+    if (!presetRunning || isAborted()) return;
+    doInsert(k);
+    const depth = getDepth(root.value);
+    message.value = t(
+      `Inserted ${k} — depth ${depth}. ${depth > 1 ? `${k} keys fit in ${depth} levels. A naive BST would need ${k} levels.` : 'Still fits in one node.'}`,
+      `已插入 ${k} — 深度 ${depth}。${depth > 1 ? `${k} 个键只需 ${depth} 层。朴素 BST 需要 ${k} 层。` : '仍在一个节点内。'}`
+    );
+    await delay(500);
+    if (!presetRunning || isAborted()) return;
+  }
+  message.value = t(
+    `12 sequential keys in ${getDepth(root.value)} levels. A BST would be a linked list (depth 12). This is why databases use B+ trees, not BSTs.`,
+    `12 个顺序键只需 ${getDepth(root.value)} 层。BST 会退化为链表（深度 12）。这就是为什么数据库使用 B+ 树而非 BST。`
+  );
+  log(t('B+ tree guarantees O(log n) height even with sequential inserts — BST degenerates to O(n)', 'B+ 树即使顺序插入也保证 O(log n) 高度 — BST 退化为 O(n)'), 'highlight');
   presetRunning = false;
 }
 
@@ -359,6 +388,7 @@ const edges = computed(() => getEdges(treeLayout.value));
     <div class="viz-presets">
       <span class="viz-label">{{ t('Scenarios:', '场景：') }}</span>
       <button class="viz-btn" @click="presetSplitDemo">{{ t('Node Splitting', '节点分裂') }}</button>
+      <button class="viz-btn" @click="presetSequentialInsert">{{ t('Sequential Insert', '顺序插入') }}</button>
       <button class="viz-btn" @click="presetRangeQuery">{{ t('Range Query', '范围查询') }}</button>
     </div>
 

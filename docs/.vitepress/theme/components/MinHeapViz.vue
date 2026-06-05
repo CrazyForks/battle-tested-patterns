@@ -197,6 +197,7 @@ async function presetScheduler() {
     'React Scheduler: extract-min always picks the highest-priority (lowest number) task next.',
     'React Scheduler：extract-min 总是选择优先级最高（数字最小）的任务。'
   );
+  log(t('Min-heap: O(1) find-min, O(log n) insert/extract — the scheduler sweet spot', '最小堆：O(1) 查找最小值，O(log n) 插入/提取 — 调度器的最佳选择'), 'highlight');
   presetRunning = false;
 }
 
@@ -231,6 +232,36 @@ async function presetHeapSort() {
     `Heap sort complete: [${sorted.join(', ')}] — each extraction is O(log n).`,
     `堆排序完成：[${sorted.join(', ')}] — 每次提取 O(log n)。`
   );
+  log(t('Heap sort: O(n log n) with O(1) extra space — no worst-case degradation unlike quicksort', '堆排序：O(n log n)，O(1) 额外空间 — 不像快排有最坏退化'), 'highlight');
+  presetRunning = false;
+}
+
+async function presetMergeSorted() {
+  if (presetRunning) return;
+  reset();
+  presetRunning = true;
+  message.value = t(
+    'Merging two sorted streams via min-heap. This is how k-way merge works in database compaction and external sort.',
+    '通过最小堆合并两个有序流。这就是数据库压缩和外部排序中 k 路合并的工作方式。'
+  );
+  await delay(800);
+  if (!presetRunning || isAborted()) return;
+  const streams = [[3, 7, 11, 15], [2, 5, 9, 13]];
+  for (let i = 0; i < Math.max(streams[0].length, streams[1].length); i++) {
+    for (const stream of streams) {
+      if (i < stream.length) {
+        if (!presetRunning || isAborted()) return;
+        await insert(stream[i]);
+        await delay(300);
+        if (!presetRunning || isAborted()) return;
+      }
+    }
+  }
+  message.value = t(
+    'All elements merged into heap. The root always holds the global minimum — extract to get sorted output across both streams.',
+    '所有元素已合并入堆。堆顶始终是全局最小值 — 提取即可获得两个流的排序输出。'
+  );
+  log(t('Min-heap enables O(log k) merge of k sorted streams — core of LSM compaction and external sort', '最小堆实现 k 个有序流的 O(log k) 合并 — LSM 压缩和外部排序的核心'), 'highlight');
   presetRunning = false;
 }
 </script>
@@ -302,6 +333,7 @@ async function presetHeapSort() {
       <span class="viz-label">{{ t('Scenarios:', '场景：') }}</span>
       <button class="viz-btn" @click="presetScheduler">{{ t('React Scheduler', 'React 调度器') }}</button>
       <button class="viz-btn" @click="presetHeapSort">{{ t('Heap Sort', '堆排序') }}</button>
+      <button class="viz-btn" @click="presetMergeSorted">{{ t('Merge Streams', '合并流') }}</button>
     </div>
 
     <div class="viz-status">{{ message }}</div>

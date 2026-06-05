@@ -188,6 +188,57 @@ async function presetBuildAndSearch() {
     'Redis 有序集合使用 Skip List 而非平衡 BST。为什么？实现更简单，性能相当，范围查询天然支持。'
   );
   log(message.value, 'success');
+  log(t('Skip list: O(log n) search via random level promotion — no rotations, no rebalancing', 'Skip List：通过随机层级提升实现 O(log n) 搜索 — 无旋转，无重平衡'), 'highlight');
+  presetRunning = false;
+}
+
+async function presetRangeScan() {
+  if (presetRunning) return;
+  reset();
+  presetRunning = true;
+  const vals = [5, 12, 18, 25, 33, 40, 48, 55, 62, 70];
+  for (const v of vals) {
+    if (!presetRunning || isAborted()) return;
+    await insert(v);
+    await delay(200);
+    if (!presetRunning || isAborted()) return;
+  }
+  message.value = t(
+    'Range scan: finding all values in [20, 50]. First search for the start, then walk the bottom level — this is Redis ZRANGEBYSCORE.',
+    '范围扫描：查找 [20, 50] 内的所有值。先搜索起点，然后遍历底层 — 这就是 Redis 的 ZRANGEBYSCORE。'
+  );
+  await delay(1000);
+  if (!presetRunning || isAborted()) return;
+
+  const rangeStart = 20, rangeEnd = 50;
+  const results: number[] = [];
+  highlightPath.value = [];
+
+  for (let i = 0; i < nodes.value.length; i++) {
+    if (!presetRunning || isAborted()) return;
+    const val = nodes.value[i].val;
+    if (val >= rangeStart && val <= rangeEnd) {
+      highlightPath.value = [...highlightPath.value, { nodeIdx: i, level: 0 }];
+      results.push(val);
+      message.value = t(
+        `Range scan: found ${val} (${results.length} so far). Walking bottom level — O(1) per node.`,
+        `范围扫描：找到 ${val}（已找到 ${results.length} 个）。遍历底层 — 每个节点 O(1)。`
+      );
+      await delay(400);
+      if (!presetRunning || isAborted()) return;
+    } else if (val > rangeEnd) {
+      break;
+    }
+  }
+
+  message.value = t(
+    `Range [${rangeStart}, ${rangeEnd}] complete: found ${results.length} values (${results.join(', ')}). O(log n) to find start + O(k) to scan k results.`,
+    `范围 [${rangeStart}, ${rangeEnd}] 完成：找到 ${results.length} 个值（${results.join(', ')}）。O(log n) 查找起点 + O(k) 扫描 k 个结果。`
+  );
+  log(t('Range scan: O(log n + k) — skip list links make range queries natural, why Redis chose it over BSTs', '范围扫描：O(log n + k) — 跳表链接使范围查询天然高效，Redis 选择它而非 BST 的原因'), 'highlight');
+  await delay(800);
+  if (isAborted()) return;
+  highlightPath.value = [];
   presetRunning = false;
 }
 
@@ -345,6 +396,7 @@ async function presetLevelTraversal() {
     <div class="viz-presets">
       <span class="viz-label">{{ t('Scenarios:', '场景：') }}</span>
       <button class="viz-btn" @click="presetBuildAndSearch">{{ t('Build & Search', '构建搜索') }}</button>
+      <button class="viz-btn" @click="presetRangeScan">{{ t('Range Scan', '范围扫描') }}</button>
       <button class="viz-btn" @click="presetLevelTraversal">{{ t('Level Distribution', '层级分布') }}</button>
     </div>
 
