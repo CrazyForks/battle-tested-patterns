@@ -200,7 +200,7 @@ traffic_light.send("TIMER")  # "green"
 
 运行练习：`pnpm test`（TypeScript）· `cargo test`（Rust）· `go test ./...`（Go）· `pytest`（Python）
 
-Exercise files: Rust `exercises/rust/src/state_machine.rs` · Go `exercises/go/state_machine_test.go` · Python `exercises/python/test_state_machine.py`
+练习文件： Rust `exercises/rust/src/state_machine.rs` · Go `exercises/go/state_machine_test.go` · Python `exercises/python/test_state_machine.py`
 
 ## 何时使用
 

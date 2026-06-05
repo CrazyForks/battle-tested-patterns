@@ -397,7 +397,7 @@ impl CheckpointableStore {
 
 运行练习：`pnpm test`（TypeScript）· `cargo test`（Rust）· `go test ./...`（Go）· `pytest`（Python）
 
-Exercise files: Rust `exercises/rust/src/checkpointing.rs` · Go `exercises/go/checkpointing_test.go` · Python `exercises/python/test_checkpointing.py`
+练习文件： Rust `exercises/rust/src/checkpointing.rs` · Go `exercises/go/checkpointing_test.go` · Python `exercises/python/test_checkpointing.py`
 
 ## 何时使用
 

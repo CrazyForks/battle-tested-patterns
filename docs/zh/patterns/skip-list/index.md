@@ -308,7 +308,7 @@ impl SkipList {
 
 运行练习：`pnpm test`（TypeScript）· `cargo test`（Rust）· `go test ./...`（Go）· `pytest`（Python）
 
-Exercise files: Rust `exercises/rust/src/skip_list.rs` · Go `exercises/go/skip_list_test.go` · Python `exercises/python/test_skip_list.py`
+练习文件： Rust `exercises/rust/src/skip_list.rs` · Go `exercises/go/skip_list_test.go` · Python `exercises/python/test_skip_list.py`
 
 ## 何时使用
 

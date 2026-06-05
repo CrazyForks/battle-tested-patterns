@@ -186,7 +186,7 @@ impl TokenBucket {
 
 运行练习：`pnpm test`（TypeScript）· `cargo test`（Rust）· `go test ./...`（Go）· `pytest`（Python）
 
-Exercise files: Rust `exercises/rust/src/rate_limiter.rs` · Go `exercises/go/rate_limiter_test.go` · Python `exercises/python/test_rate_limiter.py`
+练习文件： Rust `exercises/rust/src/rate_limiter.rs` · Go `exercises/go/rate_limiter_test.go` · Python `exercises/python/test_rate_limiter.py`
 
 ## 何时使用
 

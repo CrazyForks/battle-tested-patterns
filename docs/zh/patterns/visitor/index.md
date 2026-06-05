@@ -198,7 +198,7 @@ impl ExprVisitor for Evaluator {
 
 运行练习：`pnpm test`（TypeScript）· `cargo test`（Rust）· `go test ./...`（Go）· `pytest`（Python）
 
-Exercise files: Rust `exercises/rust/src/visitor.rs` · Go `exercises/go/visitor_test.go` · Python `exercises/python/test_visitor.py`
+练习文件： Rust `exercises/rust/src/visitor.rs` · Go `exercises/go/visitor_test.go` · Python `exercises/python/test_visitor.py`
 
 ## 何时使用
 

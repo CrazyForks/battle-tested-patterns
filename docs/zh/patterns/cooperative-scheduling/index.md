@@ -232,7 +232,7 @@ remaining = work_loop(
 
 运行练习：`pnpm test`（TypeScript）· `cargo test`（Rust）· `go test ./...`（Go）· `pytest`（Python）
 
-Exercise files: Rust `exercises/rust/src/cooperative_scheduling.rs` · Go `exercises/go/cooperative_scheduling_test.go` · Python `exercises/python/test_cooperative_scheduling.py`
+练习文件： Rust `exercises/rust/src/cooperative_scheduling.rs` · Go `exercises/go/cooperative_scheduling_test.go` · Python `exercises/python/test_cooperative_scheduling.py`
 
 ## 何时使用
 

@@ -265,7 +265,7 @@ impl<T> Drop for Rc<T> {
 
 运行练习：`pnpm test`（TypeScript）· `cargo test`（Rust）· `go test ./...`（Go）· `pytest`（Python）
 
-Exercise files: Rust `exercises/rust/src/reference_counting.rs` · Go `exercises/go/reference_counting_test.go` · Python `exercises/python/test_reference_counting.py`
+练习文件： Rust `exercises/rust/src/reference_counting.rs` · Go `exercises/go/reference_counting_test.go` · Python `exercises/python/test_reference_counting.py`
 
 ## 何时使用
 

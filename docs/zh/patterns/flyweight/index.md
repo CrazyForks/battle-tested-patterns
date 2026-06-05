@@ -170,7 +170,7 @@ func (in *Interner) Resolve(id int) string {
 
 运行练习：`pnpm test`（TypeScript）· `cargo test`（Rust）· `go test ./...`（Go）· `pytest`（Python）
 
-Exercise files: Rust `exercises/rust/src/flyweight.rs` · Go `exercises/go/flyweight_test.go` · Python `exercises/python/test_flyweight.py`
+练习文件： Rust `exercises/rust/src/flyweight.rs` · Go `exercises/go/flyweight_test.go` · Python `exercises/python/test_flyweight.py`
 
 ## 何时使用
 

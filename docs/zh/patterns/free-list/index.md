@@ -201,7 +201,7 @@ impl FreeList {
 
 运行练习：`pnpm test`（TypeScript）· `cargo test`（Rust）· `go test ./...`（Go）· `pytest`（Python）
 
-Exercise files: Rust `exercises/rust/src/free_list.rs` · Go `exercises/go/free_list_test.go` · Python `exercises/python/test_free_list.py`
+练习文件： Rust `exercises/rust/src/free_list.rs` · Go `exercises/go/free_list_test.go` · Python `exercises/python/test_free_list.py`
 
 ## 何时使用
 

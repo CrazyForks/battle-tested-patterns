@@ -560,7 +560,7 @@ impl LSMTree {
 
 运行练习：`pnpm test`（TypeScript）· `cargo test`（Rust）· `go test ./...`（Go）· `pytest`（Python）
 
-Exercise files: Rust `exercises/rust/src/lsm_tree.rs` · Go `exercises/go/lsm_tree_test.go` · Python `exercises/python/test_lsm_tree.py`
+练习文件： Rust `exercises/rust/src/lsm_tree.rs` · Go `exercises/go/lsm_tree_test.go` · Python `exercises/python/test_lsm_tree.py`
 
 ## 何时使用
 

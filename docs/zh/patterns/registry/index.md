@@ -239,7 +239,7 @@ impl<T> Registry<T> {
 
 运行练习：`pnpm test`（TypeScript）· `cargo test`（Rust）· `go test ./...`（Go）· `pytest`（Python）
 
-Exercise files: Rust `exercises/rust/src/registry.rs` · Go `exercises/go/registry_test.go` · Python `exercises/python/test_registry.py`
+练习文件： Rust `exercises/rust/src/registry.rs` · Go `exercises/go/registry_test.go` · Python `exercises/python/test_registry.py`
 
 ## 何时使用
 

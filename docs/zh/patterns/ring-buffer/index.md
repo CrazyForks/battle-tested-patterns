@@ -208,7 +208,7 @@ class RingBuffer:
 
 运行练习：`pnpm test`（TypeScript）· `cargo test`（Rust）· `go test ./...`（Go）· `pytest`（Python）
 
-Exercise files: Rust `exercises/rust/src/ring_buffer.rs` · Go `exercises/go/ring_buffer_test.go` · Python `exercises/python/test_ring_buffer.py`
+练习文件： Rust `exercises/rust/src/ring_buffer.rs` · Go `exercises/go/ring_buffer_test.go` · Python `exercises/python/test_ring_buffer.py`
 
 ## 何时使用
 

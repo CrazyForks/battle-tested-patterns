@@ -188,7 +188,7 @@ impl LRUCache {
 
 运行练习：`pnpm test`（TypeScript）· `cargo test`（Rust）· `go test ./...`（Go）· `pytest`（Python）
 
-Exercise files: Rust `exercises/rust/src/lru_cache.rs` · Go `exercises/go/lru_cache_test.go` · Python `exercises/python/test_lru_cache.py`
+练习文件： Rust `exercises/rust/src/lru_cache.rs` · Go `exercises/go/lru_cache_test.go` · Python `exercises/python/test_lru_cache.py`
 
 ## 何时使用
 

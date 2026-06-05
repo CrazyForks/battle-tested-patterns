@@ -171,7 +171,7 @@ class ObjectPool:
 
 运行练习：`pnpm test`（TypeScript）· `cargo test`（Rust）· `go test ./...`（Go）· `pytest`（Python）
 
-Exercise files: Rust `exercises/rust/src/object_pool.rs` · Go `exercises/go/object_pool_test.go` · Python `exercises/python/test_object_pool.py`
+练习文件： Rust `exercises/rust/src/object_pool.rs` · Go `exercises/go/object_pool_test.go` · Python `exercises/python/test_object_pool.py`
 
 ## 何时使用
 

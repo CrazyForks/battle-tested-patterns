@@ -180,7 +180,7 @@ print(messages)  # ["hello", "world"] — unchanged
 
 运行练习：`pnpm test`（TypeScript）· `cargo test`（Rust）· `go test ./...`（Go）· `pytest`（Python）
 
-Exercise files: Rust `exercises/rust/src/observer.rs` · Go `exercises/go/observer_test.go` · Python `exercises/python/test_observer.py`
+练习文件： Rust `exercises/rust/src/observer.rs` · Go `exercises/go/observer_test.go` · Python `exercises/python/test_observer.py`
 
 ## 何时使用
 
