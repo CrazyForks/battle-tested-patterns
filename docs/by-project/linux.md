@@ -25,35 +25,7 @@ The Linux kernel has been refined over 30+ years. These patterns have survived d
 
 When a process calls `read()`, multiple patterns activate in a single syscall:
 
-```text
-read(fd, buf, count)
-  │
-  ▼
-┌───────────────────────────────────────────────────┐
-│ 1. VTABLE — the VFS layer looks up the file's     │
-│    file_operations struct and calls .read().       │
-│    ext4, NFS, procfs each provide their own        │
-│    implementation behind the same interface.        │
-├───────────────────────────────────────────────────┤
-│ 2. BITMASK — the kernel checks file permission     │
-│    bits (rwxrwxrwx) against the process's UID/GID. │
-│    A single AND operation decides access.           │
-├───────────────────────────────────────────────────┤
-│ 3. REFERENCE COUNTING — opening the file           │
-│    incremented its inode refcount. The kernel       │
-│    won't free the inode while any fd references it. │
-├───────────────────────────────────────────────────┤
-│ 4. BATCH PROCESSING — if the read triggers disk     │
-│    I/O, the block layer merges adjacent requests    │
-│    to minimize seek time before dispatching.        │
-├───────────────────────────────────────────────────┤
-│ 5. RING BUFFER — ftrace logs the syscall entry/exit │
-│    into a per-CPU ring buffer for tracing.          │
-└───────────────────────────────────────────────────┘
-  │
-  ▼
- Data returned to userspace
-```
+<CompositionFlow variant="linux-read" />
 
 The "everything is a file" abstraction works because vtable dispatch lets the kernel treat ext4 files, network sockets, and `/proc` entries identically. The bitmask permission check happens once regardless of filesystem type. And reference counting ensures no resource is freed while in use — even if another process deletes the file.
 

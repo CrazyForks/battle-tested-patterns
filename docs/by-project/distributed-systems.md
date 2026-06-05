@@ -32,39 +32,7 @@ High-throughput messaging and trading systems push throughput patterns to the ex
 
 When a client writes a key to a distributed database like etcd, patterns chain across the entire path:
 
-```text
-Client: PUT /key "value"
-  │
-  ▼
-┌───────────────────────────────────────────────────┐
-│ 1. RATE LIMITER — the gateway applies a token      │
-│    bucket to prevent any single client from         │
-│    overwhelming the cluster.                        │
-├───────────────────────────────────────────────────┤
-│ 2. CONSISTENT HASHING — the router determines      │
-│    which node owns this key. Virtual nodes ensure   │
-│    load stays balanced even when nodes join/leave.  │
-├───────────────────────────────────────────────────┤
-│ 3. WRITE-AHEAD LOG — before modifying state, the   │
-│    leader appends the operation to a WAL on disk.   │
-│    If the process crashes, replay recovers state.   │
-├───────────────────────────────────────────────────┤
-│ 4. LOGICAL CLOCK — the write gets a monotonic       │
-│    revision number. No wall-clock sync needed —     │
-│    all nodes agree on ordering via the revision.    │
-├───────────────────────────────────────────────────┤
-│ 5. MVCC — the new version is stored alongside old   │
-│    versions. Concurrent readers see a consistent    │
-│    snapshot without blocking the write.             │
-├───────────────────────────────────────────────────┤
-│ 6. CHECKPOINTING — periodically, the system takes   │
-│    a snapshot. Future crash recovery replays only   │
-│    the WAL entries after the last checkpoint.       │
-└───────────────────────────────────────────────────┘
-  │
-  ▼
- ACK → client (write is durable + replicated)
-```
+<CompositionFlow variant="distributed-write" />
 
 The patterns form a durability pipeline: rate limiting protects the system, consistent hashing routes the request, WAL ensures durability, logical clocks order events, MVCC provides isolation, and checkpoints bound recovery time.
 

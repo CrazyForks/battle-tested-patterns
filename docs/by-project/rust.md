@@ -21,34 +21,7 @@ Rust's standard library embodies zero-cost abstractions through its type system.
 
 When `cargo build` compiles a Rust crate, the compiler and runtime use these patterns together:
 
-```text
-cargo build
-  │
-  ▼
-┌───────────────────────────────────────────────────┐
-│ 1. DEPENDENCY GRAPH — Cargo resolves the crate     │
-│    dependency DAG and determines compilation order. │
-│    Independent crates compile in parallel.          │
-├───────────────────────────────────────────────────┤
-│ 2. INTERNING — rustc interns all identifiers into   │
-│    a global table. Every variable name, type name,  │
-│    and keyword becomes a u32 index. Comparison is   │
-│    O(1) integer equality instead of string compare. │
-├───────────────────────────────────────────────────┤
-│ 3. ARENA ALLOCATOR — the compiler allocates AST     │
-│    nodes and type info in per-query arenas. When    │
-│    a query completes, the entire arena is freed —   │
-│    no per-node deallocation overhead.               │
-├───────────────────────────────────────────────────┤
-│ 4. WORK STEALING — Tokio's multi-thread runtime    │
-│    (used by async Rust programs) steals tasks from  │
-│    idle workers' queues to keep all cores busy.     │
-├───────────────────────────────────────────────────┤
-│ 5. REFERENCE COUNTING — Arc<T> enables shared       │
-│    ownership across threads without a GC. The       │
-│    compiler's type system guarantees no data races. │
-└───────────────────────────────────────────────────┘
-```
+<CompositionFlow variant="rust-build" />
 
 Rust's zero-cost abstractions philosophy means these patterns have no runtime overhead beyond what a hand-written C implementation would have. The `Iterator` trait compiles down to the same machine code as a manual loop. `Cow<T>` avoids cloning when the data is only read. `Arc<T>` uses atomic operations only when actually shared.
 

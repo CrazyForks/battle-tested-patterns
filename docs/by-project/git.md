@@ -20,34 +20,7 @@ Git's data model is built on copy-on-write immutable objects and efficient diffi
 
 When you run `git commit`, multiple patterns work together to create an immutable, verifiable snapshot:
 
-```text
-git commit -m "fix bug"
-  │
-  ▼
-┌───────────────────────────────────────────────────┐
-│ 1. DIFF / PATCH — Git computes the diff between   │
-│    the index (staging area) and the working tree   │
-│    to determine what changed.                      │
-├───────────────────────────────────────────────────┤
-│ 2. COPY-ON-WRITE — changed files become new blob   │
-│    objects. Unchanged files are shared by reference │
-│    (same SHA-1 → same object). No data is copied   │
-│    unless it actually changed.                     │
-├───────────────────────────────────────────────────┤
-│ 3. MERKLE TREE — tree objects hash their children.  │
-│    A changed blob changes its parent tree hash,    │
-│    which changes the commit hash. Any tampering     │
-│    anywhere is detectable from the root.           │
-├───────────────────────────────────────────────────┤
-│ 4. BLOOM FILTER — the commit-graph file stores     │
-│    changed-path bloom filters. Future `git log`    │
-│    queries can skip commits that didn't touch a    │
-│    given path without reading the tree.            │
-└───────────────────────────────────────────────────┘
-  │
-  ▼
- New commit object (immutable, content-addressed)
-```
+<CompositionFlow variant="git-commit" />
 
 The core insight is that copy-on-write + Merkle hashing gives Git both space efficiency (shared objects) and integrity verification (tamper-evident hashes) with no trade-off between the two.
 

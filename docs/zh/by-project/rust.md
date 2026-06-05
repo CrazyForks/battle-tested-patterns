@@ -21,34 +21,7 @@ Rust 标准库通过其类型系统实现了零成本抽象。
 
 当 `cargo build` 编译 Rust crate 时，编译器和运行时协同使用这些模式：
 
-```text
-cargo build
-  │
-  ▼
-┌───────────────────────────────────────────────────┐
-│ 1. DEPENDENCY GRAPH — Cargo resolves the crate     │
-│    dependency DAG and determines compilation order. │
-│    Independent crates compile in parallel.          │
-├───────────────────────────────────────────────────┤
-│ 2. INTERNING — rustc interns all identifiers into   │
-│    a global table. Every variable name, type name,  │
-│    and keyword becomes a u32 index. Comparison is   │
-│    O(1) integer equality instead of string compare. │
-├───────────────────────────────────────────────────┤
-│ 3. ARENA ALLOCATOR — the compiler allocates AST     │
-│    nodes and type info in per-query arenas. When    │
-│    a query completes, the entire arena is freed —   │
-│    no per-node deallocation overhead.               │
-├───────────────────────────────────────────────────┤
-│ 4. WORK STEALING — Tokio's multi-thread runtime    │
-│    (used by async Rust programs) steals tasks from  │
-│    idle workers' queues to keep all cores busy.     │
-├───────────────────────────────────────────────────┤
-│ 5. REFERENCE COUNTING — Arc<T> enables shared       │
-│    ownership across threads without a GC. The       │
-│    compiler's type system guarantees no data races. │
-└───────────────────────────────────────────────────┘
-```
+<CompositionFlow variant="rust-build" />
 
 Rust 的零成本抽象哲学意味着这些模式没有超出手写 C 实现的运行时开销。`Iterator` trait 编译后生成的机器码与手动循环完全相同。`Cow<T>` 在数据仅被读取时避免克隆。`Arc<T>` 仅在实际共享时才使用原子操作。
 

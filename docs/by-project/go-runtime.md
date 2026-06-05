@@ -24,35 +24,7 @@ Go's runtime and standard library demonstrate clean, practical pattern implement
 
 When you launch `go func()`, multiple patterns work together to run millions of goroutines on a few OS threads:
 
-```text
-go func() { ... }
-  │
-  ▼
-┌───────────────────────────────────────────────────┐
-│ 1. FREE LIST — the runtime allocates goroutine     │
-│    stacks from a fixed-size allocator (fixalloc).  │
-│    No malloc/free per goroutine — just grab a node  │
-│    from the free list.                              │
-├───────────────────────────────────────────────────┤
-│ 2. OBJECT POOL — sync.Pool provides per-P local    │
-│    pools for temporary objects (like fmt buffers).  │
-│    Each P has a private pool → no lock contention.  │
-├───────────────────────────────────────────────────┤
-│ 3. COOPERATIVE SCHEDULING — the goroutine runs      │
-│    until it hits a preemption point (function call, │
-│    channel op, or async preemption signal). Then    │
-│    the scheduler picks the next goroutine.          │
-├───────────────────────────────────────────────────┤
-│ 4. WORK STEALING — when a P's local run queue is    │
-│    empty, it steals goroutines from another P's     │
-│    queue. stealWork() grabs half the victim's queue │
-│    in one batch, keeping all cores busy.            │
-├───────────────────────────────────────────────────┤
-│ 5. SEMAPHORE — when goroutines need bounded         │
-│    concurrency (e.g., errgroup with limit), the     │
-│    weighted semaphore controls how many run at once. │
-└───────────────────────────────────────────────────┘
-```
+<CompositionFlow variant="go-goroutine" />
 
 The GMP model (Goroutines, M threads, P processors) is the glue: each P owns a local run queue, a free-list allocator, and a sync.Pool shard. Work stealing only kicks in when a P runs dry. This design means most operations are lock-free on the fast path, and contention only happens during stealing — which is the rare case by design.
 
