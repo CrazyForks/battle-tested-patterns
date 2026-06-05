@@ -93,7 +93,7 @@ description: "46 个模式的 Big-O 复杂度速查表 — 核心操作、时间
 | O(1) 查找 + O(1) 淘汰 | [LRU 缓存](/zh/patterns/lru-cache/) | 双向链表额外内存 |
 | O(1) 大规模写入 | [LSM 树](/zh/patterns/lsm-tree/) | 读放大（多层级） |
 | O(1) 成员检测 | [布隆过滤器](/zh/patterns/bloom-filter/) | 假阳性（无假阴性） |
-| O(1) 分配 | [Arena](/zh/patterns/arena-allocator/) 或 [Free List](/zh/patterns/free-list/) | 无单独释放(Arena) 或碎片化(Free List) |
+| O(1) 分配 | [Arena 分配器](/zh/patterns/arena-allocator/) 或 [空闲链表](/zh/patterns/free-list/) | 无单独释放(Arena) 或碎片化(空闲链表) |
 | O(log n) 有序访问 | [跳表](/zh/patterns/skip-list/) 或 [B+ 树](/zh/patterns/b-plus-tree/) | 跳表更简单，B+ 树磁盘优化 |
 | 零拷贝读取 | [写时复制](/zh/patterns/copy-on-write/) 或 [MVCC](/zh/patterns/mvcc/) | 写入时有写放大 |
 | 扩容最小重哈希 | [一致性哈希](/zh/patterns/consistent-hashing/) | 虚拟节点增加内存开销 |
