@@ -199,7 +199,7 @@ Then exercises at 2 difficulty levels — all with tests you can run.
 |---------|---------|
 | 46 patterns | Bitmask, LRU Cache, MVCC, Work Stealing, Actor Model, and 41 more |
 | 46 interactive visualizations | Hands-on SVG visualizations — click, drag, experiment to build intuition |
-| 93 TS exercises + 46 per lang | 4 languages (TS/Rust/Go/Python), 1,067+ tests across real-world scenarios |
+| 93 TS exercises + 46 per lang | 4 languages (TS/Rust/Go/Python), 1,132+ tests across real-world scenarios |
 | 184 challenge questions | "Guess what happens" scenario Q&A to test understanding |
 | 9 system case studies | How React, Linux, Go, Git, Node.js, Rust, game engines, and distributed systems compose patterns |
 | 4 languages | TypeScript, Go, Python, Rust — idiomatic implementations |
@@ -213,7 +213,7 @@ git clone https://github.com/Totoro-jam/battle-tested-patterns.git
 cd battle-tested-patterns && pnpm install
 
 # Run exercises in any language
-pnpm test                         # TypeScript (491 tests, Vitest)
+pnpm test                         # TypeScript (553 tests, Vitest)
 cd exercises/rust && cargo test   # Rust (173 tests)
 cd exercises/go && go test ./...  # Go (~170 tests)
 cd exercises/python && pytest     # Python (233 tests)

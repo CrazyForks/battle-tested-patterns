@@ -18,6 +18,7 @@
 - [ ] Skip List — Probabilistic sorted structure
 - [ ] B+ Tree — Disk-optimized balanced tree
 - [ ] Merkle Tree — Hash chain for integrity proofs
+- [ ] Visitor — Decouple traversal from operations
 
 ## Track 2: Concurrency & Scheduling
 
@@ -41,6 +42,7 @@
 - [ ] Rate Limiter — Token bucket controls throughput
 - [ ] Middleware Chain — Composable request handlers
 - [ ] Dependency Graph — DAG + topological sort
+- [ ] Registry — Self-registration for plugin discovery
 - [ ] Consistent Hashing — Minimal remapping on node change
 - [ ] Logical Clock — Causal ordering without wall clocks
 
@@ -63,12 +65,7 @@
 - [ ] Interning — Hash-based deduplication
 - [ ] Free List — O(1) alloc from freed slots
 - [ ] Arena Allocator — Bump-allocate, bulk-free
-
-## Bonus: Behavioral Patterns
-
-- [ ] Visitor — Double dispatch on heterogeneous trees
-- [ ] Vtable — Function pointer struct for polymorphism
-- [ ] Registry — Self-register by name, discover at runtime
+- [ ] Vtable — Function pointers for runtime polymorphism
 
 ---
 
