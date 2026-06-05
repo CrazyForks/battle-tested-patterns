@@ -171,7 +171,7 @@ async function presetSearchPath() {
   if (!presetRunning || isAborted()) return;
 
   message.value = t(
-    “'card' found, 'cap' not found — failed at 'p' edge from 'ca'. Tries give precise failure points; hash tables just say 'not found'. DNS resolvers use tries for domain name lookup (right-to-left: com → example → www).”,
+    `'card' found, 'cap' not found — failed at 'p' edge from 'ca'. Tries give precise failure points; hash tables just say 'not found'. DNS resolvers use tries for domain name lookup (right-to-left: com → example → www).`,
     `找到 'card'，未找到 'cap' — 在 'ca' 处的 'p' 边失败。Trie 给出精确失败点；哈希表只会说”未找到”。DNS 解析器使用 Trie 进行域名查找（从右到左：com → example → www）。`
   );
   log(message.value, 'highlight');
