@@ -2,9 +2,12 @@
 import { ref, computed } from 'vue';
 import { useI18n } from '../composables/useI18n';
 import { useVizTimers } from '../composables/useVizTimers';
+import { useVizLog } from '../composables/useVizLog';
+import VizLog from './VizLog.vue';
 
 const { t } = useI18n();
 const { safeTimeout, delay, clearAll, speed, isAborted } = useVizTimers();
+const { entries: logEntries, log, clear: clearLog } = useVizLog();
 
 /* ── Flyweight data model ── */
 
@@ -118,6 +121,7 @@ function applyText() {
     `Processed ${total} characters with only ${unique} unique flyweight objects. Each glyph bitmap stored once — Java's String.intern() and Python's string interning work the same way.`,
     `处理了 ${total} 个字符，仅使用 ${unique} 个唯一的 Flyweight 对象。每个字形位图只存储一次 — Java 的 String.intern() 和 Python 的字符串驻留原理相同。`
   );
+  log(message.value, 'success');
 }
 
 function appendText() {
@@ -159,6 +163,7 @@ function reset() {
   lastAddedIds.value = new Set();
   presetRunning = false;
   message.value = t('Reset. Type a sentence and click Apply.', '已重置。输入一句话并点击应用。');
+  clearLog();
 }
 
 function formatBytes(bytes: number): string {
@@ -189,6 +194,7 @@ async function presetTextEditor() {
     `3 flyweights store 768B of glyph data. Without sharing: 9 copies = 2,304B. Saved ${memorySavedPct.value}%. Game engines use this for particle systems — millions of particles share one texture.`,
     `3 个 flyweight 存储 768B 字形数据。不共享：9 份 = 2,304B。节省 ${memorySavedPct.value}%。游戏引擎用此模式处理粒子系统 — 数百万粒子共享一个纹理。`
   );
+  log(message.value, 'highlight');
   presetRunning = false;
 }
 
@@ -210,6 +216,7 @@ async function presetHighRedundancy() {
     `1 flyweight for 18 instances: ${memorySavedPct.value}% memory saved. CSS applies the same principle — one style rule shared across thousands of DOM elements.`,
     `1 个 flyweight 服务 18 个实例：节省 ${memorySavedPct.value}% 内存。CSS 应用相同原则 — 一条样式规则在数千个 DOM 元素间共享。`
   );
+  log(message.value, 'highlight');
   presetRunning = false;
 }
 
@@ -234,6 +241,7 @@ async function presetAppendDemo() {
     `After appending: ${totalInstances.value} instances, ${uniqueCount.value} flyweights, ${hitRate.value}% hit rate. The pool amortizes creation cost over the document's lifetime.`,
     `追加后：${totalInstances.value} 个实例，${uniqueCount.value} 个 flyweight，${hitRate.value}% 命中率。池在文档生命周期内摊销创建成本。`
   );
+  log(message.value, 'highlight');
   presetRunning = false;
 }
 
@@ -387,6 +395,7 @@ applyText();
     </div>
 
     <div class="viz-status">{{ message }}</div>
+    <VizLog :entries="logEntries" @clear="clearLog" />
   </div>
 </template>
 

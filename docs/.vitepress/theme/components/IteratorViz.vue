@@ -2,9 +2,12 @@
 import { ref, reactive, computed } from 'vue';
 import { useI18n } from '../composables/useI18n';
 import { useVizTimers } from '../composables/useVizTimers';
+import { useVizLog } from '../composables/useVizLog';
+import VizLog from './VizLog.vue';
 
 const { t } = useI18n();
 const { delay, clearAll, speed, isAborted } = useVizTimers();
+const { entries: logEntries, log, clear: clearLog } = useVizLog();
 
 const SOURCE = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 const TAKE_COUNT = 3;
@@ -120,6 +123,7 @@ async function pullNext() {
       `Pipeline complete! Result: [${state.collected.join(', ')}]. Processed ${state.elementsProcessed} of ${SOURCE.length} elements. This is pull-based evaluation — Rust's .iter().filter().map().take().collect() chain.`,
       `管道完成！结果：[${state.collected.join(', ')}]。处理了 ${SOURCE.length} 个元素中的 ${state.elementsProcessed} 个。这是基于拉取的求值 — Rust 的 .iter().filter().map().take().collect() 链。`
     );
+    log(message.value, 'success');
   } else if (state.sourceIdx >= SOURCE.length - 1 && state.taken.length < TAKE_COUNT) {
     state.done = true;
     message.value = t(
@@ -148,6 +152,7 @@ function reset() {
   animating.value = false;
   presetRunning = false;
   message.value = t('Reset. Click "Pull Next" to start pulling elements lazily.', '已重置。点击"拉取下一个"开始惰性拉取元素。');
+  clearLog();
 }
 
 function stageActive(name: string): boolean {
@@ -199,6 +204,7 @@ async function presetShortCircuit() {
     `Done! ${state.elementsProcessed} elements processed, ${SOURCE.length - state.elementsProcessed} never touched. An eager pipeline would process all ${SOURCE.length} first, then take 3 — wasting ${SOURCE.length - state.elementsProcessed} map() calls.`,
     `完成！${state.elementsProcessed} 个元素被处理，${SOURCE.length - state.elementsProcessed} 个未被访问。急切管道会先处理全部 ${SOURCE.length} 个，再取 3 个 — 浪费 ${SOURCE.length - state.elementsProcessed} 次 map() 调用。`
   );
+  log(message.value, 'highlight');
   presetRunning = false;
 }
 
@@ -345,6 +351,7 @@ async function presetStepByStep() {
     </div>
 
     <div class="viz-status">{{ message }}</div>
+    <VizLog :entries="logEntries" @clear="clearLog" />
   </div>
 </template>
 

@@ -2,9 +2,12 @@
 import { ref, computed } from 'vue';
 import { useI18n } from '../composables/useI18n';
 import { useVizTimers } from '../composables/useVizTimers';
+import { useVizLog } from '../composables/useVizLog';
+import VizLog from './VizLog.vue';
 
 const { t } = useI18n();
 const { delay, clearAll, speed, isAborted } = useVizTimers();
+const { entries: logEntries, log, clear: clearLog } = useVizLog();
 
 interface KV {
   key: string;
@@ -95,6 +98,7 @@ async function flush() {
     `Flushed! Created SSTable #${sst.id} in Level 0 with ${sst.entries.length} entries. SSTables are immutable — once written, never modified.`,
     `已刷盘！在 Level 0 创建 SSTable #${sst.id}，含 ${sst.entries.length} 条记录。SSTable 是不可变的 — 一旦写入，永不修改。`
   );
+  log(message.value, 'info');
 }
 
 async function compact() {
@@ -138,6 +142,7 @@ async function compact() {
     `Compaction done! Merged ${l0Count} L0 SSTable(s) into Level 1 SSTable #${sst.id} (${merged.length} entries). Newer values override older ones — this is how updates and deletes work.`,
     `压缩完成！将 ${l0Count} 个 L0 SSTable 合并为 Level 1 SSTable #${sst.id}（${merged.length} 条记录）。新值覆盖旧值 — 更新和删除就是这样工作的。`
   );
+  log(message.value, 'success');
 }
 
 async function read() {
@@ -223,6 +228,7 @@ function reset() {
   nextSstId = 1;
   presetRunning = false;
   message.value = t('Reset. Write key-value pairs to begin.', '已重置。写入键值对以开始。');
+  clearLog();
 }
 
 function isLevelHighlighted(levelId: string): boolean {
@@ -256,6 +262,7 @@ async function presetWriteHeavy() {
     '8 writes done, 2 SSTables in L0. Without compaction, reads get slower (must check each SSTable). Compaction merges them — the classic write amplification tradeoff.',
     '8 次写入完成，L0 中有 2 个 SSTable。不压缩的话，读取变慢（必须检查每个 SSTable）。压缩合并它们 — 经典的写放大权衡。'
   );
+  log(message.value, 'highlight');
   presetRunning = false;
 }
 
@@ -285,6 +292,7 @@ async function presetCompactionDemo() {
     'Compaction merged 2 L0 SSTables into 1 sorted L1 SSTable. Keys a-h now in one place — reads only check 1 SSTable instead of 2. RocksDB does this in background threads.',
     '压缩将 2 个 L0 SSTable 合并为 1 个排序的 L1 SSTable。键 a-h 现在在一个位置 — 读取只需检查 1 个 SSTable 而非 2 个。RocksDB 在后台线程中执行此操作。'
   );
+  log(message.value, 'highlight');
   presetRunning = false;
 }
 
@@ -320,6 +328,7 @@ async function presetUpdateOverwrite() {
     'Reading "x" returns "NEW" from memtable (most recent write). The "old" value in L0 SSTable is shadowed. Compaction will eventually discard the old value.',
     '读取 "x" 从 memtable 返回 "NEW"（最近的写入）。L0 SSTable 中的 "old" 值被遮蔽。压缩最终会丢弃旧值。'
   );
+  log(message.value, 'highlight');
   presetRunning = false;
 }
 </script>
@@ -491,6 +500,7 @@ async function presetUpdateOverwrite() {
     </div>
 
     <div class="viz-status">{{ message }}</div>
+    <VizLog :entries="logEntries" @clear="clearLog" />
   </div>
 </template>
 

@@ -2,9 +2,12 @@
 import { ref, computed, reactive } from 'vue';
 import { useI18n } from '../composables/useI18n';
 import { useVizTimers } from '../composables/useVizTimers';
+import { useVizLog } from '../composables/useVizLog';
+import VizLog from './VizLog.vue';
 
 const { t } = useI18n();
 const { safeTimeout, safeInterval, delay, clearAll, speed, isAborted } = useVizTimers();
+const { entries: logEntries, log, clear: clearLog } = useVizLog();
 
 /* ── Data model ──────────────────────────────── */
 interface InternEntry {
@@ -99,6 +102,7 @@ function intern(str?: string) {
       `intern("${val}") -> reused existing pool entry, assigned to ${varName}. O(1) pointer equality now possible.`,
       `intern("${val}") -> 复用已有池条目，赋值给 ${varName}。现在可以使用 O(1) 指针相等性。`,
     );
+    log(message.value, 'success');
   } else {
     pool.value.push({ value: val, id: ++entryIdCounter });
     variables.value.push({
@@ -112,6 +116,7 @@ function intern(str?: string) {
       `intern("${val}") -> NEW entry added to pool, assigned to ${varName}`,
       `intern("${val}") -> 新条目已添加到池中，赋值给 ${varName}`,
     );
+    log(message.value, 'info');
   }
   inputText.value = '';
   safeTimeout(() => { highlightValue.value = ''; highlightAction.value = ''; }, 700);
@@ -138,6 +143,7 @@ function removeVariable(v: VarRef) {
         `Removed ${v.name}. refcount("${v.targetValue}") = 0 -> GC'd from pool. This is how weak interning works in Go's sync.Pool.`,
         `已移除 ${v.name}。refcount("${v.targetValue}") = 0 -> 已从池中回收。Go 的 sync.Pool 弱驻留就是这样工作的。`,
       );
+      log(message.value, 'warning');
     }
   } else {
     message.value = t(
@@ -164,6 +170,7 @@ function reset() {
   comparingCharIdx.value = -1;
   isComparing.value = false;
   presetRunning = false;
+  clearLog();
 }
 
 function refsForEntry(value: string): VarRef[] {
@@ -302,6 +309,7 @@ async function presetDeduplication() {
     '3 references to "hello" share 1 pool entry. Memory saved: 2 copies avoided. V8 interns all identifiers in JavaScript source code the same way.',
     '3 个 "hello" 引用共享 1 个池条目。内存节省：避免了 2 份副本。V8 对 JavaScript 源代码中的所有标识符做同样的处理。'
   );
+  log(message.value, 'highlight');
   presetRunning = false;
 }
 
@@ -334,6 +342,7 @@ async function presetGarbageCollection() {
     '"temp" removed from pool (refcount=0). "keep" stays (refcount=2). This prevents intern tables from growing unbounded — a real concern in long-running servers.',
     '"temp" 从池中移除（refcount=0）。"keep" 保留（refcount=2）。这防止 intern 表无限增长 — 长时间运行的服务器的真实问题。'
   );
+  log(message.value, 'highlight');
   presetRunning = false;
 }
 
@@ -559,6 +568,7 @@ async function presetComparisonDemo() {
       'in-status--remove': highlightAction === 'remove',
       'in-status--gc': highlightAction === 'gc',
     }">{{ message }}</div>
+    <VizLog :entries="logEntries" @clear="clearLog" />
   </div>
 </template>
 

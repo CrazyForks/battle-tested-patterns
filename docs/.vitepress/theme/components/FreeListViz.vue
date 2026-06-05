@@ -2,9 +2,12 @@
 import { ref, computed } from 'vue';
 import { useI18n } from '../composables/useI18n';
 import { useVizTimers } from '../composables/useVizTimers';
+import { useVizLog } from '../composables/useVizLog';
+import VizLog from './VizLog.vue';
 
 const { t } = useI18n();
 const { delay, clearAll, speed, isAborted } = useVizTimers();
+const { entries: logEntries, log, clear: clearLog } = useVizLog();
 
 const BLOCK_COUNT = 10;
 
@@ -61,6 +64,7 @@ function allocate() {
     `Allocated block ${blockId} as "${label}" — O(1) pop from head. New head: ${newHead !== null ? newHead : 'null'}. LIFO order means recently freed blocks are reused first (cache-friendly).`,
     `已分配块 ${blockId} 为 "${label}" — O(1) 从头部弹出。新 head: ${newHead !== null ? newHead : 'null'}。LIFO 顺序意味着最近释放的块优先复用（缓存友好）。`
   );
+  log(message.value, 'info');
 }
 
 function freeBlock(id: number) {
@@ -77,6 +81,7 @@ function freeBlock(id: number) {
     `Freed block ${id} ("${oldLabel}") — O(1) prepend to head. LIFO: block ${id} will be allocated next. This is how jemalloc and tcmalloc work.`,
     `已释放块 ${id}（"${oldLabel}"）— O(1) 插入头部。LIFO：块 ${id} 将被下次分配。jemalloc 和 tcmalloc 就是这样工作的。`
   );
+  log(message.value, 'success');
 }
 
 function freeAll() {
@@ -110,6 +115,7 @@ function reset() {
     'Reset complete — free list restored to initial order [0 → 1 → ... → 9 → null]',
     '重置完成 — Free List 恢复初始顺序 [0 → 1 → ... → 9 → null]'
   );
+  clearLog();
 }
 
 function handleKeydown(e: KeyboardEvent) {
@@ -142,6 +148,7 @@ async function presetAllocFree() {
     'Block 1 was freed and immediately reused — LIFO order. Hot cache lines stay warm. Linux kernel slab allocator uses this exact pattern for struct allocation.',
     '块 1 被释放后立即复用 — LIFO 顺序。热缓存行保持温度。Linux 内核 slab 分配器用完全相同的模式分配 struct。'
   );
+  log(message.value, 'highlight');
   presetRunning = false;
 }
 
@@ -194,6 +201,7 @@ async function presetFragmentation() {
     'Freed slots 1 and 3 were filled by new allocations. Zero fragmentation — every block is the same size. Unity ECS and Unreal use this for component storage.',
     '释放的槽位 1 和 3 被新分配填充。零碎片化 — 每个块大小相同。Unity ECS 和 Unreal 用此方式存储组件。'
   );
+  log(message.value, 'highlight');
   presetRunning = false;
 }
 </script>
@@ -314,6 +322,7 @@ async function presetFragmentation() {
     </div>
 
     <div class="viz-status">{{ message }}</div>
+    <VizLog :entries="logEntries" @clear="clearLog" />
   </div>
 </template>
 

@@ -2,9 +2,12 @@
 import { ref } from 'vue';
 import { useI18n } from '../composables/useI18n';
 import { useVizTimers } from '../composables/useVizTimers';
+import { useVizLog } from '../composables/useVizLog';
+import VizLog from './VizLog.vue';
 
 const { t } = useI18n();
 const { delay, clearAll, speed, isAborted } = useVizTimers();
+const { entries: logEntries, log, clear: clearLog } = useVizLog();
 
 interface Process {
   name: string;
@@ -67,6 +70,7 @@ function receiveMessage(toIdx: number) {
     `${to.name}: received (sender clock=${msg.clock}) → max(${prevClock}, ${msg.clock}) + 1 = ${to.clock}. The max() ensures causal ordering: if A→B, then clock(A) < clock(B).`,
     `${to.name}：已接收 (发送方 clock=${msg.clock}) → max(${prevClock}, ${msg.clock}) + 1 = ${to.clock}。max() 确保因果顺序：如果 A→B，则 clock(A) < clock(B)。`
   );
+  log(message.value, 'success');
 }
 
 function reset() {
@@ -79,6 +83,7 @@ function reset() {
   pendingMessages.value = [];
   presetRunning = false;
   message.value = t('Reset — perform events to see Lamport clocks', '已重置 — 执行事件以查看 Lamport 时钟');
+  clearLog();
 }
 
 async function presetCausalChain() {
@@ -107,6 +112,7 @@ async function presetCausalChain() {
     'Causal chain complete: P1 send(2)→P2 recv(3)→P2 send(5)→P3 recv(6). Each receive\'s clock is strictly greater than the send — this guarantees if A caused B, clock(A) < clock(B). Used by Spanner, CockroachDB, and TiDB.',
     '因果链完成：P1 send(2)→P2 recv(3)→P2 send(5)→P3 recv(6)。每次接收的时钟严格大于发送 — 保证如果 A 导致了 B，则 clock(A) < clock(B)。Spanner、CockroachDB 和 TiDB 使用此原理。'
   );
+  log(message.value, 'highlight');
   presetRunning = false;
 }
 
@@ -134,6 +140,7 @@ async function presetConcurrentEvents() {
     'All three processes have clock=1 or clock=2 — same value but no causal link. This is Lamport clocks\' limitation: equal timestamps don\'t mean simultaneous. Vector clocks (used by DynamoDB) solve this by tracking per-process counters.',
     '三个进程的时钟都是 1 或 2 — 相同值但无因果关系。这是 Lamport 时钟的局限：相等的时间戳不意味着同时发生。向量时钟（DynamoDB 使用）通过跟踪每个进程的计数器解决此问题。'
   );
+  log(message.value, 'highlight');
   presetRunning = false;
 }
 
@@ -159,6 +166,7 @@ async function presetClockSkew() {
     'P2 jumped from 0 to 7: max(0, 6) + 1 = 7. The send incremented P1\'s clock to 6, and the message carries that value. This ensures P2\'s future events are ordered after P1\'s message.',
     'P2 从 0 跳到 7：max(0, 6) + 1 = 7。发送时 P1 的时钟递增到 6，消息携带该值。这确保 P2 的未来事件排在 P1 的消息之后。'
   );
+  log(message.value, 'highlight');
   presetRunning = false;
 }
 </script>
@@ -219,6 +227,7 @@ async function presetClockSkew() {
     </div>
 
     <div class="viz-status">{{ message }}</div>
+    <VizLog :entries="logEntries" @clear="clearLog" />
   </div>
 </template>
 
