@@ -187,6 +187,11 @@
   50% { opacity: 0.3; }
 }
 
+/* Tighten h2 spacing */
+.vp-doc h2 {
+  margin-top: 24px;
+}
+
 /* Homepage feature icon images */
 .VPFeature .VPImage {
   width: 100px;
