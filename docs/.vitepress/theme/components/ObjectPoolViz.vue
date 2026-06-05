@@ -2,9 +2,12 @@
 import { ref, computed } from 'vue';
 import { useI18n } from '../composables/useI18n';
 import { useVizTimers } from '../composables/useVizTimers';
+import { useVizLog } from '../composables/useVizLog';
+import VizLog from './VizLog.vue';
 
 const { t } = useI18n();
 const { safeInterval, safeTimeout, delay, clearAll, speed, isAborted } = useVizTimers();
+const { entries: logEntries, log, clear: clearLog } = useVizLog();
 
 interface PoolObject {
   id: number;
@@ -83,6 +86,7 @@ function acquire() {
   }
   poolHits.value++;
   checkOut(obj, purpose);
+  log(message.value, 'info');
   purposeInput.value = '';
 }
 
@@ -128,6 +132,7 @@ function returnObject(obj: PoolObject, auto = false) {
       `${obj.name} 手动归还（用途："${oldPurpose}"）`,
     );
   }
+  log(message.value, 'success');
 }
 
 function growPool() {
@@ -152,6 +157,7 @@ function reset() {
   poolHits.value = 0;
   poolMisses.value = 0;
   message.value = t('Pool reset — all objects available', '池已重置 — 所有对象可用');
+  clearLog();
 }
 
 function stateColor(s: PoolObject['state']): string {
@@ -185,6 +191,7 @@ async function presetHighLoad() {
     'Pool exhausted! The 6th request failed. Options: grow the pool (dynamic sizing), queue the request (bounded waiting), or reject fast (fail-open). HikariCP uses connectionTimeout to decide when to give up.',
     '池耗尽！第 6 个请求失败。选项：扩容（动态调整）、排队请求（有界等待）或快速拒绝（快速失败）。HikariCP 使用 connectionTimeout 决定何时放弃。'
   );
+  log(message.value, 'highlight');
   presetRunning = false;
 }
 
@@ -224,6 +231,7 @@ async function presetAcquireRelease() {
     'Objects were reused — no new allocation needed. In JDBC pools, creating a new connection takes 5-50ms (TCP + TLS + auth). Reuse takes <0.1ms. That is 50-500x faster.',
     '对象被重用 — 无需新分配。在 JDBC 池中，创建新连接需 5-50ms (TCP + TLS + auth)。重用只需 <0.1ms。快 50-500 倍。'
   );
+  log(message.value, 'highlight');
   presetRunning = false;
 }
 
@@ -254,6 +262,7 @@ async function presetDynamicGrowth() {
     'Pool grew from 5 to 7. The new object was acquired immediately. But beware: unbounded growth causes resource exhaustion. pgBouncer caps at max_client_conn; Go\'s database/sql has SetMaxOpenConns.',
     '池从 5 增长到 7。新对象立即被获取。但注意：无限增长会导致资源耗尽。pgBouncer 限制 max_client_conn；Go 的 database/sql 有 SetMaxOpenConns。'
   );
+  log(message.value, 'highlight');
   presetRunning = false;
 }
 </script>
@@ -380,6 +389,7 @@ async function presetDynamicGrowth() {
     </div>
 
     <div class="viz-status">{{ message }}</div>
+    <VizLog :entries="logEntries" @clear="clearLog" />
   </div>
 </template>
 

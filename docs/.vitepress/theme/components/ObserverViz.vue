@@ -2,9 +2,12 @@
 import { ref } from 'vue';
 import { useI18n } from '../composables/useI18n';
 import { useVizTimers } from '../composables/useVizTimers';
+import { useVizLog } from '../composables/useVizLog';
+import VizLog from './VizLog.vue';
 
 const { t } = useI18n();
 const { delay, clearAll, speed, isAborted } = useVizTimers();
+const { entries: logEntries, log, clear: clearLog } = useVizLog();
 
 interface Subscriber {
   id: number;
@@ -44,6 +47,7 @@ async function emitEvent() {
   }
 
   message.value = t(`"${event}" delivered to all subscribers`, `"${event}" 已送达所有订阅者`);
+  log(message.value, 'success');
   await delay(400);
   if (isAborted()) return;
   lastEvent.value = '';
@@ -82,6 +86,7 @@ function reset() {
   lastEvent.value = '';
   broadcasting.value = false;
   message.value = t('Observer reset', 'Observer 已重置');
+  clearLog();
 }
 
 async function presetFanOut() {
@@ -106,6 +111,7 @@ async function presetFanOut() {
     'All 5 subscribers received both events. The publisher does not know or care who is listening — this decoupling is the key benefit. Adding a 6th subscriber requires zero changes to the publisher.',
     '全部 5 个订阅者接收了两个事件。发布者不知道也不关心谁在监听 — 这种解耦是核心优势。添加第 6 个订阅者不需要修改发布者。'
   );
+  log(message.value, 'highlight');
   presetRunning = false;
 }
 
@@ -132,6 +138,7 @@ async function presetDynamicSubscription() {
     'Analytics missed the second event after unsubscribing. Forgetting to unsubscribe causes memory leaks — this is why React warns about updating unmounted components and why RxJS has takeUntil/unsubscribe.',
     'Analytics 取消订阅后错过了第二个事件。忘记取消订阅会导致内存泄漏 — 这就是 React 警告更新已卸载组件以及 RxJS 有 takeUntil/unsubscribe 的原因。'
   );
+  log(message.value, 'highlight');
   presetRunning = false;
 }
 
@@ -155,6 +162,7 @@ async function presetEventStorm() {
     '5 events broadcast to 3 subscribers = 15 deliveries total. Without throttling, a mousemove handler can fire 60+ events/sec. debounce(300) reduces this to ~3/sec — 20x fewer handler invocations.',
     '5 个事件广播给 3 个订阅者 = 共 15 次投递。不做节流的话，mousemove 处理程序每秒可触发 60+ 次。debounce(300) 将其减少到约 3 次/秒 — 减少 20 倍处理程序调用。'
   );
+  log(message.value, 'highlight');
   presetRunning = false;
 }
 </script>
@@ -216,6 +224,7 @@ async function presetEventStorm() {
     </div>
 
     <div class="viz-status">{{ message }}</div>
+    <VizLog :entries="logEntries" @clear="clearLog" />
   </div>
 </template>
 

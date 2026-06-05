@@ -2,9 +2,12 @@
 import { ref, computed } from 'vue';
 import { useI18n } from '../composables/useI18n';
 import { useVizTimers } from '../composables/useVizTimers';
+import { useVizLog } from '../composables/useVizLog';
+import VizLog from './VizLog.vue';
 
 const { t } = useI18n();
 const { safeTimeout, delay, clearAll, speed, isAborted } = useVizTimers();
+const { entries: logEntries, log, clear: clearLog } = useVizLog();
 
 interface Iterator {
   label: string;
@@ -60,6 +63,7 @@ function next() {
       `Merge complete! All iterators exhausted. Output: [${output.value.join(', ')}]. Time: O(n log k) with a min-heap, where k = number of iterators.`,
       `合并完成！所有迭代器已耗尽。输出：[${output.value.join(', ')}]。时间：O(n log k)，使用最小堆，k = 迭代器数量。`
     );
+    log(message.value, 'success');
     highlightIdx.value = -1;
     pickedValue.value = null;
     return;
@@ -83,6 +87,7 @@ function next() {
       `Picked ${minVal}. Merge complete! Output: [${output.value.join(', ')}]. This is how RocksDB compaction, SQL ORDER BY with multiple indexes, and hadoop MapReduce shuffle work.`,
       `选取 ${minVal}。合并完成！输出：[${output.value.join(', ')}]。RocksDB 压缩、SQL ORDER BY 多索引和 Hadoop MapReduce shuffle 就是这样工作的。`
     );
+    log(message.value, 'success');
   }
 }
 
@@ -99,6 +104,7 @@ function reset() {
   done.value = false;
   presetRunning = false;
   message.value = t('Press "Next" to pick the minimum head and advance', '按"下一个"选择最小的头元素并推进');
+  clearLog();
 }
 
 async function presetAutoRun() {
@@ -243,6 +249,7 @@ async function presetDuplicates() {
     </div>
 
     <div class="viz-status">{{ message }}</div>
+    <VizLog :entries="logEntries" @clear="clearLog" />
   </div>
 </template>
 

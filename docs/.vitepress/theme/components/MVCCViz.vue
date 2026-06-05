@@ -2,9 +2,12 @@
 import { ref, computed } from 'vue';
 import { useI18n } from '../composables/useI18n';
 import { useVizTimers } from '../composables/useVizTimers';
+import { useVizLog } from '../composables/useVizLog';
+import VizLog from './VizLog.vue';
 
 const { t } = useI18n();
 const { safeTimeout, delay, clearAll, speed, isAborted } = useVizTimers();
+const { entries: logEntries, log, clear: clearLog } = useVizLog();
 
 interface Version {
   ver: number;
@@ -167,6 +170,7 @@ function commitTxn() {
     `T${txn.id} COMMITTED at version ${newVer}. ${writeCount} write(s) now visible to new transactions.`,
     `T${txn.id} 在版本 ${newVer} 提交。${writeCount} 个写入现在对新事务可见。`
   );
+  log(message.value, 'success');
   selectedTxn.value = null;
 }
 
@@ -182,6 +186,7 @@ function abortTxn() {
   }
   txn.status = 'aborted';
   message.value = t(`T${txn.id} ABORTED. All staged writes discarded.`, `T${txn.id} 已中止。所有暂存写入已丢弃。`);
+  log(message.value, 'warning');
   selectedTxn.value = null;
 }
 
@@ -202,6 +207,7 @@ function reset() {
     'Begin a transaction to start. Each gets a snapshot version.',
     '开始一个事务。每个事务获取一个快照版本。'
   );
+  clearLog();
 }
 
 async function presetSnapshotIsolation() {
@@ -244,6 +250,7 @@ async function presetSnapshotIsolation() {
     'T1 still reads balance=100 even though T2 committed 200! T1\'s snapshot (v1) is frozen — it never sees T2\'s changes. This prevents "phantom reads" and is how PostgreSQL, CockroachDB, and TiDB implement MVCC.',
     'T1 仍然读到 balance=100，即使 T2 已提交 200！T1 的快照 (v1) 被冻结 — 永远看不到 T2 的变更。这防止了"幻读"，是 PostgreSQL、CockroachDB 和 TiDB 实现 MVCC 的方式。'
   );
+  log(message.value, 'highlight');
   presetRunning = false;
 }
 
@@ -290,6 +297,7 @@ async function presetWriteConflict() {
     'T1 committed, T2 aborted — only one writer wins. PostgreSQL uses "first-updater-wins" rule; CockroachDB uses timestamp ordering. Both prevent lost updates without row-level locks.',
     'T1 提交，T2 中止 — 只有一个写入者胜出。PostgreSQL 使用"先更新者获胜"规则；CockroachDB 使用时间戳排序。两者都无需行级锁即可防止丢失更新。'
   );
+  log(message.value, 'highlight');
   presetRunning = false;
 }
 
@@ -323,6 +331,7 @@ async function presetVersionChainGrowth() {
     'The "user" key now has 4 versions. In PostgreSQL, VACUUM removes versions no active transaction needs. In MySQL InnoDB, purge threads clean the undo log. Without cleanup, the version chain grows unbounded — this is "MVCC bloat".',
     '"user" 键现在有 4 个版本。在 PostgreSQL 中，VACUUM 移除没有活跃事务需要的版本。在 MySQL InnoDB 中，purge 线程清理 undo log。不清理的话，版本链无限增长 — 这就是"MVCC 膨胀"。'
   );
+  log(message.value, 'highlight');
   presetRunning = false;
 }
 </script>
@@ -416,6 +425,7 @@ async function presetVersionChainGrowth() {
     </div>
 
     <div class="viz-status">{{ message }}</div>
+    <VizLog :entries="logEntries" @clear="clearLog" />
   </div>
 </template>
 

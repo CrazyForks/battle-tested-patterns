@@ -2,9 +2,12 @@
 import { ref } from 'vue';
 import { useI18n } from '../composables/useI18n';
 import { useVizTimers } from '../composables/useVizTimers';
+import { useVizLog } from '../composables/useVizLog';
+import VizLog from './VizLog.vue';
 
 const { t } = useI18n();
 const { safeInterval, safeTimeout, delay, clearAll, speed, isAborted } = useVizTimers();
+const { entries: logEntries, log, clear: clearLog } = useVizLog();
 
 const capacity = 8;
 const refillRate = 2;
@@ -40,9 +43,11 @@ function sendRequest() {
     tokens.value--;
     requestLog.value.push({ time: now, accepted: true });
     message.value = t(`Request accepted (${tokens.value} tokens left)`, `请求已接受（剩余 ${tokens.value} 令牌）`);
+    log(message.value, 'success');
   } else {
     requestLog.value.push({ time: now, accepted: false });
     message.value = t('Request REJECTED — bucket empty!', '请求被拒绝 — 令牌桶为空！');
+    log(message.value, 'error');
   }
   if (requestLog.value.length > 20) {
     requestLog.value = requestLog.value.slice(-20);
@@ -62,6 +67,7 @@ function reset() {
   tokens.value = capacity;
   requestLog.value = [];
   message.value = t('Bucket refilled to capacity', '令牌桶已补满');
+  clearLog();
 }
 
 function tokenColor(i: number) {
@@ -91,6 +97,7 @@ async function presetBurstAndRecover() {
     '8 accepted, 2 rejected. Now refilling at 2/sec. In 4 seconds the bucket will be full again. Stripe\'s API allows bursts of 25 requests, then refills at 25/sec — generous for integration testing, strict for abuse.',
     '8 个接受，2 个拒绝。现在以 2/秒补充。4 秒后桶将再次满。Stripe API 允许 25 个请求的突发，然后以 25/秒补充 — 对集成测试宽松，对滥用严格。'
   );
+  log(message.value, 'highlight');
   presetRunning = false;
 }
 
@@ -115,6 +122,7 @@ async function presetSteadyState() {
     'All 6 requests accepted — tokens never dropped below 7 because refill outpaces consumption. This is the ideal: clients stay within their quota and never see 429 Too Many Requests.',
     '全部 6 个请求被接受 — 令牌从未低于 7 因为补充速度超过消耗。这是理想状态：客户端保持在配额内，永远不会看到 429 Too Many Requests。'
   );
+  log(message.value, 'highlight');
   presetRunning = false;
 }
 
@@ -146,6 +154,7 @@ async function presetDrainAndBlock() {
     'Bucket drained — all subsequent requests rejected (HTTP 429). Solutions: per-IP buckets (Cloudflare), sliding window counters (Redis MULTI), or leaky bucket (constant drain rate). Nginx uses limit_req with burst parameter.',
     '桶已耗尽 — 所有后续请求被拒绝 (HTTP 429)。解决方案：按 IP 分桶 (Cloudflare)、滑动窗口计数器 (Redis MULTI)、或漏桶（恒定流出速率）。Nginx 使用 limit_req 的 burst 参数。'
   );
+  log(message.value, 'highlight');
   presetRunning = false;
 }
 </script>
@@ -218,6 +227,7 @@ async function presetDrainAndBlock() {
     </div>
 
     <div class="viz-status">{{ message }}</div>
+    <VizLog :entries="logEntries" @clear="clearLog" />
   </div>
 </template>
 

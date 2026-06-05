@@ -2,9 +2,12 @@
 import { ref, computed } from 'vue';
 import { useI18n } from '../composables/useI18n';
 import { useVizTimers } from '../composables/useVizTimers';
+import { useVizLog } from '../composables/useVizLog';
+import VizLog from './VizLog.vue';
 
 const { t } = useI18n();
 const { delay, clearAll, speed, isAborted } = useVizTimers();
+const { entries: logEntries, log, clear: clearLog } = useVizLog();
 
 const leaves = ref<string[]>(['A', 'B', 'C', 'D']);
 const highlightPath = ref<Set<number>>(new Set());
@@ -98,6 +101,7 @@ async function verifyLeaf(leafIdx: number) {
     `Verified: root hash matches — Data ${leaves.value[leafIdx]} is intact. This "Merkle proof" is how light clients verify Bitcoin transactions without downloading the full blockchain.`,
     `验证通过：根哈希匹配 — 数据 ${leaves.value[leafIdx]} 完整。这种"Merkle 证明"是轻客户端无需下载完整区块链即可验证 Bitcoin 交易的方式。`
   );
+  log(message.value, 'success');
   await delay(1200);
   if (isAborted()) return;
   highlightPath.value = new Set();
@@ -113,6 +117,7 @@ async function tamperLeaf() {
     `Tampered Data ${original} → ${leaves.value[idx]} — root hash changed! Every node on the path to root is invalidated. This is how Git detects corrupted objects.`,
     `篡改数据 ${original} → ${leaves.value[idx]} — 根哈希已改变！到根的路径上每个节点都失效了。Git 就是这样检测损坏对象的。`
   );
+  log(message.value, 'warning');
 }
 
 function reset() {
@@ -125,6 +130,7 @@ function reset() {
     'Merkle tree reset — verify leaves or tamper data',
     'Merkle Tree 已重置 — 验证叶子或篡改数据'
   );
+  clearLog();
 }
 
 async function presetVerifyAll() {
@@ -147,6 +153,7 @@ async function presetVerifyAll() {
     'All 4 leaves verified with only 2 hashes each. A tree with 1M leaves would still need only 20 hashes per proof — that is the power of Merkle trees.',
     '全部 4 个叶子验证完成，每个只需 2 个哈希。有 100 万叶子的树每个证明仍然只需 20 个哈希 — 这就是 Merkle 树的力量。'
   );
+  log(message.value, 'highlight');
   presetRunning = false;
 }
 
@@ -171,6 +178,7 @@ async function presetTamperAndDetect() {
     `Root hash changed from ${savedRoot.slice(0, 6)} to ${tree.value[0].slice(0, 6)} — tampering detected! In Git, this is like "git fsck" finding a corrupted commit.`,
     `根哈希从 ${savedRoot.slice(0, 6)} 变为 ${tree.value[0].slice(0, 6)} — 检测到篡改！在 Git 中，这就像 "git fsck" 发现损坏的提交。`
   );
+  log(message.value, 'highlight');
   presetRunning = false;
 }
 
@@ -202,6 +210,7 @@ async function presetDiffSync() {
     'Step 3: H(C) differs, H(D) matches → only block C changed. Found the diff in O(log n) comparisons! Cassandra anti-entropy uses exactly this approach.',
     '步骤 3：H(C) 不同，H(D) 匹配 → 只有 Block C 改变。在 O(log n) 次比较中找到差异！Cassandra 反熵正是使用这种方法。'
   );
+  log(message.value, 'highlight');
   presetRunning = false;
 }
 </script>
@@ -271,6 +280,7 @@ async function presetDiffSync() {
     </div>
 
     <div class="viz-status">{{ message }}</div>
+    <VizLog :entries="logEntries" @clear="clearLog" />
   </div>
 </template>
 
