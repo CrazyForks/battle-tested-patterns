@@ -77,6 +77,9 @@ difficulty: "beginner | intermediate | advanced"
 
 ## Real-World Analogy — one everyday metaphor (parking lot, fuse, dishwasher, etc.)
 ## Core Idea          — concept + diagram (Mermaid, ASCII, or table — whichever fits best)
+                        MUST include a `| Property | Value |` table summarizing key
+                        complexity characteristics (e.g. O(1) insert, O(n) scan) placed
+                        AFTER the diagram and BEFORE the "Try it yourself" line
 ## Production Proof   — table with ≥ 2 projects, precise GitHub URLs to line numbers
                         Description must be specific enough to learn WITHOUT clicking
 ## Implementation     — TypeScript (required) + ≥ 1 other (Rust / Go / Python / C)
@@ -198,6 +201,8 @@ Add `## Challenge Questions` section at the end of the pattern doc:
 - [ ] ZH code sync: if editing EN code blocks, immediately update the corresponding ZH file with identical code
 - [ ] ZH tab order: code-group tabs must appear in the same language order as EN
 - [ ] ZH structural parity: every Production Proof row, info callout, and warning box in EN must also appear in ZH
+- [ ] Core Idea property table: every pattern must have a `| Property | Value |` table with key complexity characteristics after the diagram
+- [ ] ZH property table: must use `| 属性 | 值 |` headers with translated descriptions but keeping O() notation unchanged
 
 ### 9. Submit PR
 
@@ -231,6 +236,7 @@ Before tagging a release, run a comprehensive multi-dimensional audit:
 - [ ] **ZH code parity**: all ZH code blocks are byte-identical to EN, tab order matches
 - [ ] **ZH structural parity**: every Production Proof row, info/tip callout in EN also exists in ZH
 - [ ] **Implementation correctness**: each code block actually implements the stated data structure (not a simpler stand-in)
+- [ ] **Property tables**: every Core Idea section has a `| Property | Value |` table; ZH uses `| 属性 | 值 |`
 - [ ] **Analogy quality**: Real-World Analogy sections use only non-technical vocabulary
 - [ ] **by-project**: new patterns added to ALL relevant project pages (EN+ZH)
 - [ ] **pattern-connections**: summary table updated if pattern fits a system case study (EN+ZH)

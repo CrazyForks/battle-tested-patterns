@@ -95,6 +95,7 @@ Standard Operating Procedures live in `.sop/`. Read them before:
 - Interactive viz component audit → `.sop/10-viz-component-audit.md`
 - Difficulty classification criteria → `.sop/11-difficulty-classification.md`
 - Related Patterns bidirectionality → `.sop/12-related-patterns-audit.md`
+- Content quality audit methodology → `.sop/13-content-quality-audit.md`
 
 ## Node Version
 

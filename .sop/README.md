@@ -17,3 +17,4 @@ Follow the relevant SOP before starting work to ensure consistency and quality.
 | 10 | [Viz Component Audit](10-viz-component-audit.md) | Auditing interactive visualization components |
 | 11 | [Difficulty Classification](11-difficulty-classification.md) | Classifying pattern difficulty (beginner/intermediate/advanced) |
 | 12 | [Related Patterns Audit](12-related-patterns-audit.md) | Verifying bidirectional Related Patterns links |
+| 13 | [Content Quality Audit](13-content-quality-audit.md) | Multi-dimensional quality audit (EN/ZH sync, diagrams, property tables) |

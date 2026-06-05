@@ -216,6 +216,7 @@ Exercise files: Rust `exercises/rust/src/diff_patch.rs` · Go `exercises/go/diff
 - [VS Code](https://github.com/microsoft/vscode) — text buffer diff
 - [jsdiff](https://github.com/kpdecker/jsdiff)
 - [Vue 3](https://github.com/vuejs/core) — template diff
+- [Git](https://github.com/git/git/blob/master/diff.c) — core diff engine for commits, merges, and patches
 
 ## 相关模式
 

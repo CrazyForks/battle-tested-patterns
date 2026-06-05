@@ -217,6 +217,7 @@ Exercise files: Rust `exercises/rust/src/double_buffering.rs` · Go `exercises/g
 - [OpenGL](https://www.khronos.org/opengl/) / Vulkan — swap chains
 - [PostgreSQL](https://github.com/postgres/postgres) — MVCC snapshot isolation
 - [Godot Engine](https://github.com/godotengine/godot/blob/master/servers/rendering/renderer_rd/renderer_scene_render_rd.cpp) — 双缓冲帧渲染
+- [Linux fbdev](https://github.com/torvalds/linux/blob/master/drivers/video/fbdev/core/fbmem.c) — 帧缓冲双缓冲，用于控制台和显示输出
 
 ## 相关模式
 
