@@ -3,7 +3,7 @@ description: '使用最小堆将 K 个有序流合并为一个有序输出——
 difficulty: "advanced"
 ---
 
-# 模式：归并迭代器 (Merge Iterator / K-Way Merge)
+# 模式：合并迭代器 (Merge Iterator / K-Way Merge)
 
 <DifficultyBadge />
 
@@ -19,7 +19,7 @@ difficulty: "advanced"
 
 ## 核心思想
 
-归并迭代器维护一个大小为 K 的最小堆，每个条目跟踪当前元素和它来自哪个流。每次调用 `next()` 时，弹出最小元素，推进该流，并将该流的下一个元素推回堆中。这以 O(n log K) 的时间复杂度产生全局有序输出，其中 n 是元素总数。
+合并迭代器维护一个大小为 K 的最小堆，每个条目跟踪当前元素和它来自哪个流。每次调用 `next()` 时，弹出最小元素，推进该流，并将该流的下一个元素推回堆中。这以 O(n log K) 的时间复杂度产生全局有序输出，其中 n 是元素总数。
 
 ```text
   Stream 0: [1, 5, 9]
@@ -286,12 +286,12 @@ Exercise files: Rust `exercises/rust/src/merge_iterator.rs` · Go `exercises/go/
 
 - **无序输入** -- K 路归并需要预排序的流；先排序或使用其他方法
 - **K = 2** -- 简单的双指针归并更简单，避免堆的开销
-- **随机访问模式** -- 归并迭代器用于顺序扫描，不适合点查询
+- **随机访问模式** -- 合并迭代器用于顺序扫描，不适合点查询
 - **K 很大但流很短** -- 当流很短时堆的开销占主导
 
 ## 更多生产案例
 
-- [TiKV](https://github.com/tikv/tikv) -- 跨多个 RocksDB column family 的归并迭代器
+- [TiKV](https://github.com/tikv/tikv) -- 跨多个 RocksDB column family 的合并迭代器
 - [Apache Lucene](https://github.com/apache/lucene) -- 索引优化期间合并段
 - [ClickHouse](https://github.com/ClickHouse/ClickHouse) -- MergingSortedTransform 用于合并有序数据部分
 - [CockroachDB](https://github.com/cockroachdb/cockroach) -- 归并连接和跨多个 range 的范围扫描
@@ -301,9 +301,9 @@ Exercise files: Rust `exercises/rust/src/merge_iterator.rs` · Go `exercises/go/
 | 模式 | 关系 |
 |---------|-------------|
 | [最小堆 / 优先队列 (Min Heap)](/zh/patterns/min-heap/) | 最小堆是驱动 K 路合并的核心数据结构 |
-| [LSM 树 (Log-Structured Merge Tree)](/zh/patterns/lsm-tree/) | LSM 压缩使用归并迭代器合并多个有序 SSTable |
-| [迭代器 / 惰性求值 (Iterator)](/zh/patterns/iterator/) | 归并迭代器是迭代器模式在多个源上的组合 |
-| [跳表 (Skip List)](/zh/patterns/skip-list/) | 跳表提供归并迭代器消费的有序输入流 |
+| [LSM 树 (Log-Structured Merge Tree)](/zh/patterns/lsm-tree/) | LSM 压缩使用合并迭代器合并多个有序 SSTable |
+| [迭代器 / 惰性求值 (Iterator)](/zh/patterns/iterator/) | 合并迭代器是迭代器模式在多个源上的组合 |
+| [跳表 (Skip List)](/zh/patterns/skip-list/) | 跳表提供合并迭代器消费的有序输入流 |
 | [B+ 树 (B+ Tree)](/zh/patterns/b-plus-tree/) | 合并迭代器组合来自多个 B+ 树叶子扫描的有序范围 |
 
 ## 挑战题
@@ -320,13 +320,13 @@ Exercise files: Rust `exercises/rust/src/merge_iterator.rs` · Go `exercises/go/
 LevelDB 通常合并 2-7 个层级，所以 K 非常小。在 K=4 时，线性扫描每次 next() 做 4 次比较，堆约 2 次，但避免了堆的簿记开销且有更好的分支预测。对于大 K（数百个流，如外部排序），堆明显更好。这是典型的微优化：了解你的典型 K 值比渐近复杂度更重要。
 :::
 
-::: details Q3: 你的归并迭代器正在合并来自不同数据库分片的流。两个分片返回相同的键 "user:123" 但值和时间戳不同。合并器应该如何处理？
+::: details Q3: 你的合并迭代器正在合并来自不同数据库分片的流。两个分片返回相同的键 "user:123" 但值和时间戳不同。合并器应该如何处理？
 **答案：** 使用时间戳作为决胜条件：当键相同时，时间戳最新的条目获胜。弹出所有具有相同键的条目，只保留最新的。
 
 这是 LSM 树使用的"最新获胜"去重策略。在合并期间，当遇到重复键时，比较序列号或时间戳，只保留最新的值。在 LevelDB 中，较新的条目（更高的序列号）遮蔽较旧的。这必须在合并期间完成——而不是之后——因为你需要知道每个条目来自哪个流以确定新旧。
 :::
 
-::: details Q4: 你正在使用归并迭代器对 50 个微服务进行实时日志聚合。每个服务产生约 1000 事件/秒。合并输出突然落后了。发生了什么？
+::: details Q4: 你正在使用合并迭代器对 50 个微服务进行实时日志聚合。每个服务产生约 1000 事件/秒。合并输出突然落后了。发生了什么？
 **答案：** 一个慢/停滞的流阻塞了合并。堆不能输出任何大于所有流中当前最小元素的元素，所以如果一个流停止产生数据，合并就会停滞等待它。
 
 这就是流式合并中的"掉队者问题"。解决方案：(1) 为每个流设置超时——如果 T 毫秒内没有数据到达，临时跳过该流；(2) 使用水位线——即使某些流尚未报告，也输出低于某个时间戳的所有事件；(3) 使用窗口缓冲和重排序而非严格的全局排序。Apache Flink 和 Google Dataflow 正是因为这个原因使用基于水位线的方法。
