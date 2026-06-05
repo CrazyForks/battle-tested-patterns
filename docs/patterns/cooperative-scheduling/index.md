@@ -253,7 +253,7 @@ Exercise files: Rust `exercises/rust/src/cooperative_scheduling.rs` · Go `exerc
 ## More Production Uses
 
 - [Lua](https://github.com/lua/lua) — coroutines
-- Python [asyncio](https://github.com/python/cpython/tree/main/Lib/asyncio)
+- Python [asyncio](https://github.com/python/cpython/blob/main/Lib/asyncio/tasks.py#L1-L50) — `Task` wraps coroutines, `__step` drives them one `send()` at a time
 - [Erlang/BEAM VM](https://github.com/erlang/otp/blob/master/erts/emulator/beam/emu/beam_emu.c#L305-L350) — reduction counting (yields after ~4000 reductions)
 - [Unity](https://github.com/Unity-Technologies/UnityCsReference/blob/master/Runtime/Export/Scripting/Coroutines.cs) — coroutines with `yield return`
 

@@ -234,7 +234,7 @@ Exercise files: Rust `exercises/rust/src/state_machine.rs` · Go `exercises/go/s
 
 ## Challenge Questions
 
-::: details Q1: A form has 4 steps, each with a "valid" and "invalid" sub-state, plus a "submitting" and "submitted" state. That's 4*2 + 2 = 10 states. If you add a "dirty/clean" dimension, it doubles to 20. How do you avoid this state explosion?
+::: details Q1: A form has 4 steps, each with a "valid" and "invalid" sub-state, plus a "submitting" and "submitted" state. That's 4 × 2 + 2 = 10 states. If you add a "dirty/clean" dimension, it doubles to 20. How do you avoid this state explosion?
 **Answer:** Use parallel (orthogonal) state machines — one for the form step, one for validation status, one for dirty tracking — instead of one flat machine with every combination.
 
 This is exactly what statecharts (Harel's extension of FSMs) solve. Each concern runs as an independent region: the step machine handles `NEXT`/`BACK`, the validation machine handles `VALIDATE`/`INVALIDATE`, the dirty machine handles `CHANGE`/`SAVE`. They compose without multiplying. XState supports this via `type: 'parallel'`. The total states are 4 + 2 + 2 = 8 instead of 4 × 2 × 2 = 16.
