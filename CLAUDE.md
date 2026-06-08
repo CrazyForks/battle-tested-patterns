@@ -64,8 +64,11 @@ pnpm build        # Build docs site
 pnpm test         # Run TypeScript exercises (Vitest)
 pnpm lint         # Lint markdown files
 pnpm typecheck    # TypeScript strict type check
+pnpm verify-code  # Verify all code blocks in patterns compile (TS/Rust/Go/Python)
 pnpm verify-links # Verify all source URLs are alive
-cd exercises/python && pytest  # Run Python exercises
+cd exercises/rust && cargo test    # Run Rust exercises
+cd exercises/go && go test ./...   # Run Go exercises
+cd exercises/python && pytest      # Run Python exercises
 ```
 
 ## Skills
