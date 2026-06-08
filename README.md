@@ -229,8 +229,10 @@ See [CONTRIBUTING.md](.github/CONTRIBUTING.md). The bar is intentionally high:
 
 1. **≥ 2 production proofs** with verified, line-number-precise source links
 2. **TypeScript + ≥ 1 other language** — idiomatic, not translated
-3. **≥ 2 exercises** with tests that pass
-4. Source links checked weekly by CI — broken links auto-open an Issue
+3. **Exercise files in all 4 languages** (TS/Rust/Go/Python) + answer files
+4. **Chinese translation** with identical code blocks
+5. All tests pass (`pnpm test` · `cargo test` · `go test ./...` · `pytest`), no lint errors
+6. Source links checked weekly by CI — broken links auto-open an Issue
 
 ## License
 

@@ -225,12 +225,14 @@ pnpm dev                          # 本地文档站
 
 ## 参与贡献
 
-详见 [CONTRIBUTING.md](.github/CONTRIBUTING.md)（[中文版](.github/CONTRIBUTING.zh-CN.md)）。门槛不低：
+详见 [CONTRIBUTING.md](.github/CONTRIBUTING.md)。门槛不低：
 
 1. **≥ 2 个生产验证** — 精确到行号的已验证源码链接
 2. **TypeScript + ≥ 1 种其他语言** — 地道实现，不是翻译
-3. **≥ 2 个练习** — 配套测试且通过
-4. 源码链接每周由 CI 自动检查——失效链接自动开 Issue
+3. **4 种语言的练习文件**（TS/Rust/Go/Python）+ 答案文件
+4. **中文翻译**且代码块一致
+5. 所有测试通过（`pnpm test` · `cargo test` · `go test ./...` · `pytest`），无 lint 错误
+6. 源码链接每周由 CI 自动检查——失效链接自动开 Issue
 
 ## 许可证
 
