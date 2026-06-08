@@ -16,12 +16,14 @@ See [commit history](https://github.com/Totoro-jam/battle-tested-patterns/commit
 - Remove dead warn/strict split in verify-code-blocks script
 - Standardize code-group tab order to TypeScript > Rust > Go > Python across all 66 pattern docs (EN+ZH)
 - Add explicit frontmatter `title` to all 92 pattern docs + 22 guide pages for SEO (og:title, browser tabs)
+- Update markdownlint config for frontmatter title compatibility (MD025 front_matter_title)
 
 ### CI
 
 - Extract release notes from CHANGELOG.md instead of changelogen (fixes empty release notes)
 - Add answer file existence check to content-quality workflow
 - Add frontmatter completeness and code-group tab order checks to content-quality workflow
+- Increase Rust/Go compile timeouts in verify-code-blocks (fixes sporadic CI ETIMEDOUT)
 
 ### Chores
 
