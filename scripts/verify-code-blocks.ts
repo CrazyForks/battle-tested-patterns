@@ -246,24 +246,11 @@ async function main() {
   const failures = results.filter((r) => r.error);
   const passed = results.filter((r) => !r.error);
 
-  // Go blocks are warnings (auto-import detection is imperfect)
-  // TS, Python, Rust are strict (blocking)
-  const strictLangs = ['typescript', 'python', 'rust', 'go'];
-  const strictFails = failures.filter((f) => strictLangs.includes(f.block.lang));
-  const warnFails = failures.filter((f) => !strictLangs.includes(f.block.lang));
-
   console.log(`\n${results.length} code blocks verified: ${passed.length} passed, ${failures.length} failed`);
 
-  if (warnFails.length > 0) {
-    console.log(`\n⚠️  ${warnFails.length} Go block(s) need fixing (non-blocking):`);
-    for (const f of warnFails) {
-      console.log(`  ${f.block.pattern} [${f.block.lang}] line ${f.block.line}`);
-    }
-  }
-
-  if (strictFails.length > 0) {
-    console.log('\n❌ TypeScript/Python/Rust failures (blocking):');
-    for (const f of strictFails) {
+  if (failures.length > 0) {
+    console.log('\n❌ Failures (blocking):');
+    for (const f of failures) {
       console.log(`\n  ${f.block.pattern} [${f.block.lang}] line ${f.block.line}:`);
       console.log(`     ${f.error?.split('\n')[0]}`);
     }
