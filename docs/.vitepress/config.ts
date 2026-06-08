@@ -361,6 +361,16 @@ export default withMermaid(defineConfig({
         darkModeSwitchLabel: '主题',
         sidebarMenuLabel: '菜单',
         returnToTopLabel: '回到顶部',
+        footer: {
+          message: '基于 MIT 许可证发布。',
+          copyright: 'Copyright © 2026 Totoro-jam',
+        },
+        notFound: {
+          title: '页面未找到',
+          quote: '看起来你迷路了。不过别担心，46 个模式正在等你探索。',
+          linkLabel: '返回首页',
+          linkText: '返回首页',
+        },
       },
     },
   },
@@ -371,6 +381,12 @@ export default withMermaid(defineConfig({
     socialLinks: [
       { icon: 'github', link: 'https://github.com/Totoro-jam/battle-tested-patterns' },
     ],
+    notFound: {
+      title: 'Page Not Found',
+      quote: 'Looks like you wandered off the path. But don\'t worry — 46 battle-tested patterns are waiting for you.',
+      linkLabel: 'Go to home page',
+      linkText: 'Take me home',
+    },
 
     search: {
       provider: 'local',
