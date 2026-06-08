@@ -22,7 +22,7 @@ Follow [SOP 01: New Pattern](./../.sop/01-new-pattern.md). In short:
 1. **Verify** the pattern exists in ≥ 2 production codebases
 2. **Write** the pattern document following the [template](../CLAUDE.md#pattern-file-template)
 3. **Implement** in TypeScript (required) + at least 1 other language
-4. **Create** ≥ 1 exercise test file with difficulty labels
+4. **Create** exercises in all 4 languages (TS, Rust, Go, Python) + answer files
 5. **Verify** all source links return HTTP 200
 6. **Submit** PR with a filled-out checklist
 
@@ -47,12 +47,16 @@ This is our core differentiator — every claim must be verifiable:
 ## Running Locally
 
 ```bash
-pnpm install          # Install dependencies
-pnpm dev              # Start VitePress dev server
-pnpm test             # Run TypeScript exercises
-pnpm lint             # Lint markdown
-pnpm typecheck        # TypeScript type check
-pnpm verify-links     # Verify source URLs
+pnpm install                          # Install dependencies
+pnpm dev                              # Start VitePress dev server
+pnpm test                             # Run TypeScript exercises (Vitest)
+pnpm lint                             # Lint markdown
+pnpm typecheck                        # TypeScript type check
+pnpm verify-code                      # Verify all code blocks compile
+pnpm verify-links                     # Verify source URLs
+cd exercises/rust && cargo test       # Run Rust exercises
+cd exercises/go && go test ./...      # Run Go exercises
+cd exercises/python && pytest         # Run Python exercises
 ```
 
 ## PR Process

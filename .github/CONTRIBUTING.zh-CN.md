@@ -22,7 +22,7 @@
 1. **验证**模式在 ≥ 2 个生产代码库中存在
 2. **编写**模式文档，遵循[模板](../CLAUDE.md)
 3. **实现** TypeScript（必须）+ 至少 1 种其他语言
-4. **创建** ≥ 1 个练习测试文件，标注难度
+4. **创建** 4 种语言的练习文件（TS、Rust、Go、Python）+ 答案文件
 5. **验证**所有源码链接返回 HTTP 200
 6. **提交** PR 并填写完整的 checklist
 
@@ -47,12 +47,16 @@
 ## 本地运行
 
 ```bash
-pnpm install          # 安装依赖
-pnpm dev              # 启动文档站开发服务器
-pnpm test             # 运行 TypeScript 练习
-pnpm lint             # Lint Markdown
-pnpm typecheck        # TypeScript 类型检查
-pnpm verify-links     # 验证源码链接
+pnpm install                          # 安装依赖
+pnpm dev                              # 启动文档站开发服务器
+pnpm test                             # 运行 TypeScript 练习（Vitest）
+pnpm lint                             # Lint Markdown
+pnpm typecheck                        # TypeScript 类型检查
+pnpm verify-code                      # 验证所有代码块可编译
+pnpm verify-links                     # 验证源码链接
+cd exercises/rust && cargo test       # 运行 Rust 练习
+cd exercises/go && go test ./...      # 运行 Go 练习
+cd exercises/python && pytest         # 运行 Python 练习
 ```
 
 ## PR 流程
