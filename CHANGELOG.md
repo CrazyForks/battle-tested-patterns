@@ -15,6 +15,7 @@ See [commit history](https://github.com/Totoro-jam/battle-tested-patterns/commit
 - Add `// TODO: implement` markers to all 46 Rust exercise files for consistency with TS/Go/Python
 - Remove dead warn/strict split in verify-code-blocks script
 - Standardize code-group tab order to TypeScript > Rust > Go > Python across all 66 pattern docs (EN+ZH)
+- Add explicit frontmatter `title` to all 92 pattern docs + 22 guide pages for SEO (og:title, browser tabs)
 
 ### CI
 
