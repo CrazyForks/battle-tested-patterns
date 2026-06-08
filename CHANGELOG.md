@@ -8,9 +8,18 @@ See [commit history](https://github.com/Totoro-jam/battle-tested-patterns/commit
 
 [compare changes](https://github.com/Totoro-jam/battle-tested-patterns/compare/v1.9.0...main)
 
+### Fixes
+
+- Correct stale test counts across READMEs and exercise guides (TS 553→491, Go 173→176)
+
+### CI
+
+- Extract release notes from CHANGELOG.md instead of changelogen (fixes empty release notes)
+
 ### Documentation
 
 - Update SOPs 01/05/08 to match current 4-language exercise and release workflow
+- Add missing commands to CLAUDE.md (verify-code, Rust, Go)
 
 ## v1.9.0
 
