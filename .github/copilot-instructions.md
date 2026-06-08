@@ -25,5 +25,5 @@ More Production Uses, Related Patterns, Challenge Questions (3-4 scenario Q&A).
 
 - Monorepo: pnpm workspace (docs/, exercises/)
 - Docs: VitePress
-- Tests: Vitest (TS), cargo test (Rust), go test (Go)
+- Tests: Vitest (TS), cargo test (Rust), go test (Go), pytest (Python)
 - Commits: Conventional Commits
