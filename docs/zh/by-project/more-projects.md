@@ -24,6 +24,8 @@ description: "更多开源项目的模式：PostgreSQL、Redis、Kafka、LLVM、
 | [LSM 树](/zh/patterns/lsm-tree/) | LevelDB | [`db_impl.cc`](https://github.com/google/leveldb/blob/main/db/db_impl.cc#L1241-L1368) | `DBImpl::Write`——批量写入 WAL，插入 memtable，阈值时刷入 SST |
 | [合并迭代器](/zh/patterns/merge-iterator/) | RocksDB | [`merge_helper.cc`](https://github.com/facebook/rocksdb/blob/main/db/merge_helper.cc#L87-L156) | `TimedFullMerge` 在 compaction 期间合并同键的多个版本 |
 | [LSM 树](/zh/patterns/lsm-tree/) | RocksDB | [`memtable.cc`](https://github.com/facebook/rocksdb/blob/main/db/memtable.cc#L458-L534) | `MemTable::Add`——跳表支撑的 memtable，写满后刷入 L0 SST |
+| [B+ 树](/zh/patterns/b-plus-tree/) | PostgreSQL | [`nbtinsert.c`](https://github.com/postgres/postgres/blob/master/src/backend/access/nbtree/nbtinsert.c#L22-L55) | B-link 树（Lehman-Yao 变体）——所有表和索引均由磁盘页上的 B+ 树支撑 |
+| [B+ 树](/zh/patterns/b-plus-tree/) | SQLite | [`btreeInt.h`](https://github.com/sqlite/sqlite/blob/master/src/btreeInt.h#L190-L198) | 内部单元持有子页指针 + 键；叶单元持有有效载荷。通过 `balance_nonroot()` 实现页面分裂 |
 | [默克尔树](/zh/patterns/merkle-tree/) | ZFS (OpenZFS) | [`blkptr.c`](https://github.com/openzfs/zfs/blob/master/module/zfs/blkptr.c#L30-L77) | 块指针校验和形成 Merkle 树，从数据块到 uberblock，检测静默数据损坏 |
 | [检查点](/zh/patterns/checkpointing/) | PostgreSQL | [`checkpointer.c`](https://github.com/postgres/postgres/blob/master/src/backend/postmaster/checkpointer.c#L218-L360) | `CheckpointerMain`——刷新脏缓冲区，写检查点 WAL 记录，更新 `pg_control` |
 | [检查点](/zh/patterns/checkpointing/) | Redis | [`rdb.c`](https://github.com/redis/redis/blob/unstable/src/rdb.c#L1414-L1529) | `rdbSaveRio`——fork 子进程写入时间点 RDB 快照，不阻塞主线程 |
@@ -65,6 +67,8 @@ description: "更多开源项目的模式：PostgreSQL、Redis、Kafka、LLVM、
 | [指数退避重试](/zh/patterns/retry-backoff/) | gRPC-Go | [`internal/backoff/backoff.go`](https://github.com/grpc/grpc-go/blob/master/internal/backoff/backoff.go#L56-L75) | 带抖动的指数连接退避 |
 | [依赖图](/zh/patterns/dependency-graph/) | Terraform | [资源图](https://github.com/hashicorp/terraform) | DAG 顺序的并行资源 apply |
 | [依赖图](/zh/patterns/dependency-graph/) | Bazel | [Action 图](https://github.com/bazelbuild/bazel) | 构建目标的拓扑执行 |
+| [注册表](/zh/patterns/registry/) | gRPC-Go | [`server.go`](https://github.com/grpc/grpc-go/blob/master/server.go#L154-L170) | `RegisterService` 将服务描述添加到服务器的服务映射中，用于 RPC 方法分发 |
+| [注册表](/zh/patterns/registry/) | TensorFlow | [`op.h`](https://github.com/tensorflow/tensorflow/blob/master/tensorflow/core/framework/op.h#L258-L290) | `REGISTER_OP` 宏将操作注册到全局 `OpRegistry`，用于构建计算图 |
 | [一致性哈希](/zh/patterns/consistent-hashing/) | Nginx | [`ngx_http_upstream_hash`](https://github.com/nginx/nginx/blob/master/src/http/modules/ngx_http_upstream_hash_module.c) | 基于 ketama 哈希的上游负载均衡 |
 
 ## 编译器与语言运行时

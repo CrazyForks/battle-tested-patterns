@@ -24,6 +24,8 @@ Patterns from databases, JVM ecosystem, browsers, and other notable open-source 
 | [LSM Tree](/patterns/lsm-tree/) | LevelDB | [`db_impl.cc`](https://github.com/google/leveldb/blob/main/db/db_impl.cc#L1241-L1368) | `DBImpl::Write` — batch writes to WAL, insert into memtable, flush to SST on threshold |
 | [Merge Iterator](/patterns/merge-iterator/) | RocksDB | [`merge_helper.cc`](https://github.com/facebook/rocksdb/blob/main/db/merge_helper.cc#L87-L156) | `TimedFullMerge` combines multiple versions of the same key during compaction |
 | [LSM Tree](/patterns/lsm-tree/) | RocksDB | [`memtable.cc`](https://github.com/facebook/rocksdb/blob/main/db/memtable.cc#L458-L534) | `MemTable::Add` — skip-list backed memtable, flush to L0 SST when full |
+| [B+ Tree](/patterns/b-plus-tree/) | PostgreSQL | [`nbtinsert.c`](https://github.com/postgres/postgres/blob/master/src/backend/access/nbtree/nbtinsert.c#L22-L55) | B-link tree (Lehman-Yao variant) — all tables and indexes backed by B+ trees on disk pages |
+| [B+ Tree](/patterns/b-plus-tree/) | SQLite | [`btreeInt.h`](https://github.com/sqlite/sqlite/blob/master/src/btreeInt.h#L190-L198) | Interior cells hold child page pointers + keys; leaf cells hold payloads. Page splitting via `balance_nonroot()` |
 | [Merkle Tree](/patterns/merkle-tree/) | ZFS (OpenZFS) | [`blkptr.c`](https://github.com/openzfs/zfs/blob/master/module/zfs/blkptr.c#L30-L77) | Block pointer checksums form a Merkle tree from data blocks to uberblock for silent corruption detection |
 | [Checkpointing](/patterns/checkpointing/) | PostgreSQL | [`checkpointer.c`](https://github.com/postgres/postgres/blob/master/src/backend/postmaster/checkpointer.c#L218-L360) | `CheckpointerMain` — flush dirty buffers, write checkpoint WAL record, update `pg_control` |
 | [Checkpointing](/patterns/checkpointing/) | Redis | [`rdb.c`](https://github.com/redis/redis/blob/unstable/src/rdb.c#L1414-L1529) | `rdbSaveRio` — fork child process to write point-in-time RDB snapshot without blocking main thread |
@@ -65,6 +67,8 @@ Patterns from databases, JVM ecosystem, browsers, and other notable open-source 
 | [Retry Backoff](/patterns/retry-backoff/) | gRPC-Go | [`internal/backoff/backoff.go`](https://github.com/grpc/grpc-go/blob/master/internal/backoff/backoff.go#L56-L75) | Exponential connection backoff with jitter |
 | [Dependency Graph](/patterns/dependency-graph/) | Terraform | [Resource graph](https://github.com/hashicorp/terraform) | Parallel resource apply with DAG ordering |
 | [Dependency Graph](/patterns/dependency-graph/) | Bazel | [Action graph](https://github.com/bazelbuild/bazel) | Topological execution of build targets |
+| [Registry](/patterns/registry/) | gRPC-Go | [`server.go`](https://github.com/grpc/grpc-go/blob/master/server.go#L154-L170) | `RegisterService` adds service descriptions to the server's service map for RPC method dispatch |
+| [Registry](/patterns/registry/) | TensorFlow | [`op.h`](https://github.com/tensorflow/tensorflow/blob/master/tensorflow/core/framework/op.h#L258-L290) | `REGISTER_OP` macro registers operations into the global `OpRegistry` for computation graph building |
 | [Consistent Hashing](/patterns/consistent-hashing/) | Nginx | [`ngx_http_upstream_hash`](https://github.com/nginx/nginx/blob/master/src/http/modules/ngx_http_upstream_hash_module.c) | Upstream load balancing with ketama hashing |
 
 ## Compilers & Language Runtimes
