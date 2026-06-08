@@ -49,13 +49,25 @@ function extractLinks(content: string): Array<{ url: string; isProductionProof: 
   return links;
 }
 
-async function checkUrl(url: string): Promise<{ status: number | 'error'; ok: boolean }> {
-  try {
-    const res = await fetch(url, { method: 'HEAD', redirect: 'follow' });
-    return { status: res.status, ok: res.ok };
-  } catch {
-    return { status: 'error', ok: false };
+async function checkUrl(url: string, retries = 2): Promise<{ status: number | 'error'; ok: boolean }> {
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const res = await fetch(url, { method: 'HEAD', redirect: 'follow' });
+      if (res.ok) return { status: res.status, ok: true };
+      if (res.status >= 500 && attempt < retries) {
+        await new Promise((r) => setTimeout(r, 3000 * (attempt + 1)));
+        continue;
+      }
+      return { status: res.status, ok: false };
+    } catch {
+      if (attempt < retries) {
+        await new Promise((r) => setTimeout(r, 3000 * (attempt + 1)));
+        continue;
+      }
+      return { status: 'error', ok: false };
+    }
   }
+  return { status: 'error', ok: false };
 }
 
 async function main() {

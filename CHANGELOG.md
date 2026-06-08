@@ -11,6 +11,7 @@ See [commit history](https://github.com/Totoro-jam/battle-tested-patterns/commit
 ### Fixes
 
 - Correct stale test counts across READMEs and exercise guides (TS 553→491, Go 173→176)
+- Add retry logic to verify-source-links for transient 5xx errors (avoids false-positive issues)
 
 ### CI
 
