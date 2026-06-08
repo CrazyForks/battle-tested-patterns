@@ -90,6 +90,33 @@ function stringify(tv: TaggedValue): string {
 }
 ```
 
+```rust [Rust]
+enum Value {
+    Null,
+    Bool(bool),
+    Number(f64),
+    Str(String),
+}
+
+impl Value {
+    fn display(&self) -> String {
+        match self {
+            Value::Null => "null".to_string(),
+            Value::Bool(b) => b.to_string(),
+            Value::Number(n) => n.to_string(),
+            Value::Str(s) => format!("\"{}\"", s),
+        }
+    }
+
+    fn try_add(&self, other: &Value) -> Option<Value> {
+        match (self, other) {
+            (Value::Number(a), Value::Number(b)) => Some(Value::Number(a + b)),
+            _ => None,
+        }
+    }
+}
+```
+
 ```go [Go]
 type Tag int
 
@@ -150,33 +177,6 @@ def try_add(a: TaggedValue, b: TaggedValue) -> TaggedValue | None:
     if a.tag != "number" or b.tag != "number":
         return None
     return TaggedValue("number", a.value + b.value)
-```
-
-```rust [Rust]
-enum Value {
-    Null,
-    Bool(bool),
-    Number(f64),
-    Str(String),
-}
-
-impl Value {
-    fn display(&self) -> String {
-        match self {
-            Value::Null => "null".to_string(),
-            Value::Bool(b) => b.to_string(),
-            Value::Number(n) => n.to_string(),
-            Value::Str(s) => format!("\"{}\"", s),
-        }
-    }
-
-    fn try_add(&self, other: &Value) -> Option<Value> {
-        match (self, other) {
-            (Value::Number(a), Value::Number(b)) => Some(Value::Number(a + b)),
-            _ => None,
-        }
-    }
-}
 ```
 
 :::

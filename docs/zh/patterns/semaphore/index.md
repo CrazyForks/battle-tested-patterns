@@ -95,6 +95,32 @@ async function withSemaphore<T>(sem: Semaphore, fn: () => Promise<T>): Promise<T
 }
 ```
 
+```rust [Rust]
+use std::sync::{Arc, Mutex, Condvar};
+
+pub struct Semaphore {
+    count: Mutex<usize>,
+    cvar: Condvar,
+}
+
+impl Semaphore {
+    pub fn new(max: usize) -> Self {
+        Semaphore { count: Mutex::new(max), cvar: Condvar::new() }
+    }
+
+    pub fn acquire(&self) {
+        let mut count = self.count.lock().unwrap();
+        while *count == 0 { count = self.cvar.wait(count).unwrap(); }
+        *count -= 1;
+    }
+
+    pub fn release(&self) {
+        *self.count.lock().unwrap() += 1;
+        self.cvar.notify_one();
+    }
+}
+```
+
 ```go [Go]
 // Idiomatic Go: buffered channel as semaphore
 func process(s string) { /* work */ }
@@ -125,32 +151,6 @@ async def fetch_with_limit(urls: list[str], max_concurrent: int = 5):
         async with sem:  # acquire + release via context manager
             return await do_fetch(url)
     return await asyncio.gather(*(fetch_one(u) for u in urls))
-```
-
-```rust [Rust]
-use std::sync::{Arc, Mutex, Condvar};
-
-pub struct Semaphore {
-    count: Mutex<usize>,
-    cvar: Condvar,
-}
-
-impl Semaphore {
-    pub fn new(max: usize) -> Self {
-        Semaphore { count: Mutex::new(max), cvar: Condvar::new() }
-    }
-
-    pub fn acquire(&self) {
-        let mut count = self.count.lock().unwrap();
-        while *count == 0 { count = self.cvar.wait(count).unwrap(); }
-        *count -= 1;
-    }
-
-    pub fn release(&self) {
-        *self.count.lock().unwrap() += 1;
-        self.cvar.notify_one();
-    }
-}
 ```
 
 :::

@@ -104,19 +104,6 @@ fn example() {
 }
 ```
 
-```python [Python]
-# Python generators are native lazy iterators
-def fibonacci():
-    a, b = 0, 1
-    while True:
-        yield a
-        a, b = b, a + b
-
-# Take first 10 even Fibonacci numbers — lazy, infinite-safe
-evens = (x for x in fibonacci() if x % 2 == 0)
-first_10 = [next(evens) for _ in range(10)]
-```
-
 ```go [Go]
 // Go 1.23+ iter.Seq for lazy iteration
 package iterator
@@ -167,6 +154,19 @@ func Collect[T any](seq iter.Seq[T]) []T {
 // source := slices.Values([]int{1,2,3,4,5,6,7,8,9,10})
 // result := Collect(Take(Map(Filter(source, isOdd), times10), 3))
 // → [10, 30, 50]
+```
+
+```python [Python]
+# Python generators are native lazy iterators
+def fibonacci():
+    a, b = 0, 1
+    while True:
+        yield a
+        a, b = b, a + b
+
+# Take first 10 even Fibonacci numbers — lazy, infinite-safe
+evens = (x for x in fibonacci() if x % 2 == 0)
+first_10 = [next(evens) for _ in range(10)]
 ```
 
 :::
