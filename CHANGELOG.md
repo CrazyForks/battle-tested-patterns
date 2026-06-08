@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 See [commit history](https://github.com/Totoro-jam/battle-tested-patterns/commits/main) for detailed changes.
 
+## Unreleased
+
+[compare changes](https://github.com/Totoro-jam/battle-tested-patterns/compare/v1.9.1...main)
+
 ## v1.9.1
 
 [compare changes](https://github.com/Totoro-jam/battle-tested-patterns/compare/v1.9.0...v1.9.1)
