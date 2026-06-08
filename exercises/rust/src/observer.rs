@@ -4,30 +4,30 @@ pub struct EventBus {
 }
 
 impl EventBus {
-    pub fn new() -> Self {
+    pub fn new() -> Self { // TODO: implement
         EventBus {
             listeners: std::collections::HashMap::new(),
             logs: Vec::new(),
         }
     }
 
-    pub fn add_listener(&mut self) -> usize {
+    pub fn add_listener(&mut self) -> usize { // TODO: implement
         let id = self.logs.len();
         self.logs.push(Vec::new());
         id
     }
 
-    pub fn subscribe(&mut self, event: &str, listener_id: usize) {
+    pub fn subscribe(&mut self, event: &str, listener_id: usize) { // TODO: implement
         self.listeners.entry(event.to_string()).or_default().push(listener_id);
     }
 
-    pub fn unsubscribe(&mut self, event: &str, listener_id: usize) {
+    pub fn unsubscribe(&mut self, event: &str, listener_id: usize) { // TODO: implement
         if let Some(ids) = self.listeners.get_mut(event) {
             ids.retain(|&id| id != listener_id);
         }
     }
 
-    pub fn publish(&mut self, event: &str) {
+    pub fn publish(&mut self, event: &str) { // TODO: implement
         if let Some(ids) = self.listeners.get(event).cloned() {
             for id in ids {
                 self.logs[id].push(event.to_string());
@@ -35,7 +35,7 @@ impl EventBus {
         }
     }
 
-    pub fn events_for(&self, listener_id: usize) -> &[String] {
+    pub fn events_for(&self, listener_id: usize) -> &[String] { // TODO: implement
         &self.logs[listener_id]
     }
 }

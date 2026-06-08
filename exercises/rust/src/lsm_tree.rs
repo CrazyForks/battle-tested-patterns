@@ -7,7 +7,7 @@ struct LSMTree {
 }
 
 impl LSMTree {
-    fn new(threshold: usize) -> Self {
+    fn new(threshold: usize) -> Self { // TODO: implement
         Self {
             mem_table: HashMap::new(),
             threshold,
@@ -15,14 +15,14 @@ impl LSMTree {
         }
     }
 
-    fn put(&mut self, key: &str, value: &str) {
+    fn put(&mut self, key: &str, value: &str) { // TODO: implement
         self.mem_table.insert(key.to_string(), value.to_string());
         if self.mem_table.len() >= self.threshold {
             self.flush();
         }
     }
 
-    fn flush(&mut self) {
+    fn flush(&mut self) { // TODO: implement
         if self.mem_table.is_empty() {
             return;
         }
@@ -30,7 +30,7 @@ impl LSMTree {
         self.sstables.push(frozen);
     }
 
-    fn get(&self, key: &str) -> Option<&str> {
+    fn get(&self, key: &str) -> Option<&str> { // TODO: implement
         if let Some(v) = self.mem_table.get(key) {
             return Some(v);
         }
@@ -42,12 +42,12 @@ impl LSMTree {
         None
     }
 
-    fn sst_count(&self) -> usize {
+    fn sst_count(&self) -> usize { // TODO: implement
         self.sstables.len()
     }
 
     #[allow(dead_code)]
-    fn all_keys(&self) -> Vec<String> {
+    fn all_keys(&self) -> Vec<String> { // TODO: implement
         let mut seen = BTreeSet::new();
         for k in self.mem_table.keys() {
             seen.insert(k.clone());

@@ -5,13 +5,13 @@ struct Registry {
 }
 
 impl Registry {
-    fn new() -> Self {
+    fn new() -> Self { // TODO: implement
         Self {
             handlers: HashMap::new(),
         }
     }
 
-    fn register(
+    fn register( // TODO: implement
         &mut self,
         name: &str,
         handler: impl Fn(&str) -> String + 'static,
@@ -23,11 +23,11 @@ impl Registry {
         Ok(())
     }
 
-    fn get(&self, name: &str) -> Option<&dyn Fn(&str) -> String> {
+    fn get(&self, name: &str) -> Option<&dyn Fn(&str) -> String> { // TODO: implement
         self.handlers.get(name).map(|h| h.as_ref())
     }
 
-    fn len(&self) -> usize {
+    fn len(&self) -> usize { // TODO: implement
         self.handlers.len()
     }
 }

@@ -8,7 +8,7 @@ pub struct BloomFilter {
 }
 
 impl BloomFilter {
-    pub fn new(size: usize, num_hashes: usize) -> Self {
+    pub fn new(size: usize, num_hashes: usize) -> Self { // TODO: implement
         BloomFilter {
             bits: vec![false; size],
             size,
@@ -16,7 +16,7 @@ impl BloomFilter {
         }
     }
 
-    fn hashes(&self, item: &str) -> Vec<usize> {
+    fn hashes(&self, item: &str) -> Vec<usize> { // TODO: implement
         let mut h1 = DefaultHasher::new();
         item.hash(&mut h1);
         let hash1 = h1.finish();
@@ -30,13 +30,13 @@ impl BloomFilter {
             .collect()
     }
 
-    pub fn add(&mut self, item: &str) {
+    pub fn add(&mut self, item: &str) { // TODO: implement
         for idx in self.hashes(item) {
             self.bits[idx] = true;
         }
     }
 
-    pub fn may_contain(&self, item: &str) -> bool {
+    pub fn may_contain(&self, item: &str) -> bool { // TODO: implement
         self.hashes(item).iter().all(|&idx| self.bits[idx])
     }
 }

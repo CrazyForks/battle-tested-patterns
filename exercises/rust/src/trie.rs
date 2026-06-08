@@ -10,17 +10,17 @@ pub struct Trie {
 }
 
 impl TrieNode {
-    fn new() -> Self {
+    fn new() -> Self { // TODO: implement
         TrieNode { children: BTreeMap::new(), is_end: false }
     }
 }
 
 impl Trie {
-    pub fn new() -> Self {
+    pub fn new() -> Self { // TODO: implement
         Trie { root: TrieNode::new() }
     }
 
-    pub fn insert(&mut self, word: &str) {
+    pub fn insert(&mut self, word: &str) { // TODO: implement
         let mut node = &mut self.root;
         for &b in word.as_bytes() {
             node = node.children.entry(b).or_insert_with(TrieNode::new);
@@ -28,7 +28,7 @@ impl Trie {
         node.is_end = true;
     }
 
-    pub fn search(&self, word: &str) -> bool {
+    pub fn search(&self, word: &str) -> bool { // TODO: implement
         let mut node = &self.root;
         for &b in word.as_bytes() {
             match node.children.get(&b) {
@@ -39,7 +39,7 @@ impl Trie {
         node.is_end
     }
 
-    pub fn starts_with(&self, prefix: &str) -> bool {
+    pub fn starts_with(&self, prefix: &str) -> bool { // TODO: implement
         let mut node = &self.root;
         for &b in prefix.as_bytes() {
             match node.children.get(&b) {
@@ -50,7 +50,7 @@ impl Trie {
         true
     }
 
-    pub fn autocomplete(&self, prefix: &str) -> Vec<String> {
+    pub fn autocomplete(&self, prefix: &str) -> Vec<String> { // TODO: implement
         let mut node = &self.root;
         for &b in prefix.as_bytes() {
             match node.children.get(&b) {
@@ -63,7 +63,7 @@ impl Trie {
         results
     }
 
-    fn collect_words(node: &TrieNode, prefix: String, results: &mut Vec<String>) {
+    fn collect_words(node: &TrieNode, prefix: String, results: &mut Vec<String>) { // TODO: implement
         if node.is_end {
             results.push(prefix.clone());
         }

@@ -6,7 +6,7 @@ pub struct RetryConfig {
     pub base_delay: Duration,
 }
 
-pub fn with_retry<F>(cfg: &RetryConfig, mut f: F) -> Result<u32, String>
+pub fn with_retry<F>(cfg: &RetryConfig, mut f: F) -> Result<u32, String> // TODO: implement
 where
     F: FnMut() -> Result<(), String>,
 {

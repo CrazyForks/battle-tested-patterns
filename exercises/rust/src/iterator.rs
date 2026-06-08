@@ -3,11 +3,11 @@ pub struct Iter<T> {
 }
 
 impl<T: Clone> Iter<T> {
-    pub fn from(items: Vec<T>) -> Self {
+    pub fn from(items: Vec<T>) -> Self { // TODO: implement
         Iter { items }
     }
 
-    pub fn filter<F>(self, pred: F) -> Iter<T>
+    pub fn filter<F>(self, pred: F) -> Iter<T> // TODO: implement
     where
         F: Fn(&T) -> bool,
     {
@@ -16,7 +16,7 @@ impl<T: Clone> Iter<T> {
         }
     }
 
-    pub fn map_items<U: Clone, F>(self, f: F) -> Iter<U>
+    pub fn map_items<U: Clone, F>(self, f: F) -> Iter<U> // TODO: implement
     where
         F: Fn(T) -> U,
     {
@@ -25,17 +25,17 @@ impl<T: Clone> Iter<T> {
         }
     }
 
-    pub fn take(self, n: usize) -> Iter<T> {
+    pub fn take(self, n: usize) -> Iter<T> { // TODO: implement
         Iter {
             items: self.items.into_iter().take(n).collect(),
         }
     }
 
-    pub fn collect(self) -> Vec<T> {
+    pub fn collect(self) -> Vec<T> { // TODO: implement
         self.items
     }
 
-    pub fn fold<U, F>(self, init: U, f: F) -> U
+    pub fn fold<U, F>(self, init: U, f: F) -> U // TODO: implement
     where
         F: Fn(U, T) -> U,
     {

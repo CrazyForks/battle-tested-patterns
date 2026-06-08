@@ -7,13 +7,13 @@ enum TaggedValue {
 }
 
 impl TaggedValue {
-    fn is_numeric(&self) -> bool {
+    fn is_numeric(&self) -> bool { // TODO: implement
         matches!(self, TaggedValue::Int(_) | TaggedValue::Float(_))
     }
 }
 
 impl fmt::Display for TaggedValue {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result { // TODO: implement
         match self {
             TaggedValue::Int(v) => write!(f, "Int({})", v),
             TaggedValue::Float(v) => write!(f, "Float({:.2})", v),

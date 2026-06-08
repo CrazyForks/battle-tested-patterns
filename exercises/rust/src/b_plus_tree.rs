@@ -9,7 +9,7 @@ struct BPlusTree {
 }
 
 impl BPlusTree {
-    fn new(order: usize) -> Self {
+    fn new(order: usize) -> Self { // TODO: implement
         Self {
             order,
             leaves: vec![BPlusLeaf {
@@ -19,7 +19,7 @@ impl BPlusTree {
         }
     }
 
-    fn find_leaf_idx(&self, key: i32) -> usize {
+    fn find_leaf_idx(&self, key: i32) -> usize { // TODO: implement
         for (i, leaf) in self.leaves.iter().enumerate() {
             if leaf.keys.is_empty() || key <= *leaf.keys.last().unwrap() {
                 return i;
@@ -28,7 +28,7 @@ impl BPlusTree {
         self.leaves.len() - 1
     }
 
-    fn insert(&mut self, key: i32, value: &str) {
+    fn insert(&mut self, key: i32, value: &str) { // TODO: implement
         let leaf_idx = self.find_leaf_idx(key);
         let leaf = &mut self.leaves[leaf_idx];
 
@@ -56,7 +56,7 @@ impl BPlusTree {
         }
     }
 
-    fn search(&self, key: i32) -> Option<&str> {
+    fn search(&self, key: i32) -> Option<&str> { // TODO: implement
         for leaf in &self.leaves {
             if let Some(pos) = leaf.keys.iter().position(|&k| k == key) {
                 return Some(&leaf.values[pos]);
@@ -65,7 +65,7 @@ impl BPlusTree {
         None
     }
 
-    fn range_scan(&self, low: i32, high: i32) -> Vec<&str> {
+    fn range_scan(&self, low: i32, high: i32) -> Vec<&str> { // TODO: implement
         let mut result = Vec::new();
         for leaf in &self.leaves {
             for (i, &k) in leaf.keys.iter().enumerate() {

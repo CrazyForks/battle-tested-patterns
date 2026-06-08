@@ -3,25 +3,25 @@ struct Checkpoint<T> {
 }
 
 impl<T: Clone> Checkpoint<T> {
-    fn new() -> Self {
+    fn new() -> Self { // TODO: implement
         Self {
             history: Vec::new(),
         }
     }
 
-    fn save(&mut self, state: T) {
+    fn save(&mut self, state: T) { // TODO: implement
         self.history.push(state);
     }
 
-    fn restore(&self, index: usize) -> Option<&T> {
+    fn restore(&self, index: usize) -> Option<&T> { // TODO: implement
         self.history.get(index)
     }
 
-    fn latest(&self) -> Option<&T> {
+    fn latest(&self) -> Option<&T> { // TODO: implement
         self.history.last()
     }
 
-    fn len(&self) -> usize {
+    fn len(&self) -> usize { // TODO: implement
         self.history.len()
     }
 }

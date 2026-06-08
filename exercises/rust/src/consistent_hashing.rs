@@ -9,14 +9,14 @@ pub struct HashRing {
     nodes: HashMap<String, Vec<u64>>,
 }
 
-fn hash_key(key: &str) -> u64 {
+fn hash_key(key: &str) -> u64 { // TODO: implement
     let mut h = DefaultHasher::new();
     key.hash(&mut h);
     h.finish()
 }
 
 impl HashRing {
-    pub fn new(replicas: usize) -> Self {
+    pub fn new(replicas: usize) -> Self { // TODO: implement
         HashRing {
             ring: BTreeMap::new(),
             replicas,
@@ -24,7 +24,7 @@ impl HashRing {
         }
     }
 
-    pub fn add_node(&mut self, node: &str) {
+    pub fn add_node(&mut self, node: &str) { // TODO: implement
         let mut hashes = vec![];
         for i in 0..self.replicas {
             let vkey = format!("{}#{}", node, i);
@@ -35,7 +35,7 @@ impl HashRing {
         self.nodes.insert(node.to_string(), hashes);
     }
 
-    pub fn remove_node(&mut self, node: &str) {
+    pub fn remove_node(&mut self, node: &str) { // TODO: implement
         if let Some(hashes) = self.nodes.remove(node) {
             for h in hashes {
                 self.ring.remove(&h);
@@ -43,7 +43,7 @@ impl HashRing {
         }
     }
 
-    pub fn get_node(&self, key: &str) -> Option<&str> {
+    pub fn get_node(&self, key: &str) -> Option<&str> { // TODO: implement
         if self.ring.is_empty() {
             return None;
         }

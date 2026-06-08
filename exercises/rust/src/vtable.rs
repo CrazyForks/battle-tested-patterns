@@ -6,14 +6,14 @@ struct VTable {
 }
 
 impl VTable {
-    fn new(type_name: &str) -> Self {
+    fn new(type_name: &str) -> Self { // TODO: implement
         Self {
             type_name: type_name.to_string(),
             methods: HashMap::new(),
         }
     }
 
-    fn add_method(
+    fn add_method( // TODO: implement
         &mut self,
         name: &str,
         f: impl Fn(&dyn std::any::Any) -> String + 'static,
@@ -28,19 +28,19 @@ struct DynObject<'a> {
 }
 
 impl<'a> DynObject<'a> {
-    fn new(vtable: &'a VTable, data: impl std::any::Any) -> Self {
+    fn new(vtable: &'a VTable, data: impl std::any::Any) -> Self { // TODO: implement
         Self {
             vtable,
             data: Box::new(data),
         }
     }
 
-    fn call(&self, method: &str) -> Option<String> {
+    fn call(&self, method: &str) -> Option<String> { // TODO: implement
         let f = self.vtable.methods.get(method)?;
         Some(f(self.data.as_ref()))
     }
 
-    fn type_name(&self) -> &str {
+    fn type_name(&self) -> &str { // TODO: implement
         &self.vtable.type_name
     }
 }

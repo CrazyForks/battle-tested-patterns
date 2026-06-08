@@ -6,7 +6,7 @@ struct Context {
 }
 
 impl Context {
-    fn new(request: &str) -> Self {
+    fn new(request: &str) -> Self { // TODO: implement
         Self {
             request: request.to_string(),
             response: String::new(),
@@ -22,21 +22,21 @@ struct Pipeline {
 }
 
 impl Pipeline {
-    fn new() -> Self {
+    fn new() -> Self { // TODO: implement
         Self {
             middlewares: Vec::new(),
         }
     }
 
-    fn use_mw(&mut self, mw: impl Fn(&mut Context, &dyn Fn(&mut Context)) + 'static) {
+    fn use_mw(&mut self, mw: impl Fn(&mut Context, &dyn Fn(&mut Context)) + 'static) { // TODO: implement
         self.middlewares.push(Box::new(mw));
     }
 
-    fn execute(&self, ctx: &mut Context) {
+    fn execute(&self, ctx: &mut Context) { // TODO: implement
         self.run(ctx, 0);
     }
 
-    fn run(&self, ctx: &mut Context, index: usize) {
+    fn run(&self, ctx: &mut Context, index: usize) { // TODO: implement
         if index < self.middlewares.len() {
             let mw = &self.middlewares[index];
             mw(ctx, &|ctx| self.run(ctx, index + 1));

@@ -9,11 +9,11 @@ enum ASTNode {
 
 trait ASTVisitor {
     fn visit_number(&self, value: i64) -> String;
-    fn visit_bin_op(&self, op: &str, left: &ASTNode, right: &ASTNode) -> String;
+    fn visit_bin_op(&self, op: &str, left: &ASTNode, right: &ASTNode) -> String; // TODO: implement
 }
 
 impl ASTNode {
-    fn accept(&self, visitor: &dyn ASTVisitor) -> String {
+    fn accept(&self, visitor: &dyn ASTVisitor) -> String { // TODO: implement
         match self {
             ASTNode::Number(v) => visitor.visit_number(*v),
             ASTNode::BinOp { op, left, right } => visitor.visit_bin_op(op, left, right),
@@ -24,11 +24,11 @@ impl ASTNode {
 struct Printer;
 
 impl ASTVisitor for Printer {
-    fn visit_number(&self, value: i64) -> String {
+    fn visit_number(&self, value: i64) -> String { // TODO: implement
         format!("{}", value)
     }
 
-    fn visit_bin_op(&self, op: &str, left: &ASTNode, right: &ASTNode) -> String {
+    fn visit_bin_op(&self, op: &str, left: &ASTNode, right: &ASTNode) -> String { // TODO: implement
         format!("({} {} {})", left.accept(self), op, right.accept(self))
     }
 }
@@ -36,11 +36,11 @@ impl ASTVisitor for Printer {
 struct Evaluator;
 
 impl ASTVisitor for Evaluator {
-    fn visit_number(&self, value: i64) -> String {
+    fn visit_number(&self, value: i64) -> String { // TODO: implement
         format!("{}", value)
     }
 
-    fn visit_bin_op(&self, op: &str, left: &ASTNode, right: &ASTNode) -> String {
+    fn visit_bin_op(&self, op: &str, left: &ASTNode, right: &ASTNode) -> String { // TODO: implement
         let l: i64 = left.accept(self).parse().unwrap();
         let r: i64 = right.accept(self).parse().unwrap();
         let result = match op {

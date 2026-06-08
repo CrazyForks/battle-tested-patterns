@@ -3,21 +3,21 @@ struct LamportClock {
 }
 
 impl LamportClock {
-    fn new() -> Self {
+    fn new() -> Self { // TODO: implement
         Self { time: 0 }
     }
 
-    fn tick(&mut self) -> u64 {
+    fn tick(&mut self) -> u64 { // TODO: implement
         self.time += 1;
         self.time
     }
 
-    fn send(&mut self) -> u64 {
+    fn send(&mut self) -> u64 { // TODO: implement
         self.time += 1;
         self.time
     }
 
-    fn receive(&mut self, remote: u64) -> u64 {
+    fn receive(&mut self, remote: u64) -> u64 { // TODO: implement
         if remote > self.time {
             self.time = remote;
         }
@@ -25,7 +25,7 @@ impl LamportClock {
         self.time
     }
 
-    fn time(&self) -> u64 {
+    fn time(&self) -> u64 { // TODO: implement
         self.time
     }
 }

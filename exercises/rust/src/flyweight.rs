@@ -13,11 +13,11 @@ pub struct ColorFactory {
 }
 
 impl ColorFactory {
-    pub fn new() -> Self {
+    pub fn new() -> Self { // TODO: implement
         ColorFactory { cache: HashMap::new() }
     }
 
-    pub fn get(&mut self, name: &str) -> Arc<Color> {
+    pub fn get(&mut self, name: &str) -> Arc<Color> { // TODO: implement
         if let Some(c) = self.cache.get(name) {
             return c.clone();
         }
@@ -33,7 +33,7 @@ impl ColorFactory {
     }
 
     #[allow(dead_code)]
-    pub fn cache_size(&self) -> usize {
+    pub fn cache_size(&self) -> usize { // TODO: implement
         self.cache.len()
     }
 }

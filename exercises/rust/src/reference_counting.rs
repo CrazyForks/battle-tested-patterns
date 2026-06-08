@@ -12,7 +12,7 @@ struct Rc<T> {
 }
 
 impl<T> Rc<T> {
-    fn new(value: T, dropped: StdRc<Cell<bool>>) -> Self {
+    fn new(value: T, dropped: StdRc<Cell<bool>>) -> Self { // TODO: implement
         Self {
             inner: StdRc::new(RcInner {
                 value,
@@ -22,14 +22,14 @@ impl<T> Rc<T> {
         }
     }
 
-    fn clone_rc(&self) -> Self {
+    fn clone_rc(&self) -> Self { // TODO: implement
         self.inner.ref_count.set(self.inner.ref_count.get() + 1);
         Self {
             inner: StdRc::clone(&self.inner),
         }
     }
 
-    fn drop_rc(&self) {
+    fn drop_rc(&self) { // TODO: implement
         let count = self.inner.ref_count.get() - 1;
         self.inner.ref_count.set(count);
         if count == 0 {
@@ -37,11 +37,11 @@ impl<T> Rc<T> {
         }
     }
 
-    fn ref_count(&self) -> i64 {
+    fn ref_count(&self) -> i64 { // TODO: implement
         self.inner.ref_count.get()
     }
 
-    fn value(&self) -> &T {
+    fn value(&self) -> &T { // TODO: implement
         &self.inner.value
     }
 }

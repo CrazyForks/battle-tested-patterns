@@ -6,26 +6,26 @@ struct WorkQueue {
 }
 
 impl WorkQueue {
-    fn new() -> Self {
+    fn new() -> Self { // TODO: implement
         Self {
             items: Mutex::new(VecDeque::new()),
         }
     }
 
-    fn push(&self, item: i32) {
+    fn push(&self, item: i32) { // TODO: implement
         self.items.lock().unwrap().push_back(item);
     }
 
-    fn pop(&self) -> Option<i32> {
+    fn pop(&self) -> Option<i32> { // TODO: implement
         self.items.lock().unwrap().pop_back() // LIFO
     }
 
-    fn steal(&self) -> Option<i32> {
+    fn steal(&self) -> Option<i32> { // TODO: implement
         self.items.lock().unwrap().pop_front() // FIFO
     }
 
     #[allow(dead_code)]
-    fn len(&self) -> usize {
+    fn len(&self) -> usize { // TODO: implement
         self.items.lock().unwrap().len()
     }
 }
@@ -35,16 +35,16 @@ struct WorkStealingPool {
 }
 
 impl WorkStealingPool {
-    fn new(workers: usize) -> Self {
+    fn new(workers: usize) -> Self { // TODO: implement
         let queues = (0..workers).map(|_| WorkQueue::new()).collect();
         Self { queues }
     }
 
-    fn submit(&self, worker: usize, item: i32) {
+    fn submit(&self, worker: usize, item: i32) { // TODO: implement
         self.queues[worker].push(item);
     }
 
-    fn process(&self, worker: usize) -> Option<i32> {
+    fn process(&self, worker: usize) -> Option<i32> { // TODO: implement
         if let Some(item) = self.queues[worker].pop() {
             return Some(item);
         }

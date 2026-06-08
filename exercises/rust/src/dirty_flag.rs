@@ -6,11 +6,11 @@ pub struct Transform {
 }
 
 impl Transform {
-    pub fn new(x: f64, y: f64) -> Self {
+    pub fn new(x: f64, y: f64) -> Self { // TODO: implement
         Transform { x, y, dirty: true, cached: String::new() }
     }
 
-    pub fn set_position(&mut self, x: f64, y: f64) {
+    pub fn set_position(&mut self, x: f64, y: f64) { // TODO: implement
         if (self.x - x).abs() > f64::EPSILON || (self.y - y).abs() > f64::EPSILON {
             self.x = x;
             self.y = y;
@@ -18,7 +18,7 @@ impl Transform {
         }
     }
 
-    pub fn world_matrix(&mut self) -> &str {
+    pub fn world_matrix(&mut self) -> &str { // TODO: implement
         if self.dirty {
             self.cached = ".".repeat((self.x + self.y) as usize);
             self.dirty = false;
@@ -26,7 +26,7 @@ impl Transform {
         &self.cached
     }
 
-    pub fn is_dirty(&self) -> bool {
+    pub fn is_dirty(&self) -> bool { // TODO: implement
         self.dirty
     }
 }

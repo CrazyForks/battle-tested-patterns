@@ -1,13 +1,13 @@
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 
-fn hash_leaf(data: &str) -> u64 {
+fn hash_leaf(data: &str) -> u64 { // TODO: implement
     let mut hasher = DefaultHasher::new();
     data.hash(&mut hasher);
     hasher.finish()
 }
 
-fn hash_pair(a: u64, b: u64) -> u64 {
+fn hash_pair(a: u64, b: u64) -> u64 { // TODO: implement
     let mut hasher = DefaultHasher::new();
     a.hash(&mut hasher);
     b.hash(&mut hasher);
@@ -21,7 +21,7 @@ struct MerkleTree {
 }
 
 impl MerkleTree {
-    fn build(data: &[&str]) -> Self {
+    fn build(data: &[&str]) -> Self { // TODO: implement
         if data.is_empty() {
             return Self {
                 root: 0,
@@ -56,16 +56,16 @@ impl MerkleTree {
         }
     }
 
-    fn root(&self) -> u64 {
+    fn root(&self) -> u64 { // TODO: implement
         self.root
     }
 
-    fn leaf_count(&self) -> usize {
+    fn leaf_count(&self) -> usize { // TODO: implement
         self.leaves.len()
     }
 
     #[allow(dead_code)]
-    fn depth(&self) -> usize {
+    fn depth(&self) -> usize { // TODO: implement
         self.layers.len()
     }
 }

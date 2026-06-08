@@ -10,20 +10,20 @@ struct EventLoop {
 }
 
 impl EventLoop {
-    fn new() -> Self {
+    fn new() -> Self { // TODO: implement
         Self {
             queue: VecDeque::new(),
         }
     }
 
-    fn enqueue(&mut self, name: &str, action: impl FnOnce(&mut EventLoop) + 'static) {
+    fn enqueue(&mut self, name: &str, action: impl FnOnce(&mut EventLoop) + 'static) { // TODO: implement
         self.queue.push_back(Task {
             name: name.to_string(),
             action: Box::new(action),
         });
     }
 
-    fn run(&mut self) -> Vec<String> {
+    fn run(&mut self) -> Vec<String> { // TODO: implement
         let mut executed = Vec::new();
         while let Some(task) = self.queue.pop_front() {
             (task.action)(self);
@@ -32,7 +32,7 @@ impl EventLoop {
         executed
     }
 
-    fn pending(&self) -> usize {
+    fn pending(&self) -> usize { // TODO: implement
         self.queue.len()
     }
 }

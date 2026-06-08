@@ -4,14 +4,14 @@ struct Arena {
 }
 
 impl Arena {
-    fn new(size: usize) -> Self {
+    fn new(size: usize) -> Self { // TODO: implement
         Self {
             buf: vec![0u8; size],
             off: 0,
         }
     }
 
-    fn alloc(&mut self, n: usize) -> Option<&mut [u8]> {
+    fn alloc(&mut self, n: usize) -> Option<&mut [u8]> { // TODO: implement
         if self.off + n > self.buf.len() {
             return None;
         }
@@ -20,20 +20,20 @@ impl Arena {
         Some(&mut self.buf[start..start + n])
     }
 
-    fn reset(&mut self) {
+    fn reset(&mut self) { // TODO: implement
         self.off = 0;
     }
 
-    fn used(&self) -> usize {
+    fn used(&self) -> usize { // TODO: implement
         self.off
     }
 
     #[allow(dead_code)]
-    fn cap(&self) -> usize {
+    fn cap(&self) -> usize { // TODO: implement
         self.buf.len()
     }
 
-    fn avail(&self) -> usize {
+    fn avail(&self) -> usize { // TODO: implement
         self.buf.len() - self.off
     }
 }

@@ -7,7 +7,7 @@ pub struct Semaphore {
 }
 
 impl Semaphore {
-    pub fn new(permits: usize) -> Self {
+    pub fn new(permits: usize) -> Self { // TODO: implement
         Semaphore {
             state: Mutex::new(0),
             cvar: Condvar::new(),
@@ -15,7 +15,7 @@ impl Semaphore {
         }
     }
 
-    pub fn acquire(&self) {
+    pub fn acquire(&self) { // TODO: implement
         let mut count = self.state.lock().unwrap();
         while *count >= self.max {
             count = self.cvar.wait(count).unwrap();
@@ -23,7 +23,7 @@ impl Semaphore {
         *count += 1;
     }
 
-    pub fn release(&self) {
+    pub fn release(&self) { // TODO: implement
         let mut count = self.state.lock().unwrap();
         *count -= 1;
         self.cvar.notify_one();

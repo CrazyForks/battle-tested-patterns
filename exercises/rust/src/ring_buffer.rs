@@ -7,13 +7,13 @@ pub struct RingBuffer<T> {
 }
 
 impl<T> RingBuffer<T> {
-    pub fn new(capacity: usize) -> Self {
+    pub fn new(capacity: usize) -> Self { // TODO: implement
         let mut buffer = Vec::with_capacity(capacity);
         buffer.resize_with(capacity, || None);
         RingBuffer { buffer, head: 0, tail: 0, count: 0, capacity }
     }
 
-    pub fn enqueue(&mut self, item: T) -> bool {
+    pub fn enqueue(&mut self, item: T) -> bool { // TODO: implement
         if self.count == self.capacity {
             return false;
         }
@@ -23,7 +23,7 @@ impl<T> RingBuffer<T> {
         true
     }
 
-    pub fn dequeue(&mut self) -> Option<T> {
+    pub fn dequeue(&mut self) -> Option<T> { // TODO: implement
         if self.count == 0 {
             return None;
         }
@@ -34,12 +34,12 @@ impl<T> RingBuffer<T> {
     }
 
     #[allow(dead_code)]
-    pub fn len(&self) -> usize {
+    pub fn len(&self) -> usize { // TODO: implement
         self.count
     }
 
     #[allow(dead_code)]
-    pub fn is_full(&self) -> bool {
+    pub fn is_full(&self) -> bool { // TODO: implement
         self.count == self.capacity
     }
 }

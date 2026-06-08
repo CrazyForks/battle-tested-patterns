@@ -11,7 +11,7 @@ struct EditOp {
     text: String,
 }
 
-fn diff_lines(old: &[&str], new: &[&str]) -> Vec<EditOp> {
+fn diff_lines(old: &[&str], new: &[&str]) -> Vec<EditOp> { // TODO: implement
     let m = old.len();
     let n = new.len();
 
@@ -54,7 +54,7 @@ fn diff_lines(old: &[&str], new: &[&str]) -> Vec<EditOp> {
     ops
 }
 
-fn patch(ops: &[EditOp]) -> Vec<String> {
+fn patch(ops: &[EditOp]) -> Vec<String> { // TODO: implement
     ops.iter()
         .filter(|op| op.kind != EditKind::Remove)
         .map(|op| op.text.clone())

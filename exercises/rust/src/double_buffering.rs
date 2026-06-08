@@ -4,22 +4,22 @@ pub struct DoubleBuffer {
 }
 
 impl DoubleBuffer {
-    pub fn new(size: usize) -> Self {
+    pub fn new(size: usize) -> Self { // TODO: implement
         DoubleBuffer {
             buffers: [vec![0; size], vec![0; size]],
             front: 0,
         }
     }
 
-    pub fn back(&mut self) -> &mut [u8] {
+    pub fn back(&mut self) -> &mut [u8] { // TODO: implement
         &mut self.buffers[1 - self.front]
     }
 
-    pub fn front(&self) -> &[u8] {
+    pub fn front(&self) -> &[u8] { // TODO: implement
         &self.buffers[self.front]
     }
 
-    pub fn swap(&mut self) {
+    pub fn swap(&mut self) { // TODO: implement
         self.front = 1 - self.front;
     }
 }

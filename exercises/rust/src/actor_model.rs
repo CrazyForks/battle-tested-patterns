@@ -14,7 +14,7 @@ struct Actor {
 }
 
 impl Actor {
-    fn new() -> Self {
+    fn new() -> Self { // TODO: implement
         let (sender, receiver) = mpsc::channel();
         let state = Arc::new(Mutex::new(0i64));
         let s = Arc::clone(&state);
@@ -36,18 +36,18 @@ impl Actor {
         }
     }
 
-    fn send(&self, msg: Message) {
+    fn send(&self, msg: Message) { // TODO: implement
         self.sender.as_ref().unwrap().send(msg).unwrap();
     }
 
-    fn stop(&mut self) {
+    fn stop(&mut self) { // TODO: implement
         self.sender.take();
         if let Some(h) = self.handle.take() {
             h.join().unwrap();
         }
     }
 
-    fn state(&self) -> i64 {
+    fn state(&self) -> i64 { // TODO: implement
         *self.state.lock().unwrap()
     }
 }

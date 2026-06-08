@@ -12,14 +12,14 @@ struct MVCCStore {
 }
 
 impl MVCCStore {
-    fn new() -> Self {
+    fn new() -> Self { // TODO: implement
         Self {
             data: HashMap::new(),
             clock: 0,
         }
     }
 
-    fn put(&mut self, key: &str, value: &str) -> u64 {
+    fn put(&mut self, key: &str, value: &str) -> u64 { // TODO: implement
         self.clock += 1;
         self.data
             .entry(key.to_string())
@@ -32,7 +32,7 @@ impl MVCCStore {
         self.clock
     }
 
-    fn get(&self, key: &str, as_of: u64) -> Option<&str> {
+    fn get(&self, key: &str, as_of: u64) -> Option<&str> { // TODO: implement
         let versions = self.data.get(key)?;
         for v in versions.iter().rev() {
             if v.timestamp <= as_of {
@@ -45,7 +45,7 @@ impl MVCCStore {
         None
     }
 
-    fn delete(&mut self, key: &str) -> u64 {
+    fn delete(&mut self, key: &str) -> u64 { // TODO: implement
         self.clock += 1;
         self.data
             .entry(key.to_string())

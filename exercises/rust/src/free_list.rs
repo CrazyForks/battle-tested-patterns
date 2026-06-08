@@ -4,7 +4,7 @@ struct FreeList {
 }
 
 impl FreeList {
-    fn new(size: usize) -> Self {
+    fn new(size: usize) -> Self { // TODO: implement
         let free: Vec<usize> = (0..size).rev().collect();
         Self {
             pool: vec![0; size],
@@ -12,24 +12,24 @@ impl FreeList {
         }
     }
 
-    fn alloc(&mut self) -> Option<usize> {
+    fn alloc(&mut self) -> Option<usize> { // TODO: implement
         self.free.pop()
     }
 
-    fn free(&mut self, idx: usize) {
+    fn free(&mut self, idx: usize) { // TODO: implement
         self.pool[idx] = 0;
         self.free.push(idx);
     }
 
-    fn set(&mut self, idx: usize, val: i32) {
+    fn set(&mut self, idx: usize, val: i32) { // TODO: implement
         self.pool[idx] = val;
     }
 
-    fn get(&self, idx: usize) -> i32 {
+    fn get(&self, idx: usize) -> i32 { // TODO: implement
         self.pool[idx]
     }
 
-    fn available(&self) -> usize {
+    fn available(&self) -> usize { // TODO: implement
         self.free.len()
     }
 }

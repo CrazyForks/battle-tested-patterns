@@ -6,13 +6,13 @@ struct Interner {
 }
 
 impl Interner {
-    fn new() -> Self {
+    fn new() -> Self { // TODO: implement
         Self {
             pool: HashMap::new(),
         }
     }
 
-    fn intern(&mut self, s: &str) -> Arc<str> {
+    fn intern(&mut self, s: &str) -> Arc<str> { // TODO: implement
         if let Some(existing) = self.pool.get(s) {
             return Arc::clone(existing);
         }
@@ -21,7 +21,7 @@ impl Interner {
         arc
     }
 
-    fn len(&self) -> usize {
+    fn len(&self) -> usize { // TODO: implement
         self.pool.len()
     }
 }

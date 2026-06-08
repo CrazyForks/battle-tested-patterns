@@ -14,14 +14,14 @@ pub struct StateMachine {
 }
 
 impl StateMachine {
-    pub fn new(initial: State, transitions: Vec<(State, &str, State)>) -> Self {
+    pub fn new(initial: State, transitions: Vec<(State, &str, State)>) -> Self { // TODO: implement
         let map = transitions.into_iter()
             .map(|(from, event, to)| ((from, event.to_string()), to))
             .collect();
         StateMachine { current: initial, transitions: map }
     }
 
-    pub fn send(&mut self, event: &str) -> Result<(), &'static str> {
+    pub fn send(&mut self, event: &str) -> Result<(), &'static str> { // TODO: implement
         let key = (self.current.clone(), event.to_string());
         match self.transitions.get(&key) {
             Some(next) => {
@@ -32,17 +32,17 @@ impl StateMachine {
         }
     }
 
-    pub fn can(&self, event: &str) -> bool {
+    pub fn can(&self, event: &str) -> bool { // TODO: implement
         let key = (self.current.clone(), event.to_string());
         self.transitions.contains_key(&key)
     }
 
-    pub fn current(&self) -> &State {
+    pub fn current(&self) -> &State { // TODO: implement
         &self.current
     }
 }
 
-fn approval_machine() -> StateMachine {
+fn approval_machine() -> StateMachine { // TODO: implement
     StateMachine::new(State::Idle, vec![
         (State::Idle, "submit", State::Pending),
         (State::Pending, "approve", State::Approved),

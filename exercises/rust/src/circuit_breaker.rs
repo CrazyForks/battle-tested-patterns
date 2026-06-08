@@ -16,7 +16,7 @@ pub struct CircuitBreaker {
 }
 
 impl CircuitBreaker {
-    pub fn new(threshold: u32, timeout: Duration) -> Self {
+    pub fn new(threshold: u32, timeout: Duration) -> Self { // TODO: implement
         CircuitBreaker {
             state: State::Closed,
             failures: 0,
@@ -26,7 +26,7 @@ impl CircuitBreaker {
         }
     }
 
-    pub fn call<F>(&mut self, f: F) -> Result<(), String>
+    pub fn call<F>(&mut self, f: F) -> Result<(), String> // TODO: implement
     where
         F: FnOnce() -> Result<(), String>,
     {
@@ -57,7 +57,7 @@ impl CircuitBreaker {
         }
     }
 
-    pub fn state(&self) -> &State {
+    pub fn state(&self) -> &State { // TODO: implement
         &self.state
     }
 }

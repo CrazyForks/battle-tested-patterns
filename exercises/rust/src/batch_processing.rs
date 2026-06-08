@@ -5,7 +5,7 @@ struct Batch<T> {
 }
 
 impl<T: Clone> Batch<T> {
-    fn new(size: usize) -> Self {
+    fn new(size: usize) -> Self { // TODO: implement
         Self {
             size,
             buffer: Vec::new(),
@@ -13,14 +13,14 @@ impl<T: Clone> Batch<T> {
         }
     }
 
-    fn add(&mut self, item: T) {
+    fn add(&mut self, item: T) { // TODO: implement
         self.buffer.push(item);
         if self.buffer.len() >= self.size {
             self.flush();
         }
     }
 
-    fn flush(&mut self) {
+    fn flush(&mut self) { // TODO: implement
         if self.buffer.is_empty() {
             return;
         }
@@ -28,7 +28,7 @@ impl<T: Clone> Batch<T> {
         self.batches.push(batch);
     }
 
-    fn batches(&self) -> &[Vec<T>] {
+    fn batches(&self) -> &[Vec<T>] { // TODO: implement
         &self.batches
     }
 }

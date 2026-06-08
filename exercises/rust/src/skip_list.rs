@@ -14,7 +14,7 @@ pub struct SkipList {
 }
 
 impl SkipList {
-    pub fn new() -> Self {
+    pub fn new() -> Self { // TODO: implement
         let head_node = SkipNode {
             key: i32::MIN,
             value: String::new(),
@@ -28,7 +28,7 @@ impl SkipList {
         }
     }
 
-    fn random_level(&mut self) -> usize {
+    fn random_level(&mut self) -> usize { // TODO: implement
         let mut lvl = 0;
         while lvl < MAX_LEVEL - 1 {
             self.seed ^= self.seed << 13;
@@ -43,7 +43,7 @@ impl SkipList {
         lvl
     }
 
-    pub fn insert(&mut self, key: i32, value: &str) {
+    pub fn insert(&mut self, key: i32, value: &str) { // TODO: implement
         let mut update = [0usize; MAX_LEVEL];
         let mut cur = self.head;
 
@@ -86,7 +86,7 @@ impl SkipList {
         }
     }
 
-    pub fn search(&self, key: i32) -> Option<&str> {
+    pub fn search(&self, key: i32) -> Option<&str> { // TODO: implement
         let mut cur = self.head;
         for i in (0..=self.level).rev() {
             while let Some(next_idx) = self.nodes[cur].next[i] {
@@ -105,7 +105,7 @@ impl SkipList {
         None
     }
 
-    pub fn delete(&mut self, key: i32) -> bool {
+    pub fn delete(&mut self, key: i32) -> bool { // TODO: implement
         let mut update = [0usize; MAX_LEVEL];
         let mut cur = self.head;
 

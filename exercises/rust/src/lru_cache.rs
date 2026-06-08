@@ -16,21 +16,21 @@ pub struct LRUCache {
 }
 
 impl LRUCache {
-    pub fn new(capacity: usize) -> Self {
+    pub fn new(capacity: usize) -> Self { // TODO: implement
         let mut entries = Vec::with_capacity(capacity + 2);
         entries.push(Entry { key: String::new(), value: 0, prev: 0, next: 1 }); // sentinel head
         entries.push(Entry { key: String::new(), value: 0, prev: 0, next: 1 }); // sentinel tail
         LRUCache { capacity, entries, map: HashMap::new(), head: 0, tail: 1 }
     }
 
-    fn remove(&mut self, idx: usize) {
+    fn remove(&mut self, idx: usize) { // TODO: implement
         let prev = self.entries[idx].prev;
         let next = self.entries[idx].next;
         self.entries[prev].next = next;
         self.entries[next].prev = prev;
     }
 
-    fn push_front(&mut self, idx: usize) {
+    fn push_front(&mut self, idx: usize) { // TODO: implement
         let first = self.entries[self.head].next;
         self.entries[idx].next = first;
         self.entries[idx].prev = self.head;
@@ -38,14 +38,14 @@ impl LRUCache {
         self.entries[self.head].next = idx;
     }
 
-    pub fn get(&mut self, key: &str) -> Option<i32> {
+    pub fn get(&mut self, key: &str) -> Option<i32> { // TODO: implement
         let idx = *self.map.get(key)?;
         self.remove(idx);
         self.push_front(idx);
         Some(self.entries[idx].value)
     }
 
-    pub fn put(&mut self, key: &str, value: i32) {
+    pub fn put(&mut self, key: &str, value: i32) { // TODO: implement
         if let Some(&idx) = self.map.get(key) {
             self.entries[idx].value = value;
             self.remove(idx);

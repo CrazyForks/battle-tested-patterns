@@ -12,11 +12,11 @@ pub struct WAL {
 }
 
 impl WAL {
-    pub fn new() -> Self {
+    pub fn new() -> Self { // TODO: implement
         WAL { log: Vec::new(), next_lsn: 0, committed: None }
     }
 
-    pub fn append(&mut self, op: &str, data: &str) -> usize {
+    pub fn append(&mut self, op: &str, data: &str) -> usize { // TODO: implement
         let lsn = self.next_lsn;
         self.log.push(WALEntry {
             lsn,
@@ -27,7 +27,7 @@ impl WAL {
         lsn
     }
 
-    pub fn commit(&mut self, lsn: usize) -> Result<(), &'static str> {
+    pub fn commit(&mut self, lsn: usize) -> Result<(), &'static str> { // TODO: implement
         if lsn >= self.next_lsn {
             return Err("invalid LSN");
         }
@@ -40,7 +40,7 @@ impl WAL {
         }
     }
 
-    pub fn replay(&self) -> Vec<&WALEntry> {
+    pub fn replay(&self) -> Vec<&WALEntry> { // TODO: implement
         match self.committed {
             None => vec![],
             Some(c) => self.log.iter().filter(|e| e.lsn <= c).collect(),
@@ -48,7 +48,7 @@ impl WAL {
     }
 
     #[allow(dead_code)]
-    pub fn len(&self) -> usize {
+    pub fn len(&self) -> usize { // TODO: implement
         self.log.len()
     }
 }

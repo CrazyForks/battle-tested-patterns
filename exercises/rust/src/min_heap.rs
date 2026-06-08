@@ -6,30 +6,30 @@ pub struct MinHeap<T: Ord> {
 }
 
 impl<T: Ord> MinHeap<T> {
-    pub fn new() -> Self {
+    pub fn new() -> Self { // TODO: implement
         MinHeap { data: Vec::new() }
     }
 
     #[allow(dead_code)]
-    pub fn len(&self) -> usize {
+    pub fn len(&self) -> usize { // TODO: implement
         self.data.len()
     }
 
     #[allow(dead_code)]
-    pub fn is_empty(&self) -> bool {
+    pub fn is_empty(&self) -> bool { // TODO: implement
         self.data.is_empty()
     }
 
-    pub fn peek(&self) -> Option<&T> {
+    pub fn peek(&self) -> Option<&T> { // TODO: implement
         self.data.first()
     }
 
-    pub fn push(&mut self, val: T) {
+    pub fn push(&mut self, val: T) { // TODO: implement
         self.data.push(val);
         self.sift_up(self.data.len() - 1);
     }
 
-    pub fn pop(&mut self) -> Option<T> {
+    pub fn pop(&mut self) -> Option<T> { // TODO: implement
         if self.data.is_empty() {
             return None;
         }
@@ -42,7 +42,7 @@ impl<T: Ord> MinHeap<T> {
         val
     }
 
-    fn sift_up(&mut self, mut idx: usize) {
+    fn sift_up(&mut self, mut idx: usize) { // TODO: implement
         while idx > 0 {
             let parent = (idx - 1) / 2;
             if self.data[idx] < self.data[parent] {
@@ -54,7 +54,7 @@ impl<T: Ord> MinHeap<T> {
         }
     }
 
-    fn sift_down(&mut self, mut idx: usize) {
+    fn sift_down(&mut self, mut idx: usize) { // TODO: implement
         let len = self.data.len();
         loop {
             let left = 2 * idx + 1;

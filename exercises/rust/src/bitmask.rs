@@ -5,23 +5,23 @@ pub const WRITE: u32 = 1 << 1;
 pub const EXECUTE: u32 = 1 << 2;
 pub const DELETE: u32 = 1 << 3;
 
-pub fn has_flag(flags: u32, flag: u32) -> bool {
+pub fn has_flag(flags: u32, flag: u32) -> bool { // TODO: implement
     (flags & flag) == flag
 }
 
-pub fn has_any(flags: u32, mask: u32) -> bool {
+pub fn has_any(flags: u32, mask: u32) -> bool { // TODO: implement
     (flags & mask) != 0
 }
 
-pub fn set_flag(flags: u32, flag: u32) -> u32 {
+pub fn set_flag(flags: u32, flag: u32) -> u32 { // TODO: implement
     flags | flag
 }
 
-pub fn clear_flag(flags: u32, flag: u32) -> u32 {
+pub fn clear_flag(flags: u32, flag: u32) -> u32 { // TODO: implement
     flags & !flag
 }
 
-pub fn toggle_flag(flags: u32, flag: u32) -> u32 {
+pub fn toggle_flag(flags: u32, flag: u32) -> u32 { // TODO: implement
     flags ^ flag
 }
 

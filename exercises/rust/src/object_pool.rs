@@ -6,19 +6,19 @@ pub struct ObjectPool<T> {
 }
 
 impl<T> ObjectPool<T> {
-    pub fn new<F: Fn() -> T + Send + Sync + 'static>(factory: F) -> Self {
+    pub fn new<F: Fn() -> T + Send + Sync + 'static>(factory: F) -> Self { // TODO: implement
         ObjectPool {
             pool: Mutex::new(Vec::new()),
             factory: Box::new(factory),
         }
     }
 
-    pub fn get(&self) -> T {
+    pub fn get(&self) -> T { // TODO: implement
         let mut pool = self.pool.lock().unwrap();
         pool.pop().unwrap_or_else(|| (self.factory)())
     }
 
-    pub fn put(&self, obj: T) {
+    pub fn put(&self, obj: T) { // TODO: implement
         let mut pool = self.pool.lock().unwrap();
         pool.push(obj);
     }

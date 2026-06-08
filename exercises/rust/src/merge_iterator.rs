@@ -1,7 +1,7 @@
 use std::cmp::Reverse;
 use std::collections::BinaryHeap;
 
-fn merge_k_sorted(lists: &[Vec<i32>]) -> Vec<i32> {
+fn merge_k_sorted(lists: &[Vec<i32>]) -> Vec<i32> { // TODO: implement
     let mut heap: BinaryHeap<Reverse<(i32, usize, usize)>> = BinaryHeap::new();
 
     for (i, list) in lists.iter().enumerate() {

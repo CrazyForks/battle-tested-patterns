@@ -5,13 +5,13 @@ struct DepGraph {
 }
 
 impl DepGraph {
-    fn new() -> Self {
+    fn new() -> Self { // TODO: implement
         Self {
             edges: HashMap::new(),
         }
     }
 
-    fn add_dep(&mut self, node: &str, dep: &str) {
+    fn add_dep(&mut self, node: &str, dep: &str) { // TODO: implement
         self.edges
             .entry(node.to_string())
             .or_default()
@@ -19,7 +19,7 @@ impl DepGraph {
         self.edges.entry(dep.to_string()).or_default();
     }
 
-    fn topo_sort(&self) -> Result<Vec<String>, &'static str> {
+    fn topo_sort(&self) -> Result<Vec<String>, &'static str> { // TODO: implement
         let mut state: HashMap<&str, u8> = HashMap::new(); // 0=unvisited, 1=visiting, 2=done
         let mut result = Vec::new();
 
@@ -29,7 +29,7 @@ impl DepGraph {
         Ok(result)
     }
 
-    fn visit<'a>(
+    fn visit<'a>( // TODO: implement
         node: &'a str,
         edges: &'a HashMap<String, Vec<String>>,
         state: &mut HashMap<&'a str, u8>,

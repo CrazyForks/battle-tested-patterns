@@ -6,40 +6,40 @@ struct TombstoneStore {
 }
 
 impl TombstoneStore {
-    fn new() -> Self {
+    fn new() -> Self { // TODO: implement
         Self {
             data: HashMap::new(),
             dead: HashSet::new(),
         }
     }
 
-    fn put(&mut self, key: &str, value: &str) {
+    fn put(&mut self, key: &str, value: &str) { // TODO: implement
         self.data.insert(key.to_string(), value.to_string());
         self.dead.remove(key);
     }
 
-    fn get(&self, key: &str) -> Option<&str> {
+    fn get(&self, key: &str) -> Option<&str> { // TODO: implement
         if self.dead.contains(key) {
             return None;
         }
         self.data.get(key).map(|s| s.as_str())
     }
 
-    fn delete(&mut self, key: &str) {
+    fn delete(&mut self, key: &str) { // TODO: implement
         self.dead.insert(key.to_string());
     }
 
-    fn is_deleted(&self, key: &str) -> bool {
+    fn is_deleted(&self, key: &str) -> bool { // TODO: implement
         self.dead.contains(key)
     }
 
-    fn compact(&mut self) {
+    fn compact(&mut self) { // TODO: implement
         for key in self.dead.drain() {
             self.data.remove(&key);
         }
     }
 
-    fn len(&self) -> usize {
+    fn len(&self) -> usize { // TODO: implement
         self.data.keys().filter(|k| !self.dead.contains(k.as_str())).count()
     }
 }

@@ -6,11 +6,11 @@ pub struct BoundedQueue {
 }
 
 impl BoundedQueue {
-    pub fn new(capacity: usize) -> Self {
+    pub fn new(capacity: usize) -> Self { // TODO: implement
         BoundedQueue { buf: VecDeque::with_capacity(capacity), cap: capacity }
     }
 
-    pub fn push(&mut self, item: i32) -> Result<(), &'static str> {
+    pub fn push(&mut self, item: i32) -> Result<(), &'static str> { // TODO: implement
         if self.buf.len() >= self.cap {
             return Err("queue full: backpressure");
         }
@@ -18,12 +18,12 @@ impl BoundedQueue {
         Ok(())
     }
 
-    pub fn pop(&mut self) -> Option<i32> {
+    pub fn pop(&mut self) -> Option<i32> { // TODO: implement
         self.buf.pop_front()
     }
 
     #[allow(dead_code)]
-    pub fn len(&self) -> usize {
+    pub fn len(&self) -> usize { // TODO: implement
         self.buf.len()
     }
 }
