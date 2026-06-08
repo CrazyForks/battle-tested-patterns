@@ -62,61 +62,14 @@ features:
 
 <MinHeapViz />
 
-## 模式精选
+## 全部 46 个模式——交互式时间线
 
-> [浏览全部 46 个模式 →](/zh/patterns/) · [模式时间线 →](/zh/guide/timeline)
+> 80 余年计算机发展史。点击任意卡片进入模式详情。[按分类浏览 →](/zh/patterns/) · [完整时间线 →](/zh/guide/timeline)
 
-### 数据结构 <span class="home-count">11 个模式</span>
-
-| 模式 | 核心洞察 | 来源项目 |
-|------|---------|---------|
-| [布隆过滤器 (Bloom Filter)](/zh/patterns/bloom-filter/) | 概率成员测试——零漏判 | LevelDB, Chromium |
-| [B+ 树](/zh/patterns/b-plus-tree/) | 叶链平衡树，支持范围扫描 | PostgreSQL, SQLite |
-| [最小堆 (Min Heap)](/zh/patterns/min-heap/) | O(1) 访问最高优先级元素 | React Scheduler, Linux CFS |
-
-### 并发 <span class="home-count">9 个模式</span>
-
-| 模式 | 核心洞察 | 来源项目 |
-|------|---------|---------|
-| [事件循环 (Event Loop)](/zh/patterns/event-loop/) | 单线程 I/O 多路复用 | libuv, Redis |
-| [MVCC](/zh/patterns/mvcc/) | 版本化读永不阻塞写 | PostgreSQL, etcd |
-| [工作窃取 (Work Stealing)](/zh/patterns/work-stealing/) | 空闲线程从繁忙队列窃取 | Go runtime, Tokio |
-
-### 系统 <span class="home-count">12 个模式</span>
-
-| 模式 | 核心洞察 | 来源项目 |
-|------|---------|---------|
-| [熔断器 (Circuit Breaker)](/zh/patterns/circuit-breaker/) | 停止调用故障服务，快速失败 | Netflix Hystrix, gobreaker |
-| [预写日志 (WAL)](/zh/patterns/write-ahead-log/) | 先记录再应用，崩溃可恢复 | etcd, PostgreSQL |
-| [一致性哈希](/zh/patterns/consistent-hashing/) | 增删节点只重映射 ~1/n 的键 | Go groupcache, HAProxy |
-
-### 内存 <span class="home-count">8 个模式</span>
-
-| 模式 | 核心洞察 | 来源项目 |
-|------|---------|---------|
-| [写时复制 (Copy-on-Write)](/zh/patterns/copy-on-write/) | 引用共享，修改时才复制 | Git, Rust Cow |
-| [Arena 分配器](/zh/patterns/arena-allocator/) | 区域内推进指针，一次性释放 | Rust bumpalo, Go |
-| [引用计数 (Reference Counting)](/zh/patterns/reference-counting/) | 零引用自动清理 | CPython, Rust Arc |
-
-### 行为型 <span class="home-count">6 个模式</span>
-
-| 模式 | 核心洞察 | 来源项目 |
-|------|---------|---------|
-| [状态机 (State Machine)](/zh/patterns/state-machine/) | 显式状态，不可能转换不可表达 | XState, Linux TCP |
-| [差异/补丁 (Diff/Patch)](/zh/patterns/diff-patch/) | 计算两个状态间最小变更 | React Reconciler, Git |
-| [迭代器 (Iterator)](/zh/patterns/iterator/) | 惰性序列，零中间分配 | Rust Iterator, Python |
+<PatternTimelineViz />
 
 <p style="text-align: center; margin-top: 2rem;">
 
 [浏览全部 46 个模式 →](/zh/patterns/)
 
 </p>
-
-<style>
-.home-count {
-  font-size: 0.8em;
-  font-weight: 400;
-  color: var(--vp-c-text-2);
-  margin-left: 0.5em;
-}
-</style>
