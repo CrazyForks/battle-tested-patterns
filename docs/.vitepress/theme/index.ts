@@ -2,6 +2,8 @@ import DefaultTheme from 'vitepress/theme';
 import type { Theme } from 'vitepress';
 import { defineAsyncComponent, defineComponent, h } from 'vue';
 import VizSkeleton from './components/VizSkeleton.vue';
+import MinHeapSkeleton from './components/MinHeapSkeleton.vue';
+import TimelineSkeleton from './components/TimelineSkeleton.vue';
 import DemoBadge from './components/DemoBadge.vue';
 import DifficultyBadge from './components/DifficultyBadge.vue';
 import CompositionFlow from './components/CompositionFlow.vue';
@@ -59,10 +61,15 @@ const vizComponents: Record<string, () => Promise<any>> = {
   PatternConnectionsViz: () => import('./components/PatternConnectionsViz.vue'),
 };
 
-function clientOnly(loader: () => Promise<any>) {
+const skeletonOverrides: Record<string, any> = {
+  MinHeapViz: MinHeapSkeleton,
+  PatternTimelineViz: TimelineSkeleton,
+};
+
+function clientOnly(loader: () => Promise<any>, skeleton?: any) {
   const AsyncComp = defineAsyncComponent({
     loader,
-    loadingComponent: VizSkeleton,
+    loadingComponent: skeleton || VizSkeleton,
     delay: 0,
   });
   return defineComponent({
@@ -81,7 +88,7 @@ export default {
     app.component('CompositionFlow', CompositionFlow);
     app.component('DecisionTree', DecisionTree);
     for (const [name, loader] of Object.entries(vizComponents)) {
-      app.component(name, clientOnly(loader));
+      app.component(name, clientOnly(loader, skeletonOverrides[name]));
     }
   },
 } satisfies Theme;
