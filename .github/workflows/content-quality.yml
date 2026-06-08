@@ -125,11 +125,35 @@ jobs:
           exit_code=0
           for dir in docs/patterns/*/; do
             pattern=$(basename "$dir")
+            snake=$(echo "$pattern" | tr '-' '_')
+
+            # TypeScript
             ts_dir="exercises/typescript/$pattern"
             if [ ! -d "$ts_dir" ] || [ -z "$(find "$ts_dir" -name '*.test.ts' 2>/dev/null)" ]; then
-              echo "::warning::No TypeScript exercises found at $ts_dir for pattern '$pattern'"
-            else
-              count=$(find "$ts_dir" -name '*.test.ts' | wc -l)
-              echo "  ✅ $pattern: $count exercise file(s)"
+              echo "::error::Missing TypeScript exercise for '$pattern'"
+              exit_code=1
+            fi
+
+            # Rust
+            if [ ! -f "exercises/rust/src/${snake}.rs" ]; then
+              echo "::error::Missing Rust exercise: exercises/rust/src/${snake}.rs"
+              exit_code=1
+            fi
+
+            # Go
+            if [ ! -f "exercises/go/${snake}_test.go" ]; then
+              echo "::error::Missing Go exercise: exercises/go/${snake}_test.go"
+              exit_code=1
+            fi
+
+            # Python
+            if [ ! -f "exercises/python/test_${snake}.py" ]; then
+              echo "::error::Missing Python exercise: exercises/python/test_${snake}.py"
+              exit_code=1
+            fi
+
+            if [ $exit_code -eq 0 ]; then
+              echo "  ✅ $pattern: all 4 languages"
             fi
           done
+          exit $exit_code
