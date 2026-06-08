@@ -18,10 +18,17 @@ Adding a new pattern (e.g. `bloom-filter`) requires creating and modifying these
 **Create:**
 
 ```text
-docs/patterns/bloom-filter/index.md          # English pattern document
-docs/zh/patterns/bloom-filter/index.md       # Chinese translation
-exercises/typescript/bloom-filter/01-basic.test.ts   # Basic exercise (required)
-exercises/typescript/bloom-filter/02-intermediate.test.ts  # Intermediate exercise (required)
+docs/patterns/bloom-filter/index.md                        # English pattern document
+docs/zh/patterns/bloom-filter/index.md                     # Chinese translation
+exercises/typescript/bloom-filter/01-basic.test.ts          # TS exercise (required)
+exercises/typescript/bloom-filter/02-intermediate.test.ts   # TS exercise (required)
+exercises/rust/src/bloom_filter.rs                          # Rust exercise (required)
+exercises/go/bloom_filter_test.go                           # Go exercise (required)
+exercises/python/test_bloom_filter.py                       # Python exercise (required)
+exercises/answers/typescript/bloom-filter.ts                # TS answer file
+exercises/answers/rust/bloom_filter.rs                      # Rust answer file
+exercises/answers/go/bloom_filter.go                        # Go answer file
+exercises/answers/python/bloom_filter.py                    # Python answer file
 ```
 
 **Modify:**
@@ -32,13 +39,7 @@ docs/index.md                # Add to English homepage pattern table
 docs/zh/index.md             # Add to Chinese homepage pattern table
 README.md                    # Add to pattern table
 README.zh-CN.md              # Add to pattern table
-```
-
-**Optional (if adding Rust exercises):**
-
-```text
-exercises/rust/src/bloom_filter.rs    # Create the Rust file
-exercises/rust/src/main.rs            # Add `mod bloom_filter;`
+exercises/rust/src/main.rs   # Add `mod bloom_filter;`
 ```
 
 ## Steps

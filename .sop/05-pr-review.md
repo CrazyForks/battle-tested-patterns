@@ -15,11 +15,11 @@ When reviewing a pull request that adds or modifies patterns, exercises, or docu
 
 ### 2. Template Compliance
 
-- [ ] All required sections present (One Liner → Core Idea → Production Proof → Implementation → Exercises → When to Use → When NOT to Use → Also Used In)
+- [ ] All required sections present (One Liner → Core Idea → Production Proof → Implementation → Exercises → When to Use → When NOT to Use → More Production Uses → Related Patterns → Challenge Questions)
 - [ ] One Liner ≤ 30 English words
-- [ ] Core Idea includes a diagram (Mermaid, ASCII, or table)
+- [ ] Core Idea includes a diagram + property table
 - [ ] Production Proof has ≥ 2 projects with line-precise links
-- [ ] "Also Used In" section lists additional projects
+- [ ] More Production Uses has ≥ 3 entries with verified URLs
 
 ### 3. Multi-Language
 
@@ -30,9 +30,10 @@ When reviewing a pull request that adds or modifies patterns, exercises, or docu
 
 ### 4. Exercises
 
-- [ ] ≥ 1 TypeScript exercise file with TODO-stub format
-- [ ] Tests pass (`pnpm test`)
-- [ ] Separator line between stubs and tests
+- [ ] Exercise files in all 4 languages (TS, Rust, Go, Python)
+- [ ] Answer files in `exercises/answers/` for all 4 languages
+- [ ] Tests pass: `pnpm test` · `cargo test` · `go test ./...` · `pytest`
+- [ ] TODO-stub format with separator line
 
 ### 5. Navigation & Sync
 
@@ -42,6 +43,17 @@ When reviewing a pull request that adds or modifies patterns, exercises, or docu
 - [ ] Chinese translation exists (`docs/zh/patterns/<name>/index.md`)
 - [ ] By-project pages updated if new source project
 
-### 6. CI Status
+### 6. Challenge Questions
+
+- [ ] 3-4 scenario-based Q&A with `::: details` syntax
+- [ ] Answers factually verified (version numbers, architecture claims)
+- [ ] No unescaped `|` in tables, no `*` for multiplication (use `×`)
+
+### 7. Related Patterns
+
+- [ ] ≥ 2 related patterns with meaningful relationship descriptions
+- [ ] Bidirectional: if A lists B, then B lists A (both EN and ZH)
+
+### 8. CI Status
 
 - [ ] All CI checks pass (CI, Content Quality, Verify Links, Deploy)

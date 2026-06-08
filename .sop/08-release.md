@@ -53,22 +53,38 @@ and stale references. Rate each dimension 1-10.
 ### 4. Tag and Release
 
 ```bash
-# Generate changelog
-pnpm changelog
+# Update CHANGELOG.md: change "## Unreleased" → "## vX.Y.Z"
+# Update compare link: v(prev)...main → v(prev)...vX.Y.Z
 
-# Review and commit
 git add CHANGELOG.md
 git commit -m "chore: prepare release vX.Y.Z"
 
-# Tag
 git tag vX.Y.Z
 git push && git push --tags
 ```
 
-`release.yml` will automatically create a GitHub Release with notes.
+`release.yml` will automatically create a GitHub Release via `changelogen`.
+
+**Known issue:** `changelogen` generates a self-referencing diff range (`vX.Y.Z...vX.Y.Z`) because the tag already exists at generation time. After the release is created, manually update the release body:
+
+```bash
+gh release edit vX.Y.Z --notes "$(cat <<'EOF'
+## vX.Y.Z
+
+**N commits** since vPREV — one-line summary.
+
+### Highlights
+- ...
+
+(paste categorized changes from CHANGELOG.md)
+
+[Full changelog](https://github.com/Totoro-jam/battle-tested-patterns/compare/vPREV...vX.Y.Z)
+EOF
+)"
+```
 
 ### 5. Post-Release
 
-- [ ] Verify GitHub Release was created
+- [ ] Verify GitHub Release was created with correct content
 - [ ] Verify docs site is deployed and accessible
 - [ ] Update any external references (if applicable)

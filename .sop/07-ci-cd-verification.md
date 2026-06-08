@@ -12,7 +12,7 @@
 |----------|---------|---------|
 | `ci.yml` | push + PR | Lint, typecheck, tests (TS + Rust + Go + Python), docs build |
 | `deploy.yml` | push to main | Build VitePress → deploy GitHub Pages |
-| `content-quality.yml` | push + PR (patterns/exercises changed) | Check template completeness, detect #L1 links |
+| `content-quality.yml` | push + PR (patterns/exercises changed) | Template completeness, #L1 link detection, EN-ZH code parity, 4-language exercise verification |
 | `verify-links.yml` | push (patterns changed) + weekly cron | HTTP check all production proof links |
 | `release.yml` | push tag `v*` | Generate release notes, create GitHub Release |
 
