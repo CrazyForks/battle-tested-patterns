@@ -391,6 +391,7 @@ export default withMermaid(defineConfig({
           text: '在 GitHub 上编辑此页',
         },
         outline: {
+          level: [2, 3],
           label: '页面导航',
         },
         lastUpdated: {
