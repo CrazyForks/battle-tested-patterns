@@ -46,6 +46,7 @@ export default withMermaid(defineConfig({
     head.push(['link', { rel: 'canonical', href: `${SITE_URL}/${enPath.replace(/index\.md$/, '').replace(/\.md$/, '')}` }]);
     head.push(['link', { rel: 'alternate', hreflang: 'en', href: `${SITE_URL}/${enPath.replace(/index\.md$/, '').replace(/\.md$/, '')}` }]);
     head.push(['link', { rel: 'alternate', hreflang: 'zh', href: `${SITE_URL}/${zhPath.replace(/index\.md$/, '').replace(/\.md$/, '')}` }]);
+    head.push(['link', { rel: 'alternate', hreflang: 'x-default', href: `${SITE_URL}/${enPath.replace(/index\.md$/, '').replace(/\.md$/, '')}` }]);
 
     return head;
   },
