@@ -220,6 +220,16 @@ const perms = READ | WRITE;            perms = READ | WRITE
 
 ## 快速开始
 
+### 前置依赖
+
+| 工具 | 版本 | 用途 |
+|------|------|------|
+| [Node.js](https://nodejs.org/) | ≥ 22 | 文档站、TypeScript 练习 |
+| [pnpm](https://pnpm.io/) | ≥ 9 | 包管理器 |
+| [Rust](https://rustup.rs/) | stable | Rust 练习（可选） |
+| [Go](https://go.dev/) | ≥ 1.23 | Go 练习（可选） |
+| [Python](https://python.org/) | ≥ 3.10 | Python 练习（可选） |
+
 ```bash
 git clone https://github.com/Totoro-jam/battle-tested-patterns.git
 cd battle-tested-patterns && pnpm install

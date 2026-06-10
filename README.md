@@ -220,6 +220,16 @@ Then exercises at 2 difficulty levels — all with tests you can run.
 
 ## Quick Start
 
+### Prerequisites
+
+| Tool | Version | Required for |
+|------|---------|-------------|
+| [Node.js](https://nodejs.org/) | ≥ 22 | Docs site, TypeScript exercises |
+| [pnpm](https://pnpm.io/) | ≥ 9 | Package manager |
+| [Rust](https://rustup.rs/) | stable | Rust exercises (optional) |
+| [Go](https://go.dev/) | ≥ 1.23 | Go exercises (optional) |
+| [Python](https://python.org/) | ≥ 3.10 | Python exercises (optional) |
+
 ```bash
 git clone https://github.com/Totoro-jam/battle-tested-patterns.git
 cd battle-tested-patterns && pnpm install
