@@ -39,14 +39,10 @@ describe('MVCCViz', () => {
     const wrapper = mount(MVCCViz);
     const beginBtn = wrapper.findAll('button').find(b => b.text().includes('Begin') || b.text().includes('开始'));
     await beginBtn!.trigger('click');
+    await flushPromises();
 
-    for (let i = 0; i < 6; i++) {
-      vi.advanceTimersByTime(500);
-      await flushPromises();
-    }
-
-    const resetBtn = wrapper.find('.viz-btn--danger');
-    await resetBtn.trigger('click');
+    const resetBtn = wrapper.findAll('.viz-btn--danger').find(b => b.text().includes('Reset') || b.text().includes('重置'));
+    await resetBtn!.trigger('click');
     await flushPromises();
 
     expect(wrapper.findAll('.mv-txn')).toHaveLength(0);
