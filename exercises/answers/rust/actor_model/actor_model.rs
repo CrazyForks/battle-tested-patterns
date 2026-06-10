@@ -1,21 +1,23 @@
-pub struct Actor<S> {
+use std::collections::VecDeque;
+
+pub struct Actor<M, S> {
     state: S,
-    mailbox: Vec<Box<dyn std::any::Any>>,
+    mailbox: VecDeque<M>,
 }
 
-impl<S> Actor<S> {
+impl<M, S> Actor<M, S> {
     pub fn new(initial_state: S) -> Self {
-        Actor { state: initial_state, mailbox: Vec::new() }
+        Actor { state: initial_state, mailbox: VecDeque::new() }
     }
 
-    pub fn send<M: std::any::Any>(&mut self, msg: M) {
-        self.mailbox.push(Box::new(msg));
+    pub fn send(&mut self, msg: M) {
+        self.mailbox.push_back(msg);
     }
 
     pub fn process<F>(&mut self, handler: F)
-    where F: Fn(&S, &dyn std::any::Any) -> S {
-        while let Some(msg) = if self.mailbox.is_empty() { None } else { Some(self.mailbox.remove(0)) } {
-            self.state = handler(&self.state, msg.as_ref());
+    where F: Fn(&S, M) -> S {
+        while let Some(msg) = self.mailbox.pop_front() {
+            self.state = handler(&self.state, msg);
         }
     }
 
