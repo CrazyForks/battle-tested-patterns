@@ -65,7 +65,7 @@ cargo test bitmask
 cargo test bitmask -- --nocapture
 ```
 
-**File location:** `exercises/rust/src/<pattern_name>.rs`
+**File location:** `exercises/rust/src/<pattern_name>/mod.rs`
 
 Each file contains the implementation and tests in a single module with `#[cfg(test)]`.
 
@@ -85,7 +85,7 @@ go test -run Bitmask -v ./...
 go test -v ./...
 ```
 
-**File location:** `exercises/go/<pattern_name>_test.go`
+**File location:** `exercises/go/<pattern_name>/<pattern_name>_test.go`
 
 Each file contains both the implementation and test functions in the same package.
 
@@ -100,13 +100,13 @@ cd exercises/python
 pytest
 
 # Run a specific pattern
-pytest test_bitmask.py
+pytest bitmask/test_bitmask.py
 
 # Run with verbose output
 pytest -v
 ```
 
-**File location:** `exercises/python/test_<pattern_name>.py`
+**File location:** `exercises/python/<pattern_name>/test_<pattern_name>.py`
 
 Each file is self-contained — no cross-file imports.
 
@@ -131,7 +131,7 @@ Every exercise follows the **TODO-stub format**:
 pnpm test ring-buffer     # TypeScript
 cargo test ring_buffer     # Rust
 go test -run RingBuffer    # Go
-pytest test_ring_buffer.py # Python
+pytest ring_buffer/test_ring_buffer.py # Python
 ```
 
 ### Separator line
@@ -160,14 +160,14 @@ When something is wrong:
 
 ## Answer Files
 
-Reference implementations live in `exercises/answers/<language>/`:
+Reference implementations live in `exercises/answers/<language>/<pattern>/`:
 
 ```text
 exercises/answers/
-├── typescript/   # 46 .ts files
-├── rust/         # 46 .rs files
-├── go/           # 46 .go files
-└── python/       # 46 .py files
+├── typescript/   # 46 directories, one .ts each
+├── rust/         # 46 directories, one .rs each
+├── go/           # 46 directories, one .go each
+└── python/       # 46 directories, one .py each
 ```
 
 These contain pure implementation code (no tests). Use them to check your work or study alternative approaches.

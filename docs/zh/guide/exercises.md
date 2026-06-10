@@ -65,7 +65,7 @@ cargo test bitmask
 cargo test bitmask -- --nocapture
 ```
 
-**文件位置：** `exercises/rust/src/<pattern_name>.rs`
+**文件位置：** `exercises/rust/src/<pattern_name>/mod.rs`
 
 每个文件包含实现和测试，使用 `#[cfg(test)]` 在同一模块中。
 
@@ -85,7 +85,7 @@ go test -run Bitmask -v ./...
 go test -v ./...
 ```
 
-**文件位置：** `exercises/go/<pattern_name>_test.go`
+**文件位置：** `exercises/go/<pattern_name>/<pattern_name>_test.go`
 
 每个文件在同一 package 中包含实现和测试函数。
 
@@ -100,13 +100,13 @@ cd exercises/python
 pytest
 
 # 运行特定模式
-pytest test_bitmask.py
+pytest bitmask/test_bitmask.py
 
 # 详细输出
 pytest -v
 ```
 
-**文件位置：** `exercises/python/test_<pattern_name>.py`
+**文件位置：** `exercises/python/<pattern_name>/test_<pattern_name>.py`
 
 每个文件完全自包含 — 无跨文件导入。
 
@@ -131,7 +131,7 @@ pytest -v
 pnpm test ring-buffer     # TypeScript
 cargo test ring_buffer     # Rust
 go test -run RingBuffer    # Go
-pytest test_ring_buffer.py # Python
+pytest ring_buffer/test_ring_buffer.py # Python
 ```
 
 ### 分隔线
@@ -160,14 +160,14 @@ pytest test_ring_buffer.py # Python
 
 ## 答案文件
 
-参考实现位于 `exercises/answers/<language>/`：
+参考实现位于 `exercises/answers/<language>/<pattern>/`：
 
 ```text
 exercises/answers/
-├── typescript/   # 46 个 .ts 文件
-├── rust/         # 46 个 .rs 文件
-├── go/           # 46 个 .go 文件
-└── python/       # 46 个 .py 文件
+├── typescript/   # 46 个目录，每个一个 .ts 文件
+├── rust/         # 46 个目录，每个一个 .rs 文件
+├── go/           # 46 个目录，每个一个 .go 文件
+└── python/       # 46 个目录，每个一个 .py 文件
 ```
 
 这些文件包含纯实现代码（无测试）。可以用来对照检查或学习不同的实现方式。
