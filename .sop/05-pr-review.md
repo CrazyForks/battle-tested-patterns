@@ -56,4 +56,4 @@ When reviewing a pull request that adds or modifies patterns, exercises, or docu
 
 ### 8. CI Status
 
-- [ ] All CI checks pass (CI, Content Quality, Verify Links, Deploy)
+- [ ] All CI checks pass (`CI / CI Pass` gate job must be green)

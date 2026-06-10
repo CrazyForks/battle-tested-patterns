@@ -4,14 +4,37 @@ All notable changes to this project will be documented in this file.
 
 See [commit history](https://github.com/Totoro-jam/battle-tested-patterns/commits/main) for detailed changes.
 
-## Unreleased
+## v1.10.0
 
-[compare changes](https://github.com/Totoro-jam/battle-tested-patterns/compare/v1.9.1...main)
+[compare changes](https://github.com/Totoro-jam/battle-tested-patterns/compare/v1.9.1...v1.10.0)
+
+### Features
+
+- Convert all 166 production proof links to SHA-pinned permalinks (never drift)
+- Add `scripts/resolve-sha-links.ts` tooling for automated link conversion
+- Replace vitepress-plugin-mermaid with conditional loading (`app.*.js` 608KB → 1.3KB, -99.8%)
+- Add `scripts/verify-mermaid.ts` for Mermaid syntax validation (26 blocks, 0 errors)
+- Add `ci-pass` gate job — Branch Protection now requires single `CI / CI Pass` check
+- Upgrade ErrorBoundary to Apple HIG design (backdrop-filter blur, SF Mono, smooth transitions)
+- Add global async component error handler in VitePress theme
+
+### CI
+
+- Merge `content-quality.yml` (5 jobs) into `ci.yml` — eliminates duplicate runs on push
+- Split test scripts: `pnpm test` (all), `pnpm test:exercises`, `pnpm test:docs`
+- Gate job aggregates all 12 CI jobs; Branch Protection only needs one check
 
 ### Fixes
 
-- Correct TS test count back to 491 (was incorrectly changed to 492); total 1,073
-- Resolve SSR hydration mismatch causing skeleton/component coexistence bug (`onMounted` flag pattern)
+- Fix flawed component tests: ReferenceCountingViz wrong selector, VisitorViz count mismatch, SkipListViz conditional guards, MiddlewareChainViz reset logic
+- Correct TS test count back to 491; total 1,073
+- Resolve SSR hydration mismatch causing skeleton/component coexistence bug
+
+### Testing
+
+- Add Viz component test infrastructure: vitest + @vue/test-utils + jsdom + VitePress mock
+- Add unit tests for 46 Viz components — 295 docs tests total
+- Add edge-case tests for CircuitBreakerViz, RetryBackoffViz, SemaphoreViz, SkipListViz
 
 ### Refactors
 
@@ -19,17 +42,17 @@ See [commit history](https://github.com/Totoro-jam/battle-tested-patterns/commit
 - Restructure Python exercises into pattern subdirectories for pytest discovery
 - Replace 229 hardcoded CSS values with `--viz-*` design tokens across 50 Viz components
 
-### Testing
-
-- Add Viz component test infrastructure: vitest + @vue/test-utils + jsdom + VitePress mock
-- Add unit tests for 3 composables (useVizLog, useI18n, useVizTimers) and 3 components (SemaphoreViz, BitmaskViz, RingBufferViz) — 34 tests total
-
 ### Documentation
 
-- Align Viz design tokens with Apple HIG principles (12px radius, dual shadows, easeOut curves, 44px mobile touch targets)
-- Add LRU Cache screenshots to EN/ZH READMEs for visual first impression
-- Add clickable documentation links to all 46 patterns in STUDY_PLAN.md
-- Add property tables to 4 remaining patterns: Bitmask, Backpressure, Circuit Breaker, Rate Limiter (EN+ZH) — 46/46 coverage
+- Update all docs to reference `pnpm test:exercises` (92 pattern files, guides, SOPs, skills)
+- Align Viz design tokens with Apple HIG principles
+- Add LRU Cache screenshots to EN/ZH READMEs
+- Add property tables to 4 remaining patterns — 46/46 coverage
+
+### Chores
+
+- Add Husky git hooks, a11y contrast fix, README prerequisites
+- Add `.nvmrc`, `.python-version` for consistent tooling
 
 ## v1.9.1
 

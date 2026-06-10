@@ -100,12 +100,252 @@ jobs:
         env:
           NODE_OPTIONS: '--max-old-space-size=4096'
 
-  # Gate job — Branch Protection only needs to require this single check.
+  # ─── Content Quality Checks ───────────────────────────────────────────
+  # Formerly in content-quality.yml; merged here so CI Pass covers everything.
+
+  check-template:
+    name: Verify pattern template completeness
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Check required sections in all patterns
+        run: |
+          exit_code=0
+          for file in docs/patterns/*/index.md; do
+            [ -f "$file" ] || continue
+            echo "Checking $file..."
+            missing=""
+            grep -q "## One Liner" "$file"            || missing="$missing One-Liner"
+            grep -q "## Core Idea" "$file"             || missing="$missing Core-Idea"
+            grep -q "## Production Proof" "$file"      || missing="$missing Production-Proof"
+            grep -q "## Implementation" "$file"        || missing="$missing Implementation"
+            grep -q "## Exercises" "$file"             || missing="$missing Exercises"
+            grep -q "## When to Use" "$file"           || missing="$missing When-to-Use"
+            grep -q "## When NOT to Use" "$file"       || missing="$missing When-NOT-to-Use"
+            grep -q "## More Production Uses" "$file"  || missing="$missing More-Production-Uses"
+            grep -q "## Related Patterns" "$file"      || missing="$missing Related-Patterns"
+            grep -q "## Challenge Questions" "$file"   || missing="$missing Challenge-Questions"
+
+            if [ -n "$missing" ]; then
+              echo "::error file=$file::Missing required sections:$missing"
+              exit_code=1
+            else
+              echo "  ✅ All required sections present"
+            fi
+
+            # Check Production Proof has at least 2 source links with line numbers
+            link_count=$(grep -c 'github\.com.*#L' "$file" || true)
+            if [ "$link_count" -lt 2 ]; then
+              echo "::warning file=$file::Only $link_count production proof link(s) with line numbers (minimum 2 required)"
+            fi
+
+            # Check no #L1 file-level links pretending to be precise
+            if grep -q 'github\.com.*#L1)' "$file"; then
+              echo "::warning file=$file::Contains #L1 file-level link — should point to specific line range"
+            fi
+          done
+          exit $exit_code
+
+  check-zh-parity:
+    name: Verify EN-ZH code parity
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Check ZH code blocks match EN
+        run: |
+          python3 - <<'PYEOF'
+          import re, os, sys
+
+          base = 'docs/patterns'
+          zh_base = 'docs/zh/patterns'
+          errors = 0
+
+          for d in sorted(os.listdir(base)):
+              en_path = os.path.join(base, d, 'index.md')
+              zh_path = os.path.join(zh_base, d, 'index.md')
+              if not os.path.isfile(en_path):
+                  continue
+              if not os.path.isfile(zh_path):
+                  print(f"::error file={en_path}::Missing ZH translation: {zh_path}")
+                  errors += 1
+                  continue
+
+              with open(en_path) as f:
+                  en = f.read()
+              with open(zh_path) as f:
+                  zh = f.read()
+
+              code_langs = {'typescript', 'python', 'rust', 'go'}
+              en_blocks = [(l, c) for l, c in re.findall(r'```(\w+).*?\n(.*?)```', en, re.DOTALL) if l in code_langs]
+              zh_blocks = [(l, c) for l, c in re.findall(r'```(\w+).*?\n(.*?)```', zh, re.DOTALL) if l in code_langs]
+
+              if len(en_blocks) != len(zh_blocks):
+                  print(f"::error file={zh_path}::Code block count mismatch: EN={len(en_blocks)}, ZH={len(zh_blocks)}")
+                  errors += 1
+                  continue
+
+              for i, ((el, ec), (zl, zc)) in enumerate(zip(en_blocks, zh_blocks)):
+                  if el != zl:
+                      print(f"::error file={zh_path}::Block {i} language mismatch: EN={el}, ZH={zl} (tab order wrong)")
+                      errors += 1
+                  elif ec != zc:
+                      print(f"::error file={zh_path}::Block {i} [{el}] content differs from EN")
+                      errors += 1
+
+          if errors:
+              print(f"\n{errors} parity error(s) found")
+              sys.exit(1)
+          else:
+              print("✅ All ZH code blocks match EN")
+          PYEOF
+
+  check-frontmatter:
+    name: Verify frontmatter completeness
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Check frontmatter fields
+        run: |
+          exit_code=0
+          for file in docs/patterns/*/index.md docs/zh/patterns/*/index.md; do
+            [ -f "$file" ] || continue
+            fm=$(sed -n '/^---$/,/^---$/p' "$file" | sed '1d;$d')
+            missing=""
+            echo "$fm" | grep -q 'title:'       || missing="$missing title"
+            echo "$fm" | grep -q 'description:' || missing="$missing description"
+            echo "$fm" | grep -q 'difficulty:'  || missing="$missing difficulty"
+            if [ -n "$missing" ]; then
+              echo "::error file=$file::Missing frontmatter fields:$missing"
+              exit_code=1
+            fi
+          done
+          # Check guide and by-project pages for title + description
+          for file in docs/guide/*.md docs/zh/guide/*.md docs/by-project/*.md docs/zh/by-project/*.md; do
+            [ -f "$file" ] || continue
+            fm=$(sed -n '/^---$/,/^---$/p' "$file" | sed '1d;$d')
+            missing=""
+            echo "$fm" | grep -q 'title:'       || missing="$missing title"
+            echo "$fm" | grep -q 'description:' || missing="$missing description"
+            if [ -n "$missing" ]; then
+              echo "::error file=$file::Missing frontmatter fields:$missing"
+              exit_code=1
+            fi
+          done
+          if [ $exit_code -eq 0 ]; then
+            echo "✅ All docs have complete frontmatter"
+          fi
+          exit $exit_code
+
+  check-tab-order:
+    name: Verify code-group tab order
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Check tab order is TS > Rust > Go > Python
+        run: |
+          python3 - <<'PYEOF'
+          import os, re, sys
+
+          LANG_ORDER = ['TypeScript', 'Rust', 'Go', 'Python']
+          errors = 0
+
+          for base in ['docs/patterns', 'docs/zh/patterns']:
+              for d in sorted(os.listdir(base)):
+                  f = os.path.join(base, d, 'index.md')
+                  if not os.path.isfile(f):
+                      continue
+                  with open(f) as fh:
+                      content = fh.read()
+                  groups = re.findall(r'::: code-group\n(.*?)\n:::', content, re.DOTALL)
+                  for i, group in enumerate(groups):
+                      langs = re.findall(r'```\w+ \[(\w+)\]', group)
+                      present = [l for l in LANG_ORDER if l in langs]
+                      actual = [l for l in langs if l in LANG_ORDER]
+                      if actual != present:
+                          print(f"::error file={f}::Code-group {i+1} tab order is {actual}, expected {present}")
+                          errors += 1
+
+          if errors:
+              print(f"\n{errors} tab order error(s) found")
+              sys.exit(1)
+          else:
+              print("✅ All code-group tab orders are correct")
+          PYEOF
+
+  check-exercises:
+    name: Verify exercises exist for patterns
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Check exercise files
+        run: |
+          exit_code=0
+          for dir in docs/patterns/*/; do
+            pattern=$(basename "$dir")
+            snake=$(echo "$pattern" | tr '-' '_')
+            pattern_ok=1
+
+            # TypeScript
+            ts_dir="exercises/typescript/$pattern"
+            if [ ! -d "$ts_dir" ] || [ -z "$(find "$ts_dir" -name '*.test.ts' 2>/dev/null)" ]; then
+              echo "::error::Missing TypeScript exercise for '$pattern'"
+              exit_code=1; pattern_ok=0
+            fi
+
+            # Rust
+            if [ ! -f "exercises/rust/src/${snake}/mod.rs" ]; then
+              echo "::error::Missing Rust exercise: exercises/rust/src/${snake}/mod.rs"
+              exit_code=1; pattern_ok=0
+            fi
+
+            # Go
+            if [ ! -f "exercises/go/${snake}/${snake}_test.go" ]; then
+              echo "::error::Missing Go exercise: exercises/go/${snake}/${snake}_test.go"
+              exit_code=1; pattern_ok=0
+            fi
+
+            # Python
+            if [ ! -f "exercises/python/${snake}/test_${snake}.py" ]; then
+              echo "::error::Missing Python exercise: exercises/python/${snake}/test_${snake}.py"
+              exit_code=1; pattern_ok=0
+            fi
+
+            # Answer files
+            for lang_dir in typescript rust go python; do
+              if [ "$lang_dir" = "typescript" ]; then
+                ans="exercises/answers/typescript/${pattern}/${pattern}.ts"
+              elif [ "$lang_dir" = "rust" ]; then
+                ans="exercises/answers/rust/${snake}/${snake}.rs"
+              elif [ "$lang_dir" = "go" ]; then
+                ans="exercises/answers/go/${snake}/${snake}.go"
+              else
+                ans="exercises/answers/python/${snake}/${snake}.py"
+              fi
+              if [ ! -f "$ans" ]; then
+                echo "::error::Missing answer file: $ans"
+                exit_code=1; pattern_ok=0
+              fi
+            done
+
+            if [ $pattern_ok -eq 1 ]; then
+              echo "  ✅ $pattern: all 4 languages + answers"
+            fi
+          done
+          exit $exit_code
+
+  # ─── Gate Job ────────────────────────────────────────────────────────────
+  # Branch Protection only needs to require this single check: "CI / CI Pass"
   # All individual jobs above run in parallel; this job waits for all of them.
   ci-pass:
     name: CI Pass
     if: always()
-    needs: [lint, test-ts, test-rust, test-go, test-python, test-components, build]
+    needs: [lint, test-ts, test-rust, test-go, test-python, test-components, build, check-template, check-zh-parity, check-frontmatter, check-tab-order, check-exercises]
     runs-on: ubuntu-latest
     steps:
       - name: Check all jobs passed
