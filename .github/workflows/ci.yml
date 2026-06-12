@@ -26,8 +26,31 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm lint
       - run: pnpm typecheck
-      - run: pnpm verify-code
       - run: pnpm verify-mermaid
+
+  # verify-code needs ALL four toolchains so that the Rust/Go/Python code blocks
+  # in the docs are genuinely compiled (not silently skipped). The script fails
+  # hard in CI (env CI=true) if any toolchain is missing.
+  verify-code:
+    name: Verify Code Blocks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: pnpm
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: actions/setup-go@v6
+        with:
+          go-version: "1.23"
+          cache-dependency-path: exercises/go/go.sum
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm verify-code
 
   test-ts:
     name: Test (TypeScript)
@@ -124,7 +147,7 @@ jobs:
   ci-pass:
     name: CI Pass
     if: always()
-    needs: [lint, test-ts, test-rust, test-go, test-python, test-components, build, check-content]
+    needs: [lint, verify-code, test-ts, test-rust, test-go, test-python, test-components, build, check-content]
     runs-on: ubuntu-latest
     steps:
       - name: Check all jobs passed
