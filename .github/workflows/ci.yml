@@ -45,7 +45,7 @@ jobs:
       - uses: actions/setup-go@v6
         with:
           go-version: "1.23"
-          cache-dependency-path: exercises/go/go.sum
+          cache: false  # verify-code uses a temp module; no go.sum to cache
       - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
@@ -81,7 +81,7 @@ jobs:
       - uses: actions/setup-go@v6
         with:
           go-version: "1.23"
-          cache-dependency-path: exercises/go/go.sum
+          cache-dependency-path: exercises/go/go.mod
       - run: cd exercises/go && go test ./...
 
   test-python:
