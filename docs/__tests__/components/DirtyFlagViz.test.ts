@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { mount, flushPromises } from '@vue/test-utils';
 import DirtyFlagViz from '../../.vitepress/theme/components/DirtyFlagViz.vue';
+import { clickButton, clickReset } from '../helpers/viz-interactions';
 
 describe('DirtyFlagViz', () => {
   beforeEach(() => {
@@ -34,9 +35,7 @@ describe('DirtyFlagViz', () => {
     await circle.trigger('click');
     await flushPromises();
 
-    const recomputeBtn = wrapper.find('.viz-btn--primary');
-    await recomputeBtn.trigger('click');
-    await flushPromises();
+    await clickButton(wrapper, ['Recompute (dirty only)', '重算（仅脏数据）']);
 
     expect(wrapper.text()).toMatch(/Skipped|跳过/);
   });
@@ -47,9 +46,7 @@ describe('DirtyFlagViz', () => {
     await circle.trigger('click');
     await flushPromises();
 
-    const resetBtn = wrapper.find('.viz-btn--danger');
-    await resetBtn.trigger('click');
-    await flushPromises();
+    await clickReset(wrapper);
 
     const stats = wrapper.find('.df-stats');
     expect(stats.exists()).toBe(true);

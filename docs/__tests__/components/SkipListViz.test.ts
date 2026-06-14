@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { mount, flushPromises } from '@vue/test-utils';
+import { clickButton, clickReset } from '../helpers/viz-interactions';
 import SkipListViz from '../../.vitepress/theme/components/SkipListViz.vue';
 
 describe('SkipListViz', () => {
@@ -23,8 +24,7 @@ describe('SkipListViz', () => {
 
   it('insert button adds a node', async () => {
     const wrapper = mount(SkipListViz);
-    const insertBtn = wrapper.find('.viz-btn--primary');
-    await insertBtn.trigger('click');
+    await clickButton(wrapper, ['Insert Random', '插入随机值']);
     vi.advanceTimersByTime(2000);
     await flushPromises();
 
@@ -33,14 +33,11 @@ describe('SkipListViz', () => {
 
   it('reset clears all nodes', async () => {
     const wrapper = mount(SkipListViz);
-    const insertBtn = wrapper.find('.viz-btn--primary');
-    await insertBtn.trigger('click');
+    await clickButton(wrapper, ['Insert Random', '插入随机值']);
     vi.advanceTimersByTime(1000);
     await flushPromises();
 
-    const resetBtn = wrapper.find('.viz-btn--danger');
-    await resetBtn.trigger('click');
-    await flushPromises();
+    await clickReset(wrapper);
 
     expect(wrapper.text()).toMatch(/empty|空|Insert|插入/i);
   });
@@ -62,20 +59,16 @@ describe('SkipListViz', () => {
 
   it('search message references sorted linked list (not array)', async () => {
     const wrapper = mount(SkipListViz);
-    const insertBtn = wrapper.find('.viz-btn--primary');
 
     // Insert a few nodes
     for (let i = 0; i < 3; i++) {
-      await insertBtn.trigger('click');
+      await clickButton(wrapper, ['Insert Random', '插入随机值']);
       vi.advanceTimersByTime(2000);
       await flushPromises();
     }
 
     // Trigger search
-    const searchBtn = wrapper.findAll('.viz-btn').find((b) =>
-      b.text().includes('Search') || b.text().includes('搜索'),
-    );
-    await searchBtn!.trigger('click');
+    await clickButton(wrapper, ['Search', '搜索']);
 
     // Search uses multiple delay() calls — advance timers in small increments
     for (let i = 0; i < 20; i++) {

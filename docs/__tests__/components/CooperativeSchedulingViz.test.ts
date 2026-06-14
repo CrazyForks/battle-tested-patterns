@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { mount, flushPromises } from '@vue/test-utils';
 import CooperativeSchedulingViz from '../../.vitepress/theme/components/CooperativeSchedulingViz.vue';
+import { hasButton } from '../helpers/viz-interactions';
 
 describe('CooperativeSchedulingViz', () => {
   beforeEach(() => {
@@ -25,8 +26,8 @@ describe('CooperativeSchedulingViz', () => {
 
   it('has start task and reset buttons', () => {
     const wrapper = mount(CooperativeSchedulingViz);
-    expect(wrapper.find('.viz-btn--primary').exists()).toBe(true);
-    expect(wrapper.find('.viz-btn--danger').exists()).toBe(true);
+    expect(hasButton(wrapper, ['Start Long Task', '启动长任务'])).toBe(true);
+    expect(hasButton(wrapper, ['Reset', '重置'])).toBe(true);
   });
 
   it('toggle switches to cooperative mode', async () => {

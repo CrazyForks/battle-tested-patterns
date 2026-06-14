@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { mount, flushPromises } from '@vue/test-utils';
 import BloomFilterViz from '../../.vitepress/theme/components/BloomFilterViz.vue';
+import { clickButton, clickReset } from '../helpers/viz-interactions';
 
 describe('BloomFilterViz', () => {
   beforeEach(() => {
@@ -21,10 +22,9 @@ describe('BloomFilterViz', () => {
   it('add button inserts an item', async () => {
     const wrapper = mount(BloomFilterViz);
     const input = wrapper.find('.bloom-input');
-    const addBtn = wrapper.find('.viz-btn--primary');
 
     await input.setValue('hello');
-    await addBtn.trigger('click');
+    await clickButton(wrapper, ['Add', '添加']);
 
     vi.advanceTimersByTime(500);
     await flushPromises();
@@ -35,18 +35,14 @@ describe('BloomFilterViz', () => {
   it('test on added item shows positive result', async () => {
     const wrapper = mount(BloomFilterViz);
     const input = wrapper.find('.bloom-input');
-    const addBtn = wrapper.find('.viz-btn--primary');
-    const testBtn = wrapper.findAll('.viz-btn').find((b) =>
-      b.text() === 'Test' || b.text() === '测试',
-    );
 
     await input.setValue('hello');
-    await addBtn.trigger('click');
+    await clickButton(wrapper, ['Add', '添加']);
     vi.advanceTimersByTime(500);
     await flushPromises();
 
     await input.setValue('hello');
-    await testBtn!.trigger('click');
+    await clickButton(wrapper, ['Test', '测试']);
     vi.advanceTimersByTime(500);
     await flushPromises();
 
@@ -57,12 +53,9 @@ describe('BloomFilterViz', () => {
   it('test on missing item shows negative result', async () => {
     const wrapper = mount(BloomFilterViz);
     const input = wrapper.find('.bloom-input');
-    const testBtn = wrapper.findAll('.viz-btn').find((b) =>
-      b.text() === 'Test' || b.text() === '测试',
-    );
 
     await input.setValue('nonexistent');
-    await testBtn!.trigger('click');
+    await clickButton(wrapper, ['Test', '测试']);
     vi.advanceTimersByTime(500);
     await flushPromises();
 
@@ -73,16 +66,13 @@ describe('BloomFilterViz', () => {
   it('reset clears all bits and items', async () => {
     const wrapper = mount(BloomFilterViz);
     const input = wrapper.find('.bloom-input');
-    const addBtn = wrapper.find('.viz-btn--primary');
-    const resetBtn = wrapper.find('.viz-btn--danger');
 
     await input.setValue('hello');
-    await addBtn.trigger('click');
+    await clickButton(wrapper, ['Add', '添加']);
     vi.advanceTimersByTime(500);
     await flushPromises();
 
-    await resetBtn.trigger('click');
-    await flushPromises();
+    await clickReset(wrapper);
 
     expect(wrapper.text()).toContain('0%');
   });
@@ -90,11 +80,10 @@ describe('BloomFilterViz', () => {
   it('fill rate increases as items are added', async () => {
     const wrapper = mount(BloomFilterViz);
     const input = wrapper.find('.bloom-input');
-    const addBtn = wrapper.find('.viz-btn--primary');
 
     for (const item of ['apple', 'banana', 'cherry']) {
       await input.setValue(item);
-      await addBtn.trigger('click');
+      await clickButton(wrapper, ['Add', '添加']);
       vi.advanceTimersByTime(500);
       await flushPromises();
     }

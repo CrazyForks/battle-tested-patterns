@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { mount, flushPromises } from '@vue/test-utils';
+import { mount } from '@vue/test-utils';
 import BackpressureViz from '../../.vitepress/theme/components/BackpressureViz.vue';
+import { clickReset } from '../helpers/viz-interactions';
 
 describe('BackpressureViz', () => {
   beforeEach(() => {
@@ -38,9 +39,7 @@ describe('BackpressureViz', () => {
 
   it('reset clears queue and stats', async () => {
     const wrapper = mount(BackpressureViz);
-    const resetBtn = wrapper.find('.viz-btn--danger');
-    await resetBtn.trigger('click');
-    await flushPromises();
+    await clickReset(wrapper);
 
     const filledSlots = wrapper.findAll('.bp-slot--filled');
     expect(filledSlots).toHaveLength(0);

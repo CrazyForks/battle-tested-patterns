@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { mount, flushPromises } from '@vue/test-utils';
 import DiffPatchViz from '../../.vitepress/theme/components/DiffPatchViz.vue';
+import { clickButton, clickReset } from '../helpers/viz-interactions';
 
 describe('DiffPatchViz', () => {
   beforeEach(() => {
@@ -25,14 +26,9 @@ describe('DiffPatchViz', () => {
 
   it('modify then diff produces diff output', async () => {
     const wrapper = mount(DiffPatchViz);
-    const modifyBtn = wrapper.findAll('.viz-btn').find((b) =>
-      b.text().includes('Modify') || b.text().includes('修改'),
-    );
-    await modifyBtn!.trigger('click');
-    await flushPromises();
+    await clickButton(wrapper, ['Modify', '修改']);
 
-    const diffBtn = wrapper.find('.viz-btn--primary');
-    await diffBtn.trigger('click');
+    await clickButton(wrapper, 'Diff');
     vi.advanceTimersByTime(1000);
     await flushPromises();
 
@@ -41,9 +37,7 @@ describe('DiffPatchViz', () => {
 
   it('reset clears diff output', async () => {
     const wrapper = mount(DiffPatchViz);
-    const resetBtn = wrapper.find('.viz-btn--danger');
-    await resetBtn.trigger('click');
-    await flushPromises();
+    await clickReset(wrapper);
 
     expect(wrapper.find('.dp-diff').exists()).toBe(false);
   });

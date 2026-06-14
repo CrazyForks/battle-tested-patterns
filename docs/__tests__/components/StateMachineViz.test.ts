@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { mount, flushPromises } from '@vue/test-utils';
 import StateMachineViz from '../../.vitepress/theme/components/StateMachineViz.vue';
+import { clickReset } from '../helpers/viz-interactions';
 
 describe('StateMachineViz', () => {
   beforeEach(() => {
@@ -73,13 +74,11 @@ describe('StateMachineViz', () => {
     const wrapper = mount(StateMachineViz);
     const btns = wrapper.findAll('.viz-btn');
     const fetchBtn = btns.find((b) => b.text().includes('FETCH'));
-    const resetBtn = wrapper.find('.viz-btn--danger');
 
     await fetchBtn!.trigger('click');
     await flushPromises();
 
-    await resetBtn.trigger('click');
-    await flushPromises();
+    await clickReset(wrapper);
 
     const historyItems = wrapper.findAll('.sm-history-item');
     expect(historyItems).toHaveLength(0);

@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { mount, flushPromises } from '@vue/test-utils';
 import MergeIteratorViz from '../../.vitepress/theme/components/MergeIteratorViz.vue';
+import { clickButton, clickReset } from '../helpers/viz-interactions';
 
 describe('MergeIteratorViz', () => {
   beforeEach(() => {
@@ -29,9 +30,7 @@ describe('MergeIteratorViz', () => {
 
   it('Next button picks minimum head and adds to output', async () => {
     const wrapper = mount(MergeIteratorViz);
-    const nextBtn = wrapper.find('.viz-btn--primary');
-    await nextBtn.trigger('click');
-    await flushPromises();
+    await clickButton(wrapper, ['Next', '下一个']);
 
     const outputCells = wrapper.findAll('.mi-cell--output');
     expect(outputCells).toHaveLength(1);
@@ -40,9 +39,7 @@ describe('MergeIteratorViz', () => {
 
   it('consumed cells get crossed out after picking', async () => {
     const wrapper = mount(MergeIteratorViz);
-    const nextBtn = wrapper.find('.viz-btn--primary');
-    await nextBtn.trigger('click');
-    await flushPromises();
+    await clickButton(wrapper, ['Next', '下一个']);
 
     const consumed = wrapper.findAll('.mi-cell--consumed');
     expect(consumed).toHaveLength(1);
@@ -50,14 +47,10 @@ describe('MergeIteratorViz', () => {
 
   it('reset restores all iterators and clears output', async () => {
     const wrapper = mount(MergeIteratorViz);
-    const nextBtn = wrapper.find('.viz-btn--primary');
-    await nextBtn.trigger('click');
-    await nextBtn.trigger('click');
-    await flushPromises();
+    await clickButton(wrapper, ['Next', '下一个']);
+    await clickButton(wrapper, ['Next', '下一个']);
 
-    const resetBtn = wrapper.find('.viz-btn--danger');
-    await resetBtn.trigger('click');
-    await flushPromises();
+    await clickReset(wrapper);
 
     expect(wrapper.findAll('.mi-cell--consumed')).toHaveLength(0);
     expect(wrapper.findAll('.mi-cell--output')).toHaveLength(0);

@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { mount, flushPromises } from '@vue/test-utils';
 import TombstoneViz from '../../.vitepress/theme/components/TombstoneViz.vue';
+import { clickButton, clickReset } from '../helpers/viz-interactions';
 
 describe('TombstoneViz', () => {
   beforeEach(() => {
@@ -54,10 +55,7 @@ describe('TombstoneViz', () => {
 
   it('write button adds a new entry to a free slot', async () => {
     const wrapper = mount(TombstoneViz);
-    const writeBtn = wrapper.findAll('.viz-btn--primary').find(
-      b => b.text().includes('Write') || b.text().includes('写入')
-    );
-    await writeBtn!.trigger('click');
+    await clickButton(wrapper, ['Write', '写入']);
     vi.advanceTimersByTime(1000);
     await flushPromises();
 
@@ -67,7 +65,9 @@ describe('TombstoneViz', () => {
 
   it('compact button is disabled when no tombstoned entries exist', () => {
     const wrapper = mount(TombstoneViz);
-    const compactBtn = wrapper.findAll('.viz-btn--primary').find(
+    // Located by visible text (not style class); we need the element itself to
+    // assert the `disabled` attribute, so we can't use clickButton here.
+    const compactBtn = wrapper.findAll('button').find(
       b => b.text().includes('Compact') || b.text().includes('压缩')
     );
     expect(compactBtn!.attributes('disabled')).toBeDefined();
@@ -81,9 +81,7 @@ describe('TombstoneViz', () => {
     vi.advanceTimersByTime(1000);
     await flushPromises();
 
-    const resetBtn = wrapper.find('.viz-btn--danger');
-    await resetBtn.trigger('click');
-    await flushPromises();
+    await clickReset(wrapper);
 
     expect(wrapper.findAll('.ts-cell--active')).toHaveLength(4);
     expect(wrapper.findAll('.ts-cell--free')).toHaveLength(8);

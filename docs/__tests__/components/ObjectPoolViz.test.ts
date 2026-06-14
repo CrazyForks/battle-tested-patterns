@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { mount, flushPromises } from '@vue/test-utils';
 import ObjectPoolViz from '../../.vitepress/theme/components/ObjectPoolViz.vue';
+import { clickButton, clickReset } from '../helpers/viz-interactions';
 
 describe('ObjectPoolViz', () => {
   beforeEach(() => {
@@ -25,9 +26,7 @@ describe('ObjectPoolViz', () => {
 
   it('acquire marks an object as in-use', async () => {
     const wrapper = mount(ObjectPoolViz);
-    const acquireBtn = wrapper.find('.viz-btn--primary');
-    await acquireBtn.trigger('click');
-    await flushPromises();
+    await clickButton(wrapper, ['Acquire', '获取']);
 
     const inUse = wrapper.findAll('.op-card--in-use');
     expect(inUse).toHaveLength(1);
@@ -35,13 +34,9 @@ describe('ObjectPoolViz', () => {
 
   it('reset restores all objects to available', async () => {
     const wrapper = mount(ObjectPoolViz);
-    const acquireBtn = wrapper.find('.viz-btn--primary');
-    await acquireBtn.trigger('click');
-    await flushPromises();
+    await clickButton(wrapper, ['Acquire', '获取']);
 
-    const resetBtn = wrapper.findAll('.viz-btn--danger').at(0)!;
-    await resetBtn.trigger('click');
-    await flushPromises();
+    await clickReset(wrapper);
 
     const available = wrapper.findAll('.op-card--available');
     expect(available).toHaveLength(5);

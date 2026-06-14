@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { mount, flushPromises } from '@vue/test-utils';
 import FreeListViz from '../../.vitepress/theme/components/FreeListViz.vue';
+import { clickButton, clickReset } from '../helpers/viz-interactions';
 
 describe('FreeListViz', () => {
   beforeEach(() => {
@@ -21,8 +22,7 @@ describe('FreeListViz', () => {
 
   it('allocate marks a block as allocated', async () => {
     const wrapper = mount(FreeListViz);
-    const allocBtn = wrapper.find('.viz-btn--primary');
-    await allocBtn.trigger('click');
+    await clickButton(wrapper, ['Allocate', '分配']);
     vi.advanceTimersByTime(500);
     await flushPromises();
 
@@ -38,14 +38,11 @@ describe('FreeListViz', () => {
 
   it('reset restores all blocks to free', async () => {
     const wrapper = mount(FreeListViz);
-    const allocBtn = wrapper.find('.viz-btn--primary');
-    await allocBtn.trigger('click');
+    await clickButton(wrapper, ['Allocate', '分配']);
     vi.advanceTimersByTime(500);
     await flushPromises();
 
-    const resetBtn = wrapper.find('.viz-btn--danger');
-    await resetBtn.trigger('click');
-    await flushPromises();
+    await clickReset(wrapper);
 
     expect(wrapper.findAll('.fl-block--allocated')).toHaveLength(0);
     expect(wrapper.findAll('.fl-block--free')).toHaveLength(10);

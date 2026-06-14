@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { mount, flushPromises } from '@vue/test-utils';
+import { mount } from '@vue/test-utils';
+import { clickButton, clickReset } from '../helpers/viz-interactions';
 import MVCCViz from '../../.vitepress/theme/components/MVCCViz.vue';
 
 describe('MVCCViz', () => {
@@ -19,31 +20,23 @@ describe('MVCCViz', () => {
 
   it('Begin Transaction creates a new active transaction', async () => {
     const wrapper = mount(MVCCViz);
-    const beginBtn = wrapper.findAll('button').find(b => b.text().includes('Begin') || b.text().includes('开始'));
-    await beginBtn!.trigger('click');
-    await flushPromises();
+    await clickButton(wrapper, ['Begin Txn', '开始事务']);
 
     expect(wrapper.text()).toMatch(/T1/);
   });
 
   it('shows transaction snapshot version', async () => {
     const wrapper = mount(MVCCViz);
-    const beginBtn = wrapper.findAll('button').find(b => b.text().includes('Begin') || b.text().includes('开始'));
-    await beginBtn!.trigger('click');
-    await flushPromises();
+    await clickButton(wrapper, ['Begin Txn', '开始事务']);
 
     expect(wrapper.text()).toMatch(/snapshot|快照|v1/i);
   });
 
   it('reset clears all transactions', async () => {
     const wrapper = mount(MVCCViz);
-    const beginBtn = wrapper.findAll('button').find(b => b.text().includes('Begin') || b.text().includes('开始'));
-    await beginBtn!.trigger('click');
-    await flushPromises();
+    await clickButton(wrapper, ['Begin Txn', '开始事务']);
 
-    const resetBtn = wrapper.findAll('.viz-btn--danger').find(b => b.text().includes('Reset') || b.text().includes('重置'));
-    await resetBtn!.trigger('click');
-    await flushPromises();
+    await clickReset(wrapper);
 
     expect(wrapper.findAll('.mv-txn')).toHaveLength(0);
   });

@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { mount, flushPromises } from '@vue/test-utils';
 import DependencyGraphViz from '../../.vitepress/theme/components/DependencyGraphViz.vue';
+import { clickButton, clickReset } from '../helpers/viz-interactions';
 
 describe('DependencyGraphViz', () => {
   beforeEach(() => {
@@ -18,8 +19,7 @@ describe('DependencyGraphViz', () => {
 
   it('topo sort button produces sorted order', async () => {
     const wrapper = mount(DependencyGraphViz);
-    const sortBtn = wrapper.find('.viz-btn--primary');
-    await sortBtn.trigger('click');
+    await clickButton(wrapper, ['Topo Sort', '拓扑排序']);
     for (let i = 0; i < 30; i++) {
       vi.advanceTimersByTime(200);
       await flushPromises();
@@ -31,9 +31,7 @@ describe('DependencyGraphViz', () => {
 
   it('reset clears sorted order', async () => {
     const wrapper = mount(DependencyGraphViz);
-    const resetBtn = wrapper.find('.viz-btn--danger');
-    await resetBtn.trigger('click');
-    await flushPromises();
+    await clickReset(wrapper);
 
     expect(wrapper.findAll('.dg-order-item')).toHaveLength(0);
   });

@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { mount, flushPromises } from '@vue/test-utils';
 import ActorModelViz from '../../.vitepress/theme/components/ActorModelViz.vue';
+import { clickButton, clickReset } from '../helpers/viz-interactions';
 
 describe('ActorModelViz', () => {
   beforeEach(() => {
@@ -25,8 +26,7 @@ describe('ActorModelViz', () => {
 
   it('send button delivers a message to target actor mailbox', async () => {
     const wrapper = mount(ActorModelViz);
-    const sendBtn = wrapper.find('.viz-btn--primary');
-    await sendBtn.trigger('click');
+    await clickButton(wrapper, ['Send', '发送']);
     vi.advanceTimersByTime(1000);
     await flushPromises();
 
@@ -36,14 +36,11 @@ describe('ActorModelViz', () => {
 
   it('reset clears all mailboxes and stats', async () => {
     const wrapper = mount(ActorModelViz);
-    const sendBtn = wrapper.find('.viz-btn--primary');
-    await sendBtn.trigger('click');
+    await clickButton(wrapper, ['Send', '发送']);
     vi.advanceTimersByTime(500);
     await flushPromises();
 
-    const resetBtn = wrapper.find('.viz-btn--danger');
-    await resetBtn.trigger('click');
-    await flushPromises();
+    await clickReset(wrapper);
 
     const actors = wrapper.findAll('.am-actor');
     expect(actors).toHaveLength(3);

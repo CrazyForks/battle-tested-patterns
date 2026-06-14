@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { mount, flushPromises } from '@vue/test-utils';
+import { clickButton, clickReset } from '../helpers/viz-interactions';
 import VisitorViz from '../../.vitepress/theme/components/VisitorViz.vue';
 
 describe('VisitorViz', () => {
@@ -32,8 +33,7 @@ describe('VisitorViz', () => {
 
   it('clicking Visit with Print Visitor shows visit output for all nodes', async () => {
     const wrapper = mount(VisitorViz);
-    const visitBtn = wrapper.find('.viz-btn--primary');
-    await visitBtn.trigger('click');
+    await clickButton(wrapper, ['Visit', '访问']);
 
     for (let i = 0; i < 20; i++) {
       vi.advanceTimersByTime(500);
@@ -48,12 +48,9 @@ describe('VisitorViz', () => {
   it('Count Visitor shows incrementing count for each node', async () => {
     const wrapper = mount(VisitorViz);
 
-    const countBtn = wrapper.findAll('.vv-type-btn')[1];
-    await countBtn.trigger('click');
-    await flushPromises();
+    await clickButton(wrapper, 'Count Visitor');
 
-    const visitBtn = wrapper.find('.viz-btn--primary');
-    await visitBtn.trigger('click');
+    await clickButton(wrapper, ['Visit', '访问']);
 
     for (let i = 0; i < 20; i++) {
       vi.advanceTimersByTime(500);
@@ -67,17 +64,14 @@ describe('VisitorViz', () => {
 
   it('reset clears visitor output and restores tree', async () => {
     const wrapper = mount(VisitorViz);
-    const visitBtn = wrapper.find('.viz-btn--primary');
-    await visitBtn.trigger('click');
+    await clickButton(wrapper, ['Visit', '访问']);
 
     for (let i = 0; i < 25; i++) {
       vi.advanceTimersByTime(500);
       await flushPromises();
     }
 
-    const resetBtn = wrapper.find('.viz-btn--danger');
-    await resetBtn.trigger('click');
-    await flushPromises();
+    await clickReset(wrapper);
 
     expect(wrapper.find('.vv-output').exists()).toBe(false);
   });

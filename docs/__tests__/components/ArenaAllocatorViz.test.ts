@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { mount, flushPromises } from '@vue/test-utils';
 import ArenaAllocatorViz from '../../.vitepress/theme/components/ArenaAllocatorViz.vue';
+import { clickButton, clickReset } from '../helpers/viz-interactions';
 
 describe('ArenaAllocatorViz', () => {
   beforeEach(() => {
@@ -25,8 +26,7 @@ describe('ArenaAllocatorViz', () => {
 
   it('allocate button creates an allocation in the arena', async () => {
     const wrapper = mount(ArenaAllocatorViz);
-    const allocBtn = wrapper.find('.viz-btn--primary');
-    await allocBtn.trigger('click');
+    await clickButton(wrapper, ['Allocate', '分配']);
     vi.advanceTimersByTime(500);
     await flushPromises();
 
@@ -36,13 +36,9 @@ describe('ArenaAllocatorViz', () => {
 
   it('reset clears all allocations', async () => {
     const wrapper = mount(ArenaAllocatorViz);
-    const allocBtn = wrapper.find('.viz-btn--primary');
-    await allocBtn.trigger('click');
-    await flushPromises();
+    await clickButton(wrapper, ['Allocate', '分配']);
 
-    const resetBtn = wrapper.find('.viz-btn--danger');
-    await resetBtn.trigger('click');
-    await flushPromises();
+    await clickReset(wrapper);
 
     const blocks = wrapper.findAll('.arena-block');
     expect(blocks).toHaveLength(1);

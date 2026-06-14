@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { mount, flushPromises } from '@vue/test-utils';
 import DoubleBufferingViz from '../../.vitepress/theme/components/DoubleBufferingViz.vue';
+import { clickButton, clickReset } from '../helpers/viz-interactions';
 
 describe('DoubleBufferingViz', () => {
   beforeEach(() => {
@@ -31,11 +32,7 @@ describe('DoubleBufferingViz', () => {
 
   it('draw frame fills back buffer and increments frame count', async () => {
     const wrapper = mount(DoubleBufferingViz);
-    const drawBtn = wrapper.findAll('.viz-btn').find((b) =>
-      b.text().includes('Draw Frame') || b.text().includes('绘制帧'),
-    );
-    await drawBtn!.trigger('click');
-    await flushPromises();
+    await clickButton(wrapper, ['Draw Frame', '绘制帧']);
 
     expect(wrapper.find('.db-frame-number').text()).toBe('1');
     const filled = wrapper.findAll('.db-cell--filled');
@@ -44,18 +41,13 @@ describe('DoubleBufferingViz', () => {
 
   it('swap exchanges front and back buffer contents', async () => {
     const wrapper = mount(DoubleBufferingViz);
-    const drawBtn = wrapper.findAll('.viz-btn').find((b) =>
-      b.text().includes('Draw Frame') || b.text().includes('绘制帧'),
-    );
-    await drawBtn!.trigger('click');
-    await flushPromises();
+    await clickButton(wrapper, ['Draw Frame', '绘制帧']);
 
     const grids = wrapper.findAll('.db-grid');
     const backFilledBefore = grids[1].findAll('.db-cell--filled').length;
     expect(backFilledBefore).toBeGreaterThanOrEqual(1);
 
-    const swapBtn = wrapper.find('.viz-btn--primary');
-    await swapBtn.trigger('click');
+    await clickButton(wrapper, ['Swap', '交换']);
     vi.advanceTimersByTime(500);
     await flushPromises();
 
@@ -65,15 +57,9 @@ describe('DoubleBufferingViz', () => {
 
   it('reset clears all cells and resets frame count', async () => {
     const wrapper = mount(DoubleBufferingViz);
-    const drawBtn = wrapper.findAll('.viz-btn').find((b) =>
-      b.text().includes('Draw Frame') || b.text().includes('绘制帧'),
-    );
-    await drawBtn!.trigger('click');
-    await flushPromises();
+    await clickButton(wrapper, ['Draw Frame', '绘制帧']);
 
-    const resetBtn = wrapper.find('.viz-btn--danger');
-    await resetBtn.trigger('click');
-    await flushPromises();
+    await clickReset(wrapper);
 
     expect(wrapper.find('.db-frame-number').text()).toBe('0');
     expect(wrapper.findAll('.db-cell--filled')).toHaveLength(0);

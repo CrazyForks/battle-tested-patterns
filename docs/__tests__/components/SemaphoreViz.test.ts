@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { mount, flushPromises } from '@vue/test-utils';
+import { clickButton, clickReset } from '../helpers/viz-interactions';
 import SemaphoreViz from '../../.vitepress/theme/components/SemaphoreViz.vue';
 
 describe('SemaphoreViz', () => {
@@ -19,8 +20,7 @@ describe('SemaphoreViz', () => {
 
   it('acquire creates an active worker', async () => {
     const wrapper = mount(SemaphoreViz);
-    await wrapper.find('.viz-btn--primary').trigger('click');
-    await flushPromises();
+    await clickButton(wrapper, ['Acquire', '获取']);
 
     const workerBoxes = wrapper.findAll('.sem-worker-box');
     expect(workerBoxes).toHaveLength(1);
@@ -28,11 +28,9 @@ describe('SemaphoreViz', () => {
 
   it('fourth acquire goes to waiting queue', async () => {
     const wrapper = mount(SemaphoreViz);
-    const btn = wrapper.find('.viz-btn--primary');
 
     for (let i = 0; i < 4; i++) {
-      await btn.trigger('click');
-      await flushPromises();
+      await clickButton(wrapper, ['Acquire', '获取']);
     }
 
     const waiting = wrapper.findAll('.sem-waiting-box');
@@ -41,8 +39,7 @@ describe('SemaphoreViz', () => {
 
   it('worker completes and releases permit after timer', async () => {
     const wrapper = mount(SemaphoreViz);
-    await wrapper.find('.viz-btn--primary').trigger('click');
-    await flushPromises();
+    await clickButton(wrapper, ['Acquire', '获取']);
 
     expect(wrapper.findAll('.sem-worker-box')).toHaveLength(1);
 
@@ -54,11 +51,9 @@ describe('SemaphoreViz', () => {
 
   it('waiting worker gets promoted when permit frees', async () => {
     const wrapper = mount(SemaphoreViz);
-    const btn = wrapper.find('.viz-btn--primary');
 
     for (let i = 0; i < 4; i++) {
-      await btn.trigger('click');
-      await flushPromises();
+      await clickButton(wrapper, ['Acquire', '获取']);
     }
 
     expect(wrapper.findAll('.sem-waiting-box')).toHaveLength(1);
@@ -74,25 +69,19 @@ describe('SemaphoreViz', () => {
 
   it('reset clears all workers', async () => {
     const wrapper = mount(SemaphoreViz);
-    const acquireBtn = wrapper.find('.viz-btn--primary');
-    const resetBtn = wrapper.find('.viz-btn--danger');
 
-    await acquireBtn.trigger('click');
-    await flushPromises();
+    await clickButton(wrapper, ['Acquire', '获取']);
     expect(wrapper.findAll('.sem-worker-box')).toHaveLength(1);
 
-    await resetBtn.trigger('click');
-    await flushPromises();
+    await clickReset(wrapper);
     expect(wrapper.findAll('.sem-worker-box')).toHaveLength(0);
   });
 
   it('SVG viewBox expands with waiting workers', async () => {
     const wrapper = mount(SemaphoreViz);
-    const btn = wrapper.find('.viz-btn--primary');
 
     for (let i = 0; i < 6; i++) {
-      await btn.trigger('click');
-      await flushPromises();
+      await clickButton(wrapper, ['Acquire', '获取']);
     }
 
     const svg = wrapper.find('.sem-svg');
@@ -113,10 +102,8 @@ describe('SemaphoreViz', () => {
 
   it('worker ID text elements use y attribute (not cy)', async () => {
     const wrapper = mount(SemaphoreViz);
-    const btn = wrapper.find('.viz-btn--primary');
 
-    await btn.trigger('click');
-    await flushPromises();
+    await clickButton(wrapper, ['Acquire', '获取']);
 
     const idTexts = wrapper.findAll('.sem-svg-id');
     for (const textEl of idTexts) {

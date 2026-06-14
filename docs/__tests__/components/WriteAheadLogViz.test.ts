@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { mount, flushPromises } from '@vue/test-utils';
 import WriteAheadLogViz from '../../.vitepress/theme/components/WriteAheadLogViz.vue';
+import { clickButton } from '../helpers/viz-interactions';
 
 describe('WriteAheadLogViz', () => {
   beforeEach(() => {
@@ -25,9 +26,7 @@ describe('WriteAheadLogViz', () => {
 
   it('write button adds a WAL entry', async () => {
     const wrapper = mount(WriteAheadLogViz);
-    const writeBtn = wrapper.find('.viz-btn--primary');
-    await writeBtn.trigger('click');
-    await flushPromises();
+    await clickButton(wrapper, ['Write', '写入']);
 
     const entries = wrapper.findAll('.wal-entry');
     expect(entries).toHaveLength(1);
@@ -35,15 +34,9 @@ describe('WriteAheadLogViz', () => {
 
   it('flush moves data to table', async () => {
     const wrapper = mount(WriteAheadLogViz);
-    const writeBtn = wrapper.find('.viz-btn--primary');
-    await writeBtn.trigger('click');
-    await flushPromises();
+    await clickButton(wrapper, ['Write', '写入']);
 
-    const flushBtn = wrapper.findAll('.viz-btn').find((b) =>
-      b.text().includes('Flush') || b.text().includes('刷写'),
-    );
-    await flushBtn!.trigger('click');
-    await flushPromises();
+    await clickButton(wrapper, ['Flush to Table', '刷写到表']);
 
     const rows = wrapper.findAll('.wal-row');
     expect(rows).toHaveLength(1);

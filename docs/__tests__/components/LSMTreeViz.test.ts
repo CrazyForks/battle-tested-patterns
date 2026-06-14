@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { mount, flushPromises } from '@vue/test-utils';
 import LSMTreeViz from '../../.vitepress/theme/components/LSMTreeViz.vue';
+import { clickButton, clickReset } from '../helpers/viz-interactions';
 
 describe('LSMTreeViz', () => {
   beforeEach(() => {
@@ -30,8 +31,7 @@ describe('LSMTreeViz', () => {
     await inputs[0].setValue('a');
     await inputs[1].setValue('1');
 
-    const writeBtn = wrapper.find('.viz-btn--primary');
-    await writeBtn.trigger('click');
+    await clickButton(wrapper, ['Write', '写入']);
     vi.advanceTimersByTime(1000);
     await flushPromises();
 
@@ -49,14 +49,11 @@ describe('LSMTreeViz', () => {
     const inputs = wrapper.findAll('.lsm-input');
     await inputs[0].setValue('x');
     await inputs[1].setValue('1');
-    const writeBtn = wrapper.find('.viz-btn--primary');
-    await writeBtn.trigger('click');
+    await clickButton(wrapper, ['Write', '写入']);
     vi.advanceTimersByTime(500);
     await flushPromises();
 
-    const resetBtn = wrapper.find('.viz-btn--danger');
-    await resetBtn.trigger('click');
-    await flushPromises();
+    await clickReset(wrapper);
 
     expect(wrapper.text()).toContain('empty');
   });

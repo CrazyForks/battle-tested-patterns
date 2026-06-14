@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { mount, flushPromises } from '@vue/test-utils';
+import { mount } from '@vue/test-utils';
+import { clickButton, clickReset } from '../helpers/viz-interactions';
 import ObserverViz from '../../.vitepress/theme/components/ObserverViz.vue';
 
 describe('ObserverViz', () => {
@@ -19,22 +20,14 @@ describe('ObserverViz', () => {
 
   it('add subscriber increases count', async () => {
     const wrapper = mount(ObserverViz);
-    const addBtn = wrapper.findAll('.viz-btn').find((b) =>
-      b.text().includes('Subscribe') || b.text().includes('订阅'),
-    );
-    await addBtn!.trigger('click');
-    await flushPromises();
+    await clickButton(wrapper, ['+ Subscribe', '+ 订阅']);
 
     expect(wrapper.findAll('.obs-subscriber')).toHaveLength(4);
   });
 
   it('remove subscriber decreases count', async () => {
     const wrapper = mount(ObserverViz);
-    const removeBtn = wrapper.findAll('.viz-btn').find((b) =>
-      b.text().includes('Unsubscribe') || b.text().includes('取消订阅'),
-    );
-    await removeBtn!.trigger('click');
-    await flushPromises();
+    await clickButton(wrapper, ['- Unsubscribe', '- 取消订阅']);
 
     expect(wrapper.findAll('.obs-subscriber')).toHaveLength(2);
   });
@@ -47,16 +40,10 @@ describe('ObserverViz', () => {
 
   it('reset restores initial state', async () => {
     const wrapper = mount(ObserverViz);
-    const addBtn = wrapper.findAll('.viz-btn').find((b) =>
-      b.text().includes('Subscribe') || b.text().includes('订阅'),
-    );
-    await addBtn!.trigger('click');
-    await flushPromises();
+    await clickButton(wrapper, ['+ Subscribe', '+ 订阅']);
     expect(wrapper.findAll('.obs-subscriber')).toHaveLength(4);
 
-    const resetBtn = wrapper.find('.viz-btn--danger');
-    await resetBtn.trigger('click');
-    await flushPromises();
+    await clickReset(wrapper);
 
     expect(wrapper.findAll('.obs-subscriber')).toHaveLength(3);
   });

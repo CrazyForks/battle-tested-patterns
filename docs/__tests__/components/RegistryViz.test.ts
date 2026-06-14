@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { mount, flushPromises } from '@vue/test-utils';
+import { clickButton, clickReset } from '../helpers/viz-interactions';
 import RegistryViz from '../../.vitepress/theme/components/RegistryViz.vue';
 
 describe('RegistryViz', () => {
@@ -25,22 +26,15 @@ describe('RegistryViz', () => {
 
   it('clicking a plugin registers it into the registry', async () => {
     const wrapper = mount(RegistryViz);
-    const registerBtns = wrapper.findAll('.reg-plugin-btn, button').filter(
-      b => b.text().includes('Register') || b.text().includes('注册') || b.text().includes('JSON')
-    );
-    if (registerBtns.length > 0) {
-      await registerBtns[0].trigger('click');
-      vi.advanceTimersByTime(1000);
-      await flushPromises();
-    }
+    await clickButton(wrapper, ['Register', '注册']);
+    vi.advanceTimersByTime(1000);
+    await flushPromises();
     expect(wrapper.text()).toMatch(/Registered|已注册|1 handler/i);
   });
 
   it('reset clears the registry', async () => {
     const wrapper = mount(RegistryViz);
-    const resetBtn = wrapper.find('.viz-btn--danger');
-    await resetBtn.trigger('click');
-    await flushPromises();
+    await clickReset(wrapper);
 
     expect(wrapper.text()).toContain('No handlers registered');
   });

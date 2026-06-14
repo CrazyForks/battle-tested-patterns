@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { mount, flushPromises } from '@vue/test-utils';
+import { clickReset } from '../helpers/viz-interactions';
 import ReferenceCountingViz from '../../.vitepress/theme/components/ReferenceCountingViz.vue';
 
 describe('ReferenceCountingViz', () => {
@@ -42,9 +43,7 @@ describe('ReferenceCountingViz', () => {
 
   it('reset restores initial objects and references', async () => {
     const wrapper = mount(ReferenceCountingViz);
-    const resetBtn = wrapper.find('.viz-btn--danger');
-    await resetBtn.trigger('click');
-    await flushPromises();
+    await clickReset(wrapper);
 
     expect(wrapper.text()).toContain('Obj A');
     expect(wrapper.text()).toContain('rc=2');

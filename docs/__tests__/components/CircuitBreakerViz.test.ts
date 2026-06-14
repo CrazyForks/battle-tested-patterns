@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { mount, flushPromises } from '@vue/test-utils';
+import { mount } from '@vue/test-utils';
 import CircuitBreakerViz from '../../.vitepress/theme/components/CircuitBreakerViz.vue';
+import { clickButton, clickReset } from '../helpers/viz-interactions';
 
 describe('CircuitBreakerViz', () => {
   beforeEach(() => {
@@ -24,9 +25,7 @@ describe('CircuitBreakerViz', () => {
 
   it('send success button adds to request log', async () => {
     const wrapper = mount(CircuitBreakerViz);
-    const successBtn = wrapper.find('.viz-btn--primary');
-    await successBtn.trigger('click');
-    await flushPromises();
+    await clickButton(wrapper, ['Send Success', '发送成功']);
 
     const dots = wrapper.findAll('.cb-log-dot');
     expect(dots.length).toBeGreaterThanOrEqual(1);
@@ -34,13 +33,9 @@ describe('CircuitBreakerViz', () => {
 
   it('multiple failures transition to OPEN state', async () => {
     const wrapper = mount(CircuitBreakerViz);
-    const failBtn = wrapper.findAll('.viz-btn--danger').find((b) =>
-      b.text().includes('Failure') || b.text().includes('失败'),
-    );
 
     for (let i = 0; i < 5; i++) {
-      await failBtn!.trigger('click');
-      await flushPromises();
+      await clickButton(wrapper, ['Send Failure', '发送失败']);
     }
 
     expect(wrapper.text()).toContain('OPEN');
@@ -48,20 +43,12 @@ describe('CircuitBreakerViz', () => {
 
   it('reset button returns to CLOSED', async () => {
     const wrapper = mount(CircuitBreakerViz);
-    const failBtn = wrapper.findAll('.viz-btn--danger').find((b) =>
-      b.text().includes('Failure') || b.text().includes('失败'),
-    );
-    const resetBtn = wrapper.findAll('.viz-btn').find((b) =>
-      b.text().includes('Reset All') || b.text().includes('全部重置'),
-    );
 
     for (let i = 0; i < 5; i++) {
-      await failBtn!.trigger('click');
-      await flushPromises();
+      await clickButton(wrapper, ['Send Failure', '发送失败']);
     }
 
-    await resetBtn!.trigger('click');
-    await flushPromises();
+    await clickReset(wrapper);
 
     expect(wrapper.text()).toContain('CLOSED');
   });
@@ -76,28 +63,19 @@ describe('CircuitBreakerViz', () => {
 
   it('success in CLOSED state resets failure counter', async () => {
     const wrapper = mount(CircuitBreakerViz);
-    const successBtn = wrapper.find('.viz-btn--primary');
-    const failBtn = wrapper.findAll('.viz-btn--danger').find((b) =>
-      b.text().includes('Failure') || b.text().includes('失败'),
-    );
 
     // Send 2 failures (below threshold of 3)
-    await failBtn!.trigger('click');
-    await flushPromises();
-    await failBtn!.trigger('click');
-    await flushPromises();
+    await clickButton(wrapper, ['Send Failure', '发送失败']);
+    await clickButton(wrapper, ['Send Failure', '发送失败']);
 
     // Send 1 success — should reset counter to 0
-    await successBtn.trigger('click');
-    await flushPromises();
+    await clickButton(wrapper, ['Send Success', '发送成功']);
 
     expect(wrapper.text()).toMatch(/reset.*0|重置.*0/i);
 
     // Now send 2 more failures — should NOT trigger OPEN (counter was reset)
-    await failBtn!.trigger('click');
-    await flushPromises();
-    await failBtn!.trigger('click');
-    await flushPromises();
+    await clickButton(wrapper, ['Send Failure', '发送失败']);
+    await clickButton(wrapper, ['Send Failure', '发送失败']);
 
     // Still CLOSED because counter was reset by the success
     expect(wrapper.text()).toContain('CLOSED');

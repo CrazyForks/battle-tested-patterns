@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { mount, flushPromises } from '@vue/test-utils';
 import BatchProcessingViz from '../../.vitepress/theme/components/BatchProcessingViz.vue';
+import { clickButton, clickReset } from '../helpers/viz-interactions';
 
 describe('BatchProcessingViz', () => {
   beforeEach(() => {
@@ -21,9 +22,7 @@ describe('BatchProcessingViz', () => {
 
   it('add item fills one slot', async () => {
     const wrapper = mount(BatchProcessingViz);
-    const addBtn = wrapper.find('.viz-btn--primary');
-    await addBtn.trigger('click');
-    await flushPromises();
+    await clickButton(wrapper, ['Add Item', '添加元素']);
 
     const filled = wrapper.findAll('.bp-slot--filled');
     expect(filled).toHaveLength(1);
@@ -31,11 +30,9 @@ describe('BatchProcessingViz', () => {
 
   it('auto-flushes when buffer reaches threshold of 5', async () => {
     const wrapper = mount(BatchProcessingViz);
-    const addBtn = wrapper.find('.viz-btn--primary');
 
     for (let i = 0; i < 5; i++) {
-      await addBtn.trigger('click');
-      await flushPromises();
+      await clickButton(wrapper, ['Add Item', '添加元素']);
     }
 
     vi.advanceTimersByTime(1000);
@@ -49,17 +46,12 @@ describe('BatchProcessingViz', () => {
 
   it('force flush processes partial buffer', async () => {
     const wrapper = mount(BatchProcessingViz);
-    const addBtn = wrapper.find('.viz-btn--primary');
 
     for (let i = 0; i < 3; i++) {
-      await addBtn.trigger('click');
-      await flushPromises();
+      await clickButton(wrapper, ['Add Item', '添加元素']);
     }
 
-    const flushBtn = wrapper.findAll('.viz-btn').find((b) =>
-      b.text().includes('Force Flush') || b.text().includes('强制刷新'),
-    );
-    await flushBtn!.trigger('click');
+    await clickButton(wrapper, ['Force Flush', '强制刷新']);
     vi.advanceTimersByTime(1000);
     await flushPromises();
 
@@ -77,13 +69,9 @@ describe('BatchProcessingViz', () => {
 
   it('reset clears buffer and batches', async () => {
     const wrapper = mount(BatchProcessingViz);
-    const addBtn = wrapper.find('.viz-btn--primary');
-    await addBtn.trigger('click');
-    await flushPromises();
+    await clickButton(wrapper, ['Add Item', '添加元素']);
 
-    const resetBtn = wrapper.find('.viz-btn--danger');
-    await resetBtn.trigger('click');
-    await flushPromises();
+    await clickReset(wrapper);
 
     expect(wrapper.findAll('.bp-slot--filled')).toHaveLength(0);
     expect(wrapper.findAll('.bp-batch')).toHaveLength(0);

@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { mount, flushPromises } from '@vue/test-utils';
 import MerkleTreeViz from '../../.vitepress/theme/components/MerkleTreeViz.vue';
+import { clickButton, clickReset } from '../helpers/viz-interactions';
 
 describe('MerkleTreeViz', () => {
   beforeEach(() => {
@@ -31,8 +32,7 @@ describe('MerkleTreeViz', () => {
 
   it('Verify A triggers path highlighting animation', async () => {
     const wrapper = mount(MerkleTreeViz);
-    const verifyBtn = wrapper.findAll('.viz-btn--primary')[0];
-    await verifyBtn.trigger('click');
+    await clickButton(wrapper, ['Verify A', '验证 A']);
 
     for (let i = 0; i < 12; i++) {
       vi.advanceTimersByTime(400);
@@ -44,22 +44,16 @@ describe('MerkleTreeViz', () => {
 
   it('Tamper changes leaf data and root hash', async () => {
     const wrapper = mount(MerkleTreeViz);
-    const tamperBtn = wrapper.find('.viz-btn--danger');
-    await tamperBtn.trigger('click');
-    await flushPromises();
+    await clickButton(wrapper, ['Tamper!', '篡改！']);
 
     expect(wrapper.text()).toMatch(/Tampered|篡改/);
   });
 
   it('reset restores leaves to A, B, C, D', async () => {
     const wrapper = mount(MerkleTreeViz);
-    const tamperBtn = wrapper.find('.viz-btn--danger');
-    await tamperBtn.trigger('click');
-    await flushPromises();
+    await clickButton(wrapper, ['Tamper!', '篡改！']);
 
-    const resetBtn = wrapper.findAll('button').find(b => b.text().includes('Reset') || b.text().includes('重置'));
-    await resetBtn!.trigger('click');
-    await flushPromises();
+    await clickReset(wrapper);
 
     expect(wrapper.text()).toContain('H(A)');
     expect(wrapper.text()).toContain('H(D)');

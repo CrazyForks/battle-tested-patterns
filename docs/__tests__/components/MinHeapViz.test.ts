@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { mount, flushPromises } from '@vue/test-utils';
 import MinHeapViz from '../../.vitepress/theme/components/MinHeapViz.vue';
+import { clickButton, clickReset } from '../helpers/viz-interactions';
 
 describe('MinHeapViz', () => {
   beforeEach(() => {
@@ -25,8 +26,7 @@ describe('MinHeapViz', () => {
 
   it('insert button adds a node to the heap', async () => {
     const wrapper = mount(MinHeapViz);
-    const insertBtn = wrapper.find('.viz-btn--primary');
-    await insertBtn.trigger('click');
+    await clickButton(wrapper, ['Insert Random', '插入随机值']);
 
     for (let i = 0; i < 10; i++) {
       vi.advanceTimersByTime(500);
@@ -39,17 +39,14 @@ describe('MinHeapViz', () => {
 
   it('reset clears the heap', async () => {
     const wrapper = mount(MinHeapViz);
-    const insertBtn = wrapper.find('.viz-btn--primary');
-    await insertBtn.trigger('click');
+    await clickButton(wrapper, ['Insert Random', '插入随机值']);
 
     for (let i = 0; i < 10; i++) {
       vi.advanceTimersByTime(500);
       await flushPromises();
     }
 
-    const resetBtn = wrapper.find('.viz-btn--danger');
-    await resetBtn.trigger('click');
-    await flushPromises();
+    await clickReset(wrapper);
 
     const circles = wrapper.findAll('svg circle');
     expect(circles).toHaveLength(0);

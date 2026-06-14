@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { mount } from '@vue/test-utils';
 import BitmaskViz from '../../.vitepress/theme/components/BitmaskViz.vue';
+import { clickButton } from '../helpers/viz-interactions';
 
 describe('BitmaskViz', () => {
   it('renders 8 bit flag buttons', () => {
@@ -39,11 +40,7 @@ describe('BitmaskViz', () => {
 
   it('set all button sets all bits', async () => {
     const wrapper = mount(BitmaskViz);
-    const setAllBtn = wrapper.findAll('.viz-btn').find((b) =>
-      b.text().includes('Set All') || b.text().includes('全部设置'),
-    );
-    expect(setAllBtn).toBeTruthy();
-    await setAllBtn!.trigger('click');
+    await clickButton(wrapper, ['Set All', '全部设置']);
 
     expect(wrapper.text()).toContain('11111111');
   });

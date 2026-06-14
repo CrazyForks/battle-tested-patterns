@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { mount, flushPromises } from '@vue/test-utils';
 import MiddlewareChainViz from '../../.vitepress/theme/components/MiddlewareChainViz.vue';
+import { clickReset } from '../helpers/viz-interactions';
 
 describe('MiddlewareChainViz', () => {
   beforeEach(() => {
@@ -43,9 +44,7 @@ describe('MiddlewareChainViz', () => {
     expect(disabled.length).toBeGreaterThanOrEqual(1);
 
     // Now reset
-    const resetBtn = wrapper.find('.viz-btn--danger');
-    await resetBtn.trigger('click');
-    await flushPromises();
+    await clickReset(wrapper);
 
     // All should be enabled again
     const disabledAfter = wrapper.findAll('.mw-config-item-disabled');

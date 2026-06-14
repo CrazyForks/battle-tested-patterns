@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { mount, flushPromises } from '@vue/test-utils';
 import RetryBackoffViz from '../../.vitepress/theme/components/RetryBackoffViz.vue';
+import { clickButton, clickReset, hasButton } from '../helpers/viz-interactions';
 
 describe('RetryBackoffViz', () => {
   beforeEach(() => {
@@ -13,14 +14,12 @@ describe('RetryBackoffViz', () => {
 
   it('renders with start button', () => {
     const wrapper = mount(RetryBackoffViz);
-    const startBtn = wrapper.find('.viz-btn--primary');
-    expect(startBtn.exists()).toBe(true);
+    expect(hasButton(wrapper, ['Send Request', '发送请求'])).toBe(true);
   });
 
   it('start button initiates retry sequence', async () => {
     const wrapper = mount(RetryBackoffViz);
-    const startBtn = wrapper.find('.viz-btn--primary');
-    await startBtn.trigger('click');
+    await clickButton(wrapper, ['Send Request', '发送请求']);
 
     for (let i = 0; i < 50; i++) {
       vi.advanceTimersByTime(200);
@@ -33,17 +32,14 @@ describe('RetryBackoffViz', () => {
 
   it('reset clears attempts', async () => {
     const wrapper = mount(RetryBackoffViz);
-    const startBtn = wrapper.find('.viz-btn--primary');
-    await startBtn.trigger('click');
+    await clickButton(wrapper, ['Send Request', '发送请求']);
 
     for (let i = 0; i < 50; i++) {
       vi.advanceTimersByTime(200);
       await flushPromises();
     }
 
-    const resetBtn = wrapper.find('.viz-btn--danger');
-    await resetBtn.trigger('click');
-    await flushPromises();
+    await clickReset(wrapper);
 
     const attempts = wrapper.findAll('.rb-attempt');
     expect(attempts).toHaveLength(0);

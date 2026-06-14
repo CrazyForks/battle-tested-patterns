@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { mount, flushPromises } from '@vue/test-utils';
 import EventLoopViz from '../../.vitepress/theme/components/EventLoopViz.vue';
+import { clickButton, clickReset } from '../helpers/viz-interactions';
 
 describe('EventLoopViz', () => {
   beforeEach(() => {
@@ -27,11 +28,7 @@ describe('EventLoopViz', () => {
 
   it('add sync pushes item to call stack', async () => {
     const wrapper = mount(EventLoopViz);
-    const syncBtn = wrapper.findAll('.viz-btn').find((b) =>
-      b.text().includes('Sync'),
-    );
-    await syncBtn!.trigger('click');
-    await flushPromises();
+    await clickButton(wrapper, ['+ Sync', '+ 同步']);
 
     const syncItems = wrapper.findAll('.el-item--sync');
     expect(syncItems).toHaveLength(1);
@@ -39,11 +36,7 @@ describe('EventLoopViz', () => {
 
   it('add macro queues a macrotask', async () => {
     const wrapper = mount(EventLoopViz);
-    const macroBtn = wrapper.findAll('.viz-btn').find((b) =>
-      b.text().includes('Macro') && !b.text().includes('Micro'),
-    );
-    await macroBtn!.trigger('click');
-    await flushPromises();
+    await clickButton(wrapper, ['+ Macro', '+ 宏任务']);
 
     const macroItems = wrapper.findAll('.el-item--macro');
     expect(macroItems).toHaveLength(1);
@@ -51,11 +44,7 @@ describe('EventLoopViz', () => {
 
   it('add micro queues a microtask', async () => {
     const wrapper = mount(EventLoopViz);
-    const microBtn = wrapper.findAll('.viz-btn').find((b) =>
-      b.text().includes('Micro'),
-    );
-    await microBtn!.trigger('click');
-    await flushPromises();
+    await clickButton(wrapper, ['+ Micro', '+ 微任务']);
 
     const microItems = wrapper.findAll('.el-item--micro');
     expect(microItems).toHaveLength(1);
@@ -63,14 +52,9 @@ describe('EventLoopViz', () => {
 
   it('step executes a call stack item and logs it', async () => {
     const wrapper = mount(EventLoopViz);
-    const syncBtn = wrapper.findAll('.viz-btn').find((b) =>
-      b.text().includes('Sync'),
-    );
-    await syncBtn!.trigger('click');
-    await flushPromises();
+    await clickButton(wrapper, ['+ Sync', '+ 同步']);
 
-    const stepBtn = wrapper.find('.viz-btn--primary');
-    await stepBtn.trigger('click');
+    await clickButton(wrapper, ['Step', '单步']);
     vi.advanceTimersByTime(500);
     await flushPromises();
 
@@ -82,15 +66,9 @@ describe('EventLoopViz', () => {
 
   it('reset clears all queues and log', async () => {
     const wrapper = mount(EventLoopViz);
-    const syncBtn = wrapper.findAll('.viz-btn').find((b) =>
-      b.text().includes('Sync'),
-    );
-    await syncBtn!.trigger('click');
-    await flushPromises();
+    await clickButton(wrapper, ['+ Sync', '+ 同步']);
 
-    const resetBtn = wrapper.find('.viz-btn--danger');
-    await resetBtn.trigger('click');
-    await flushPromises();
+    await clickReset(wrapper);
 
     expect(wrapper.findAll('.el-item')).toHaveLength(0);
     expect(wrapper.findAll('.el-log-entry')).toHaveLength(0);

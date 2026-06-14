@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { mount, flushPromises } from '@vue/test-utils';
 import BPlusTreeViz from '../../.vitepress/theme/components/BPlusTreeViz.vue';
+import { clickButton, clickReset } from '../helpers/viz-interactions';
 
 describe('BPlusTreeViz', () => {
   beforeEach(() => {
@@ -18,8 +19,7 @@ describe('BPlusTreeViz', () => {
 
   it('insert button adds a key to the tree', async () => {
     const wrapper = mount(BPlusTreeViz);
-    const insertBtn = wrapper.find('.viz-btn--primary');
-    await insertBtn.trigger('click');
+    await clickButton(wrapper, ['Insert Random', '随机插入']);
     vi.advanceTimersByTime(1000);
     await flushPromises();
 
@@ -29,14 +29,11 @@ describe('BPlusTreeViz', () => {
 
   it('reset clears the tree', async () => {
     const wrapper = mount(BPlusTreeViz);
-    const insertBtn = wrapper.find('.viz-btn--primary');
-    await insertBtn.trigger('click');
+    await clickButton(wrapper, ['Insert Random', '随机插入']);
     vi.advanceTimersByTime(500);
     await flushPromises();
 
-    const resetBtn = wrapper.find('.viz-btn--danger');
-    await resetBtn.trigger('click');
-    await flushPromises();
+    await clickReset(wrapper);
 
     const status = wrapper.find('.viz-status');
     expect(status.exists()).toBe(true);

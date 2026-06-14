@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { mount, flushPromises } from '@vue/test-utils';
+import { clickButton, clickReset } from '../helpers/viz-interactions';
 import RateLimiterViz from '../../.vitepress/theme/components/RateLimiterViz.vue';
 
 describe('RateLimiterViz', () => {
@@ -21,9 +22,7 @@ describe('RateLimiterViz', () => {
 
   it('send request consumes a token', async () => {
     const wrapper = mount(RateLimiterViz);
-    const sendBtn = wrapper.find('.viz-btn--primary');
-    await sendBtn.trigger('click');
-    await flushPromises();
+    await clickButton(wrapper, ['Send Request', '发送请求']);
 
     const activeTokens = wrapper.findAll('.rl-token-active');
     expect(activeTokens.length).toBe(7);
@@ -31,11 +30,7 @@ describe('RateLimiterViz', () => {
 
   it('burst sends multiple requests', async () => {
     const wrapper = mount(RateLimiterViz);
-    const burstBtn = wrapper.findAll('.viz-btn').find((b) =>
-      b.text().includes('Burst') || b.text().includes('突发'),
-    );
-
-    await burstBtn!.trigger('click');
+    await clickButton(wrapper, ['Burst', '突发']);
     for (let i = 0; i < 10; i++) {
       vi.advanceTimersByTime(100);
       await flushPromises();
@@ -47,11 +42,9 @@ describe('RateLimiterViz', () => {
 
   it('requests are rejected when tokens depleted', async () => {
     const wrapper = mount(RateLimiterViz);
-    const sendBtn = wrapper.find('.viz-btn--primary');
 
     for (let i = 0; i < 10; i++) {
-      await sendBtn.trigger('click');
-      await flushPromises();
+      await clickButton(wrapper, ['Send Request', '发送请求']);
     }
 
     const rejectDots = wrapper.findAll('.rl-dot-reject');
@@ -60,18 +53,12 @@ describe('RateLimiterViz', () => {
 
   it('reset restores full tokens', async () => {
     const wrapper = mount(RateLimiterViz);
-    const sendBtn = wrapper.find('.viz-btn--primary');
 
     for (let i = 0; i < 5; i++) {
-      await sendBtn.trigger('click');
-      await flushPromises();
+      await clickButton(wrapper, ['Send Request', '发送请求']);
     }
 
-    const resetBtn = wrapper.findAll('.viz-btn--danger').find((b) =>
-      b.text().includes('Reset') || b.text().includes('重置'),
-    );
-    await resetBtn!.trigger('click');
-    await flushPromises();
+    await clickReset(wrapper);
 
     const activeTokens = wrapper.findAll('.rl-token-active');
     expect(activeTokens.length).toBe(8);

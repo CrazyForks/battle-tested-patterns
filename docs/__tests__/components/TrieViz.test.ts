@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { mount, flushPromises } from '@vue/test-utils';
 import TrieViz from '../../.vitepress/theme/components/TrieViz.vue';
+import { clickButton, clickReset } from '../helpers/viz-interactions';
 
 describe('TrieViz', () => {
   beforeEach(() => {
@@ -31,8 +32,7 @@ describe('TrieViz', () => {
     const input = wrapper.find('.viz-input');
     await input.setValue('cat');
 
-    const insertBtn = wrapper.find('.viz-btn--primary');
-    await insertBtn.trigger('click');
+    await clickButton(wrapper, ['Insert', '插入']);
     vi.advanceTimersByTime(1000);
     await flushPromises();
 
@@ -45,10 +45,7 @@ describe('TrieViz', () => {
 
   it('demo button adds preset words (cat, car, card, care, dog, do)', async () => {
     const wrapper = mount(TrieViz);
-    const demoBtn = wrapper.findAll('.viz-btn, .viz-btn--primary').find(
-      b => b.text().includes('Demo') || b.text().includes('演示')
-    );
-    await demoBtn!.trigger('click');
+    await clickButton(wrapper, ['Demo', '演示']);
     vi.advanceTimersByTime(2000);
     await flushPromises();
 
@@ -58,18 +55,35 @@ describe('TrieViz', () => {
     expect(tags.map(t => t.text())).toContain('dog');
   });
 
+  it('clicking demo twice resets cleanly and leaves no residual input', async () => {
+    const wrapper = mount(TrieViz);
+
+    await clickButton(wrapper, ['Demo', '演示']);
+    vi.advanceTimersByTime(2000);
+    await flushPromises();
+
+    await clickButton(wrapper, ['Demo', '演示']);
+    vi.advanceTimersByTime(2000);
+    await flushPromises();
+
+    // No duplicate words after a second demo run
+    const tags = wrapper.findAll('.trie-word-tag');
+    expect(tags.length).toBe(6);
+
+    // Input box must be empty (no leftover "do" from early-return on duplicates)
+    const input = wrapper.find('.viz-input').element as HTMLInputElement;
+    expect(input.value).toBe('');
+  });
+
   it('reset clears all words and tree nodes', async () => {
     const wrapper = mount(TrieViz);
     const input = wrapper.find('.viz-input');
     await input.setValue('hi');
-    const insertBtn = wrapper.find('.viz-btn--primary');
-    await insertBtn.trigger('click');
+    await clickButton(wrapper, ['Insert', '插入']);
     vi.advanceTimersByTime(1000);
     await flushPromises();
 
-    const resetBtn = wrapper.find('.viz-btn--danger');
-    await resetBtn.trigger('click');
-    await flushPromises();
+    await clickReset(wrapper);
 
     expect(wrapper.find('.trie-words').exists()).toBe(false);
     expect(wrapper.text()).toMatch(/empty|空/i);

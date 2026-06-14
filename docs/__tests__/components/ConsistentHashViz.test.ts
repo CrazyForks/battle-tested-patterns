@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { mount, flushPromises } from '@vue/test-utils';
 import ConsistentHashViz from '../../.vitepress/theme/components/ConsistentHashViz.vue';
+import { clickButton, clickReset } from '../helpers/viz-interactions';
 
 describe('ConsistentHashViz', () => {
   beforeEach(() => {
@@ -20,8 +21,7 @@ describe('ConsistentHashViz', () => {
 
   it('add key places a key on the ring', async () => {
     const wrapper = mount(ConsistentHashViz);
-    const addKeyBtn = wrapper.find('.viz-btn--primary');
-    await addKeyBtn.trigger('click');
+    await clickButton(wrapper, ['Add Key', '添加键']);
     vi.advanceTimersByTime(600);
     await flushPromises();
 
@@ -31,11 +31,7 @@ describe('ConsistentHashViz', () => {
 
   it('add node increases node count', async () => {
     const wrapper = mount(ConsistentHashViz);
-    const addNodeBtn = wrapper.findAll('.viz-btn').find((b) =>
-      b.text().includes('Add Node') || b.text().includes('添加节点'),
-    );
-    await addNodeBtn!.trigger('click');
-    await flushPromises();
+    await clickButton(wrapper, ['Add Node', '添加节点']);
 
     const nodes = wrapper.findAll('.ch-node');
     expect(nodes).toHaveLength(4);
@@ -43,13 +39,9 @@ describe('ConsistentHashViz', () => {
 
   it('reset restores to 3 nodes and 0 keys', async () => {
     const wrapper = mount(ConsistentHashViz);
-    const addKeyBtn = wrapper.find('.viz-btn--primary');
-    await addKeyBtn.trigger('click');
-    await flushPromises();
+    await clickButton(wrapper, ['Add Key', '添加键']);
 
-    const resetBtn = wrapper.find('.viz-btn--danger');
-    await resetBtn.trigger('click');
-    await flushPromises();
+    await clickReset(wrapper);
 
     expect(wrapper.findAll('.ch-node')).toHaveLength(3);
     expect(wrapper.findAll('.ch-key')).toHaveLength(0);

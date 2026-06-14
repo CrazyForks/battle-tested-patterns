@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { initMermaidLoader } from '../.vitepress/theme/mermaid-loader';
+import { initMermaidLoader, type MermaidRenderer } from '../.vitepress/theme/mermaid-loader';
 
 // Mock the mermaid library so we control initialize()/run() behavior.
 // Notes on the mock setup (both matter — verified by trial):
@@ -24,6 +24,19 @@ vi.mock('mermaid', () => ({
 }));
 
 describe('mermaid-loader', () => {
+  // Each initMermaidLoader() registers a MutationObserver on <html> that
+  // re-renders on theme (.dark) changes. Without cleanup those observers
+  // outlive the test: a later beforeEach toggling documentElement.className
+  // fires a floating render AFTER afterEach has restored console.warn, leaking
+  // a stray "[mermaid-loader] Failed to render diagram(s)" line to stderr.
+  // We track every loader and dispose() it in teardown to stop the observer.
+  const loaders: MermaidRenderer[] = [];
+  function createLoader(): MermaidRenderer {
+    const loader = initMermaidLoader();
+    loaders.push(loader);
+    return loader;
+  }
+
   beforeEach(() => {
     vi.spyOn(console, 'warn').mockImplementation(() => {});
     runMock.mockClear();
@@ -33,6 +46,10 @@ describe('mermaid-loader', () => {
   });
 
   afterEach(() => {
+    // Disconnect observers BEFORE restoring mocks so no floating re-render can
+    // fire outside the spied-console window.
+    loaders.forEach((l) => l.dispose());
+    loaders.length = 0;
     vi.restoreAllMocks();
   });
 
@@ -45,7 +62,7 @@ describe('mermaid-loader', () => {
   }
 
   it('returns a no-op resolved promise when there are no .mermaid elements', async () => {
-    const render = initMermaidLoader();
+    const render = createLoader();
     await expect(render()).resolves.toBeUndefined();
     expect(runMock).not.toHaveBeenCalled();
   });
@@ -53,7 +70,7 @@ describe('mermaid-loader', () => {
   it('renders diagrams via mermaid.run when .mermaid elements exist', async () => {
     addDiagram();
 
-    const render = initMermaidLoader();
+    const render = createLoader();
     await render();
 
     expect(initializeMock).toHaveBeenCalledTimes(1);
@@ -64,7 +81,7 @@ describe('mermaid-loader', () => {
     addDiagram('this is not a valid diagram {{{');
     runMock.mockRejectedValueOnce(new Error('Parse error on malformed diagram'));
 
-    const render = initMermaidLoader();
+    const render = createLoader();
 
     // The crash must be swallowed: renderMermaid resolves, never rejects.
     await expect(render()).resolves.toBeUndefined();
@@ -77,7 +94,7 @@ describe('mermaid-loader', () => {
   it('preserves the raw diagram source in dataset for re-rendering', async () => {
     const pre = addDiagram('graph LR; X-->Y');
 
-    const render = initMermaidLoader();
+    const render = createLoader();
     await render();
 
     expect(pre.dataset.mermaidSource).toBe('graph LR; X-->Y');
@@ -87,7 +104,7 @@ describe('mermaid-loader', () => {
     document.documentElement.classList.add('dark');
     addDiagram();
 
-    const render = initMermaidLoader();
+    const render = createLoader();
     await render();
 
     expect(initializeMock).toHaveBeenCalledWith(
@@ -100,7 +117,7 @@ describe('mermaid-loader', () => {
   it('marks elements with data-mermaid-status="rendered" after successful render', async () => {
     const pre = addDiagram();
 
-    const render = initMermaidLoader();
+    const render = createLoader();
     await render();
 
     expect(pre.dataset.mermaidStatus).toBe('rendered');
@@ -110,9 +127,23 @@ describe('mermaid-loader', () => {
     const pre = addDiagram('bad diagram');
     runMock.mockRejectedValueOnce(new Error('Parse error'));
 
-    const render = initMermaidLoader();
+    const render = createLoader();
     await render();
 
     expect(pre.dataset.mermaidStatus).toBe('error');
+  });
+
+  it('dispose() stops the theme-change observer from triggering re-renders', async () => {
+    addDiagram();
+    const render = createLoader();
+    await render();
+    runMock.mockClear();
+
+    render.dispose();
+    // After dispose, toggling the theme class must NOT trigger another render.
+    document.documentElement.classList.add('dark');
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(runMock).not.toHaveBeenCalled();
   });
 });

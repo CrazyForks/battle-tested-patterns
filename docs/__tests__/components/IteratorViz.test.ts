@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { mount, flushPromises } from '@vue/test-utils';
 import IteratorViz from '../../.vitepress/theme/components/IteratorViz.vue';
+import { clickButton, clickReset } from '../helpers/viz-interactions';
 
 describe('IteratorViz', () => {
   beforeEach(() => {
@@ -29,8 +30,7 @@ describe('IteratorViz', () => {
 
   it('Pull Next advances pipeline and processes one element', async () => {
     const wrapper = mount(IteratorViz);
-    const pullBtn = wrapper.find('.viz-btn--primary');
-    await pullBtn.trigger('click');
+    await clickButton(wrapper, ['Pull Next', '拉取下一个']);
     vi.advanceTimersByTime(5000);
     await flushPromises();
 
@@ -40,14 +40,11 @@ describe('IteratorViz', () => {
 
   it('reset restores initial state', async () => {
     const wrapper = mount(IteratorViz);
-    const pullBtn = wrapper.find('.viz-btn--primary');
-    await pullBtn.trigger('click');
+    await clickButton(wrapper, ['Pull Next', '拉取下一个']);
     vi.advanceTimersByTime(2000);
     await flushPromises();
 
-    const resetBtn = wrapper.find('.viz-btn--danger');
-    await resetBtn.trigger('click');
-    await flushPromises();
+    await clickReset(wrapper);
 
     const waitingItems = wrapper.findAll('.it-item--waiting');
     expect(waitingItems).toHaveLength(10);

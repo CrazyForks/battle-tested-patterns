@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { mount, flushPromises } from '@vue/test-utils';
+import { mount } from '@vue/test-utils';
 import TaggedUnionViz from '../../.vitepress/theme/components/TaggedUnionViz.vue';
+import { clickButton, clickReset } from '../helpers/viz-interactions';
 
 describe('TaggedUnionViz', () => {
   beforeEach(() => {
@@ -39,9 +40,9 @@ describe('TaggedUnionViz', () => {
   it('clicking String button changes tag, value, and memory layout', async () => {
     const wrapper = mount(TaggedUnionViz);
 
-    const stringBtn = wrapper.findAll('.tu-type-btn')[1];
-    await stringBtn.trigger('click');
-    await flushPromises();
+    // Type buttons render their tag name as text (e.g. `String("hello")`),
+    // so locate by the tag label rather than DOM index.
+    await clickButton(wrapper, 'String');
 
     expect(wrapper.find('.tu-tag-badge').text()).toBe('String');
     expect(wrapper.find('.tu-var-value').text()).toBe('"hello"');
@@ -52,9 +53,7 @@ describe('TaggedUnionViz', () => {
   it('Run match highlights the correct branch and shows output', async () => {
     const wrapper = mount(TaggedUnionViz);
 
-    const matchBtn = wrapper.find('.viz-btn--primary');
-    await matchBtn.trigger('click');
-    await flushPromises();
+    await clickButton(wrapper, ['Run match', '运行 match']);
 
     const activeArm = wrapper.find('.tu-match-arm--active');
     expect(activeArm.exists()).toBe(true);
@@ -68,13 +67,9 @@ describe('TaggedUnionViz', () => {
   it('switching type then running match dispatches to the new branch', async () => {
     const wrapper = mount(TaggedUnionViz);
 
-    const boolBtn = wrapper.findAll('.tu-type-btn')[2];
-    await boolBtn.trigger('click');
-    await flushPromises();
+    await clickButton(wrapper, 'Bool');
 
-    const matchBtn = wrapper.find('.viz-btn--primary');
-    await matchBtn.trigger('click');
-    await flushPromises();
+    await clickButton(wrapper, ['Run match', '运行 match']);
 
     const activeArm = wrapper.find('.tu-match-arm--active');
     expect(activeArm.text()).toContain('Bool');
@@ -84,15 +79,10 @@ describe('TaggedUnionViz', () => {
   it('reset restores Number tag and clears match result', async () => {
     const wrapper = mount(TaggedUnionViz);
 
-    const stringBtn = wrapper.findAll('.tu-type-btn')[1];
-    await stringBtn.trigger('click');
-    const matchBtn = wrapper.find('.viz-btn--primary');
-    await matchBtn.trigger('click');
-    await flushPromises();
+    await clickButton(wrapper, 'String');
+    await clickButton(wrapper, ['Run match', '运行 match']);
 
-    const resetBtn = wrapper.find('.viz-btn--danger');
-    await resetBtn.trigger('click');
-    await flushPromises();
+    await clickReset(wrapper);
 
     expect(wrapper.find('.tu-tag-badge').text()).toBe('Number');
     expect(wrapper.find('.tu-match-result').exists()).toBe(false);

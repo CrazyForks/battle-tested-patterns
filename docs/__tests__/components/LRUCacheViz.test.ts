@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { mount, flushPromises } from '@vue/test-utils';
+import { mount } from '@vue/test-utils';
 import LRUCacheViz from '../../.vitepress/theme/components/LRUCacheViz.vue';
+import { clickButton, clickReset } from '../helpers/viz-interactions';
 
 describe('LRUCacheViz', () => {
   beforeEach(() => {
@@ -21,14 +22,10 @@ describe('LRUCacheViz', () => {
     const wrapper = mount(LRUCacheViz);
     const keyInput = wrapper.find('input[placeholder="Key"]');
     const valInput = wrapper.find('input[placeholder="Val"]');
-    const putBtn = wrapper.findAll('.viz-btn').find((b) =>
-      b.text().includes('Put'),
-    );
 
     await keyInput.setValue('A');
     await valInput.setValue('1');
-    await putBtn!.trigger('click');
-    await flushPromises();
+    await clickButton(wrapper, 'Put');
 
     const nodes = wrapper.findAll('.lru-node:not(.lru-node--empty)');
     expect(nodes).toHaveLength(1);
@@ -39,21 +36,13 @@ describe('LRUCacheViz', () => {
     const wrapper = mount(LRUCacheViz);
     const keyInput = wrapper.find('input[placeholder="Key"]');
     const valInput = wrapper.find('input[placeholder="Val"]');
-    const putBtn = wrapper.findAll('.viz-btn').find((b) =>
-      b.text().includes('Put'),
-    );
-    const getBtn = wrapper.findAll('.viz-btn').find((b) =>
-      b.text() === 'Get' || b.text() === '获取',
-    );
 
     await keyInput.setValue('A');
     await valInput.setValue('1');
-    await putBtn!.trigger('click');
-    await flushPromises();
+    await clickButton(wrapper, 'Put');
 
     await keyInput.setValue('A');
-    await getBtn!.trigger('click');
-    await flushPromises();
+    await clickButton(wrapper, ['Get', '获取']);
 
     expect(wrapper.text()).toContain('HIT');
   });
@@ -61,13 +50,9 @@ describe('LRUCacheViz', () => {
   it('get on missing key shows MISS', async () => {
     const wrapper = mount(LRUCacheViz);
     const keyInput = wrapper.find('input[placeholder="Key"]');
-    const getBtn = wrapper.findAll('.viz-btn').find((b) =>
-      b.text() === 'Get' || b.text() === '获取',
-    );
 
     await keyInput.setValue('Z');
-    await getBtn!.trigger('click');
-    await flushPromises();
+    await clickButton(wrapper, ['Get', '获取']);
 
     expect(wrapper.text()).toContain('MISS');
   });
@@ -76,15 +61,11 @@ describe('LRUCacheViz', () => {
     const wrapper = mount(LRUCacheViz);
     const keyInput = wrapper.find('input[placeholder="Key"]');
     const valInput = wrapper.find('input[placeholder="Val"]');
-    const putBtn = wrapper.findAll('.viz-btn').find((b) =>
-      b.text().includes('Put'),
-    );
 
     for (const key of ['A', 'B', 'C', 'D', 'E']) {
       await keyInput.setValue(key);
       await valInput.setValue(key.toLowerCase());
-      await putBtn!.trigger('click');
-      await flushPromises();
+      await clickButton(wrapper, 'Put');
     }
 
     const nodes = wrapper.findAll('.lru-node:not(.lru-node--empty)');
@@ -98,20 +79,14 @@ describe('LRUCacheViz', () => {
     const wrapper = mount(LRUCacheViz);
     const keyInput = wrapper.find('input[placeholder="Key"]');
     const valInput = wrapper.find('input[placeholder="Val"]');
-    const putBtn = wrapper.findAll('.viz-btn').find((b) =>
-      b.text().includes('Put'),
-    );
-    const resetBtn = wrapper.find('.viz-btn--danger');
 
     await keyInput.setValue('A');
     await valInput.setValue('1');
-    await putBtn!.trigger('click');
-    await flushPromises();
+    await clickButton(wrapper, 'Put');
 
     expect(wrapper.findAll('.lru-node:not(.lru-node--empty)')).toHaveLength(1);
 
-    await resetBtn.trigger('click');
-    await flushPromises();
+    await clickReset(wrapper);
 
     expect(wrapper.findAll('.lru-node:not(.lru-node--empty)')).toHaveLength(0);
   });

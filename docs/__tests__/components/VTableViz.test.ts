@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { mount, flushPromises } from '@vue/test-utils';
+import { clickReset } from '../helpers/viz-interactions';
 import VTableViz from '../../.vitepress/theme/components/VTableViz.vue';
 
 describe('VTableViz', () => {
@@ -85,9 +86,7 @@ describe('VTableViz', () => {
     vi.advanceTimersByTime(5000);
     await flushPromises();
 
-    const resetBtn = wrapper.find('.viz-btn--danger');
-    await resetBtn.trigger('click');
-    await flushPromises();
+    await clickReset(wrapper);
 
     expect(wrapper.find('.vt-result').exists()).toBe(false);
     expect(wrapper.find('.vt-history').exists()).toBe(false);

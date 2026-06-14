@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { mount, flushPromises } from '@vue/test-utils';
 import WorkStealingViz from '../../.vitepress/theme/components/WorkStealingViz.vue';
+import { clickReset } from '../helpers/viz-interactions';
 
 describe('WorkStealingViz', () => {
   beforeEach(() => {
@@ -41,9 +42,7 @@ describe('WorkStealingViz', () => {
     await addBtns[0].trigger('click');
     await flushPromises();
 
-    const resetBtn = wrapper.find('.viz-btn--danger');
-    await resetBtn.trigger('click');
-    await flushPromises();
+    await clickReset(wrapper);
 
     expect(wrapper.findAll('.ws-task')).toHaveLength(0);
   });

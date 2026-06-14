@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { mount, flushPromises } from '@vue/test-utils';
+import { clickButton, clickReset, hasButton } from '../helpers/viz-interactions';
 import RingBufferViz from '../../.vitepress/theme/components/RingBufferViz.vue';
 
 describe('RingBufferViz', () => {
@@ -32,12 +33,9 @@ describe('RingBufferViz', () => {
 
   it('enqueue button exists and is clickable', async () => {
     const wrapper = mount(RingBufferViz);
-    const enqueueBtn = wrapper.findAll('.viz-btn').find((b) =>
-      b.text().includes('Enqueue') || b.text().includes('入队'),
-    );
-    expect(enqueueBtn).toBeTruthy();
+    expect(hasButton(wrapper, ['Enqueue', '入队'])).toBe(true);
 
-    await enqueueBtn!.trigger('click');
+    await clickButton(wrapper, ['Enqueue', '入队']);
     vi.advanceTimersByTime(500);
     await flushPromises();
 
@@ -47,17 +45,12 @@ describe('RingBufferViz', () => {
 
   it('reset button clears buffer', async () => {
     const wrapper = mount(RingBufferViz);
-    const enqueueBtn = wrapper.findAll('.viz-btn').find((b) =>
-      b.text().includes('Enqueue') || b.text().includes('入队'),
-    );
-    const resetBtn = wrapper.find('.viz-btn--danger');
 
-    await enqueueBtn!.trigger('click');
+    await clickButton(wrapper, ['Enqueue', '入队']);
     vi.advanceTimersByTime(500);
     await flushPromises();
 
-    await resetBtn.trigger('click');
-    await flushPromises();
+    await clickReset(wrapper);
 
     const svg = wrapper.find('.ringbuf-svg');
     expect(svg.text()).toContain('0');

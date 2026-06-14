@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { mount, flushPromises } from '@vue/test-utils';
+import { mount } from '@vue/test-utils';
 import FlyweightViz from '../../.vitepress/theme/components/FlyweightViz.vue';
+import { clickReset } from '../helpers/viz-interactions';
 
 describe('FlyweightViz', () => {
   beforeEach(() => {
@@ -44,9 +45,7 @@ describe('FlyweightViz', () => {
 
   it('reset clears all instances and pool', async () => {
     const wrapper = mount(FlyweightViz);
-    const resetBtn = wrapper.find('.viz-btn--danger');
-    await resetBtn.trigger('click');
-    await flushPromises();
+    await clickReset(wrapper);
 
     expect(wrapper.findAll('.fw-pool-chip')).toHaveLength(0);
     expect(wrapper.findAll('.fw-grid-cell')).toHaveLength(0);

@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { mount, flushPromises } from '@vue/test-utils';
 import InterningViz from '../../.vitepress/theme/components/InterningViz.vue';
+import { clickReset } from '../helpers/viz-interactions';
 
 describe('InterningViz', () => {
   beforeEach(() => {
@@ -57,9 +58,7 @@ describe('InterningViz', () => {
     await presetBtns[0].trigger('click');
     await flushPromises();
 
-    const resetBtn = wrapper.find('.viz-btn--danger');
-    await resetBtn.trigger('click');
-    await flushPromises();
+    await clickReset(wrapper);
 
     expect(wrapper.findAll('.in-entry')).toHaveLength(0);
     expect(wrapper.findAll('.in-var')).toHaveLength(0);
