@@ -22,7 +22,7 @@ export function useVizTimers() {
     });
   }
 
-  function safeTimeout(fn: () => void, ms: number): ReturnType<typeof setTimeout> {
+  function safeTimeout(fn: (...args: any[]) => void, ms: number): ReturnType<typeof setTimeout> {
     const tid = setTimeout(() => {
       pendingTimers.delete(tid);
       if (!aborted) fn();

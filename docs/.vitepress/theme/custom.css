@@ -41,6 +41,27 @@
   background: var(--viz-bg);
   box-shadow: var(--viz-shadow-sm);
   font-family: var(--vp-font-family-base);
+
+  /* Visualization elements are demonstrative, not editable text:
+     suppress the text I-beam cursor and accidental text selection. */
+  cursor: default;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Re-enable selection + native cursor for content readers may want to copy:
+   inputs (editable), log entries, and the status message. */
+.viz-container input,
+.viz-container textarea,
+.viz-container .viz-log,
+.viz-container .viz-status {
+  cursor: auto;
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+.viz-container input[type="range"] {
+  cursor: pointer;
 }
 
 .dark .viz-container {
