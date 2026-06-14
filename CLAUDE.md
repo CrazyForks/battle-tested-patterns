@@ -106,7 +106,7 @@ Standard Operating Procedures live in `.sop/`. Read them before:
 - CI/CD verification → `.sop/07-ci-cd-verification.md`
 - Release process → `.sop/08-release.md`
 - Vue component build pitfalls → `.sop/09-vue-build-pitfalls.md`
-- Interactive viz component audit → `.sop/10-viz-component-audit.md`
+- Building/auditing/testing interactive viz components (incl. time-travel via `useVizHistory` + `VizPlaybackBar`, and test-selector discipline) → `.sop/10-viz-component-audit.md`
 - Difficulty classification criteria → `.sop/11-difficulty-classification.md`
 - Related Patterns bidirectionality → `.sop/12-related-patterns-audit.md`
 - Content quality audit methodology → `.sop/13-content-quality-audit.md`

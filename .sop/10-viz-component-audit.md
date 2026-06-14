@@ -192,6 +192,89 @@ Crash recovery rebuilt state from ALL WAL entries instead of only flushed entrie
 
 For any operation that reconstructs state (crash recovery, checkpoint restore, compaction): verify it uses the correct subset of data entries (flushed vs. pending, committed vs. uncommitted).
 
+## Category 8: Time-Travel Integration (useVizHistory)
+
+### The Problem
+
+Every interactive component integrates time travel via `useVizHistory` +
+`VizPlaybackBar` (undo/redo/play/scrub). A June-2026 audit found systemic bugs:
+user actions that never `commit()` a snapshot, `onRestore` that fails to fully
+rebuild state, orphaned timers that keep mutating state after undo, and preset
+guards / status messages that don't travel with the snapshot. The result: time
+travel silently shows the wrong state, or the UI locks up after an undo.
+
+### The Contract (every interactive component MUST satisfy)
+
+1. **Commit on every user action**: every function that mutates tracked state
+   ends with `history.commit(snapshot, label)` — including early-return branches
+   (e.g. extract-last-element, abort, "nothing to do" guards). A mutation that
+   skips commit is invisible to playback.
+2. **`getMessage` wiring**: pass `getMessage: () => message.value` so the
+   status-bar text travels with each snapshot.
+3. **`onRestore(state, msg)` fully rebuilds the step**:
+   - apply the snapshot to all reactive state;
+   - restore the message: `if (msg !== undefined) message.value = msg;`
+   - reset transient/anim state (highlights, `animType`, `lastTransition`, etc.);
+   - reset blocking flags (`running`, `flushing`, `compacting`, `recovering`,
+     `yieldGap`, …) so the UI isn't stuck after undo;
+   - reset the non-reactive `presetRunning` guard so presets aren't locked;
+   - for timer-driven components, call `clearAll()` to stop orphaned
+     `safeTimeout`/`safeInterval` callbacks that would mutate restored state.
+4. **`reset()` calls `history.reset()`** to collapse history to the initial step.
+5. **Initial snapshot has no message by design**: `useVizHistory` does NOT call
+   `getMessage()` for the construction-time initial snapshot (the component's
+   `message` ref may not be initialized yet — declaration-order TDZ). This is
+   intentional; `commit()`/`reset()` capture messages safely afterward.
+
+### Not bugs (do not "fix")
+
+- The append-only **log** (`useVizLog`) does NOT rewind on time travel — it is an
+  event trail, like a DevTools console. Only `message` (current-state narration)
+  is restored; the log is preserved.
+- `isAborted()` is true ONLY during `onUnmounted`; committing in those branches
+  is dead code (the history stack is being discarded). Don't add commits there.
+
+### Audit Check
+
+Drive every interactive link (each button/preset), then undo/redo/scrub: does the
+SVG/DOM, highlights, AND status message all rebuild the historical step? After an
+undo mid-animation, can you still operate the component (no stuck flags/timers)?
+
+## Category 9: Test Selector Discipline
+
+### The Problem
+
+Tests historically located controls by *style* class (`.viz-btn--primary`,
+`.viz-btn--danger`) or by DOM index (`findAll('.viz-btn')[1]`). These are
+implementation details: they break on reorder/restyle, and a silently shifted
+index can make a test pass while clicking the wrong control (false green).
+
+### The Rule
+
+Use the shared helper `docs/__tests__/helpers/viz-interactions.ts` to locate
+**behavioral controls** the way a user does:
+
+- `clickButton(wrapper, ['EN', 'ZH'])` — click a button by visible label
+- `clickReset(wrapper)` — reset by label (Reset / Reset All / Clear All)
+- `clickButtonInScope(scope, label)` — when several identical labels exist across
+  repeated groups (e.g. each process row's "Receive"), scope to a container then
+  match by text
+- playback bar: `playbackStepBack/Forward/SkipStart/SkipEnd`, `playbackCounter`,
+  `playbackVisible` (located by aria-label)
+
+**Forbidden for behavioral elements**: `.viz-btn--*` style classes and
+`findAll(...)[n]` index selectors to pick a button.
+
+**Allowed**: component-domain DOM selectors for *display/state assertions*
+(`.bm-flag`, `.tu-mem-cell`, `circle[r="10"]`, inputs, `.viz-presets` counts) and
+container scopes (`.lc-process`) — these are structure, not behavioral buttons.
+
+### Audit Check
+
+Grep the test for `viz-btn--primary|viz-btn--danger|viz-btn--secondary` and
+`findAll(...)[n]` on buttons. Any hit on a *clicked* control must migrate to the
+helper; index/class on display DOM may stay.
+
 ## Full Component Audit Checklist
 
 When auditing a `*Viz.vue` component, check ALL of the following:
@@ -208,3 +291,10 @@ When auditing a `*Viz.vue` component, check ALL of the following:
 - [ ] **Message accuracy**: All displayed numbers/formulas match actual code computations
 - [ ] **Per-entity timers**: Individual entity timers stored and cancellable
 - [ ] **Recovery correctness**: Rebuild operations use correct data subset
+- [ ] **Commit coverage**: Every state-mutating action (incl. early-return branches) ends with `history.commit()`
+- [ ] **getMessage wired**: `useVizHistory` options include `getMessage: () => message.value`
+- [ ] **onRestore completeness**: `onRestore(state, msg)` rebuilds state, restores `message` (`if (msg !== undefined)`), resets transient/blocking flags + `presetRunning`, and `clearAll()` for timer-driven components
+- [ ] **history.reset()**: `reset()` calls `history.reset()`
+- [ ] **Log not rewound**: append-only log (`useVizLog`) is intentionally preserved on time travel (not a bug)
+- [ ] **Test selectors**: behavioral controls clicked via `viz-interactions` helper (label/aria/scope), never `.viz-btn--*` class or `findAll(...)[n]` index
+- [ ] **Preset log coverage**: Every preset scenario's per-step `commit` must have a corresponding `log()` call in the preset body (not in the shared helper function). Prevents "time-travel has N steps but log shows only 1 entry" sparse-log UX. Log calls go in the preset loop/sequence, never in helpers shared with manual buttons (avoids duplicate logs on manual click).

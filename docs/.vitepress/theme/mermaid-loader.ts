@@ -4,9 +4,21 @@
  * - Only loads the mermaid library on pages that contain .mermaid elements
  * - Listens for VitePress theme toggle (.dark class) and re-renders with correct theme
  * - Handles VitePress SPA navigation (re-checks on route change)
+ *
+ * Returns the render function with an attached `dispose()` that disconnects the
+ * theme-change MutationObserver. Production uses a single long-lived loader so
+ * dispose is optional there; tests call it in teardown to stop the observer from
+ * firing floating re-renders across test boundaries (which otherwise leak a
+ * real-mermaid render attempt and a stray console.warn into the next test).
  */
-export function initMermaidLoader(): () => Promise<void> {
-  if (typeof window === 'undefined') return async () => {};
+export type MermaidRenderer = (() => Promise<void>) & { dispose: () => void };
+
+export function initMermaidLoader(): MermaidRenderer {
+  if (typeof window === 'undefined') {
+    const noop = (async () => {}) as MermaidRenderer;
+    noop.dispose = () => {};
+    return noop;
+  }
 
   let mermaidModule: typeof import('mermaid') | null = null;
 
@@ -76,5 +88,7 @@ export function initMermaidLoader(): () => Promise<void> {
     attributeFilter: ['class'],
   });
 
-  return renderMermaid;
+  const renderer = renderMermaid as MermaidRenderer;
+  renderer.dispose = () => observer.disconnect();
+  return renderer;
 }
