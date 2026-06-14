@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 See [commit history](https://github.com/Totoro-jam/battle-tested-patterns/commits/main) for detailed changes.
 
+## [1.13.0](https://github.com/Totoro-jam/battle-tested-patterns/compare/v1.12.0...v1.13.0) (2026-06-14)
+
+
+### Features
+
+* add time-travel playback infrastructure ([f0e1e3c](https://github.com/Totoro-jam/battle-tested-patterns/commit/f0e1e3c3fbe704f980de91e1cf87fc38fd43d6df))
+* integrate time-travel into all viz components ([2509b96](https://github.com/Totoro-jam/battle-tested-patterns/commit/2509b96afd3fe4bb7fe4269488c92afbebb71c8d))
+
 ## v1.12.0
 
 [compare changes](https://github.com/Totoro-jam/battle-tested-patterns/compare/v1.11.0...v1.12.0)
