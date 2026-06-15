@@ -137,7 +137,6 @@ describe('Actor Model - Intermediate: Actor Supervision', () => {
   });
 
   it('should preserve message order after restart', () => {
-    const log: string[] = [];
     const supervisor = new SupervisedActor<string[]>();
     const child = supervisor.spawn('logger', [] as string[], (state, msg) => {
       const m = msg as string;

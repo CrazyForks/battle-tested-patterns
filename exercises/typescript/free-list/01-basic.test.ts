@@ -53,7 +53,7 @@ describe('Free List - Basic', () => {
   it('should reuse freed slots', () => {
     const fl = new FreeList(10);
     const a = fl.alloc()!;
-    const b = fl.alloc()!;
+    fl.alloc();
     fl.free(a);
     const c = fl.alloc()!;
     expect(c).toBe(a);
@@ -80,7 +80,7 @@ describe('Free List - Basic', () => {
 
   it('should allow reallocation after free', () => {
     const fl = new FreeList(2);
-    const a = fl.alloc()!;
+    fl.alloc();
     const b = fl.alloc()!;
     expect(fl.alloc()).toBeNull();
 

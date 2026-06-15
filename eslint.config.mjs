@@ -82,6 +82,18 @@ export default tseslint.config(
     },
   },
 
+  // Exercise answer files are standalone, self-contained reference solutions
+  // that are intentionally NOT exported (they are read by learners, not
+  // imported by tests). Their top-level class/function is therefore "unused"
+  // by design, so no-unused-vars is a false positive here — disable it for
+  // this directory only.
+  {
+    files: ['exercises/answers/**/*.{ts,js}'],
+    rules: {
+      '@typescript-eslint/no-unused-vars': 'off',
+    },
+  },
+
   // Config / script files run in Node.
   {
     files: ['**/*.{js,mjs,cjs}', 'scripts/**/*.ts'],

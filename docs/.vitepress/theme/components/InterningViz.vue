@@ -290,7 +290,7 @@ function runComparison() {
 
       const maxLen = Math.max(a.targetValue.length, b.targetValue.length);
       let charIdx = 0;
-      safeInterval(function charStep(intervalId?: ReturnType<typeof setInterval>) {
+      safeInterval(function charStep(_intervalId?: ReturnType<typeof setInterval>) {
         if (charIdx >= maxLen) {
           comparingCharIdx.value = -1;
           compareResult.value = t(

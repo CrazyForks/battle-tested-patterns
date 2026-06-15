@@ -11,17 +11,9 @@
  *   tsx scripts/check-relations.ts --verbose
  */
 
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
-import {
-  ROOT,
-  DOCS_DIR,
-  PATTERNS_DIR,
-  discoverPatterns,
-  extractSections,
-  report,
-  summarize,
-} from './lib/patterns.js';
+import { DOCS_DIR, discoverPatterns, extractSections, report, summarize } from './lib/patterns.js';
 
 const args = process.argv.slice(2);
 const verbose = args.includes('--verbose');

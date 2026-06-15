@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { mount, flushPromises } from '@vue/test-utils';
+import { mount } from '@vue/test-utils';
 import CopyOnWriteViz from '../../.vitepress/theme/components/CopyOnWriteViz.vue';
 
 describe('CopyOnWriteViz', () => {

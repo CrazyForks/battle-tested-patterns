@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, reactive, computed } from 'vue';
+import { ref, reactive } from 'vue';
 import { useI18n } from '../composables/useI18n';
 import { useVizTimers } from '../composables/useVizTimers';
 import { useVizLog } from '../composables/useVizLog';
@@ -80,8 +80,6 @@ const vizHistory = useVizHistory<IteratorSnapshot>(
     },
   },
 );
-
-const hasNext = computed(() => !state.done && state.sourceIdx < SOURCE.length - 1);
 
 async function pullNext() {
   if (state.done || animating.value) return;

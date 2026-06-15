@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { mount } from '@vue/test-utils';
-import { defineComponent, ref } from 'vue';
+import { defineComponent } from 'vue';
 import { useVizTimers } from '../../.vitepress/theme/composables/useVizTimers';
 
 function withSetup<T>(composable: () => T): { result: T; unmount: () => void } {

@@ -20,7 +20,6 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import {
-  ROOT,
   DOCS_DIR,
   discoverPatterns,
   findMarkdownFiles,

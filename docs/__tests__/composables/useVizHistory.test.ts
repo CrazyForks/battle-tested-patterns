@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { ref, nextTick, defineComponent } from 'vue';
+import { defineComponent } from 'vue';
 import { mount } from '@vue/test-utils';
 import { useVizHistory } from '../../.vitepress/theme/composables/useVizHistory';
 

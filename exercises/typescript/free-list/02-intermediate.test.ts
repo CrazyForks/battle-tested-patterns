@@ -124,7 +124,7 @@ describe('Free List - Intermediate: Generation Pool', () => {
   it('should reuse freed slots for new allocations', () => {
     const pool = new GenerationPool<string>(2);
     const h1 = pool.alloc('a')!;
-    const h2 = pool.alloc('b')!;
+    pool.alloc('b');
     expect(pool.alloc('c')).toBeNull(); // full
 
     pool.free(h1);

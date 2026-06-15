@@ -97,13 +97,6 @@ function substituteVisitor(env: Record<string, number>): TransformVisitor {
   };
 }
 
-/** Evaluate a fully-reduced expression (must be a number node) */
-function evaluate(expr: Expr): number | null {
-  const folded = transform(expr, constantFoldVisitor());
-  if (folded.type === 'number') return folded.value;
-  return null;
-}
-
 // ─── Tests (do not modify below this line) ───────────────────────
 
 describe('Visitor - Intermediate: Transform Visitor', () => {
@@ -111,7 +104,6 @@ describe('Visitor - Intermediate: Transform Visitor', () => {
   const varr = (n: string): Expr => ({ type: 'variable', name: n });
   const add = (l: Expr, r: Expr): Expr => ({ type: 'add', left: l, right: r });
   const mul = (l: Expr, r: Expr): Expr => ({ type: 'multiply', left: l, right: r });
-  const neg = (o: Expr): Expr => ({ type: 'negate', operand: o });
 
   it('should fold constant addition', () => {
     const expr = add(num(3), num(7));

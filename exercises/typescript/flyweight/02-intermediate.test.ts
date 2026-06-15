@@ -84,7 +84,7 @@ describe('Flyweight - Intermediate: Icon Registry', () => {
 
   it('should clear the registry', () => {
     const registry = new IconRegistry();
-    const before = registry.getIcon('arrow');
+    registry.getIcon('arrow');
     expect(registry.has('arrow')).toBe(true);
 
     registry.clear();

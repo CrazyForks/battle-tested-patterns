@@ -65,8 +65,6 @@ const stateColor = computed(() => {
   }
 });
 
-const stateLabel = computed(() => state.value.replace('_', '-'));
-
 function sendSuccess() {
   if (state.value === 'OPEN') {
     requestLog.value.unshift({ type: 'rejected', id: ++reqId });

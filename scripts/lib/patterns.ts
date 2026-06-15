@@ -9,7 +9,7 @@
  * - CI-compatible error/warning output
  */
 
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
 export const ROOT = join(import.meta.dirname, '../..');

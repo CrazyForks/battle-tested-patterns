@@ -83,7 +83,7 @@ describe('Semaphore - Intermediate: Connection Pool', () => {
   it('should block at N+1 and unblock on release', async () => {
     const pool = new ConnectionPool(2);
     const c1 = await pool.acquire();
-    const c2 = await pool.acquire();
+    await pool.acquire();
 
     let blocked = true;
     const pending = pool.acquire().then((conn) => {

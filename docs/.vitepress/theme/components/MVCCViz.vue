@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref } from 'vue';
 import { useI18n } from '../composables/useI18n';
 import { useVizTimers } from '../composables/useVizTimers';
 import { useVizLog } from '../composables/useVizLog';
@@ -98,8 +98,6 @@ function beginTxn() {
     `begin T${txn.id}`,
   );
 }
-
-const activeTxns = computed(() => transactions.value.filter((t) => t.status === 'active'));
 
 const selectedTxn = ref<number | null>(null);
 const writeKey = ref('user');

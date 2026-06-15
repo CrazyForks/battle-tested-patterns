@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { mount, flushPromises } from '@vue/test-utils';
+import { mount } from '@vue/test-utils';
 import ObjectPoolViz from '../../.vitepress/theme/components/ObjectPoolViz.vue';
 import { clickButton, clickReset } from '../helpers/viz-interactions';
 

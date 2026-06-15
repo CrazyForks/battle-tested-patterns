@@ -89,10 +89,6 @@ export default defineConfig({
       };
       head.push(['script', { type: 'application/ld+json' }, JSON.stringify(ld)]);
     } else if (isPattern) {
-      const slug = pageData.relativePath
-        .replace(/^zh\//, '')
-        .replace(/^patterns\//, '')
-        .replace(/\/index\.md$/, '');
       const breadcrumbs = {
         '@context': 'https://schema.org',
         '@type': 'BreadcrumbList',

@@ -8,7 +8,7 @@ import VizLog from './VizLog.vue';
 import VizPlaybackBar from './VizPlaybackBar.vue';
 
 const { t } = useI18n();
-const { safeTimeout, delay, clearAll, speed, isAborted } = useVizTimers();
+const { delay, clearAll, speed, isAborted } = useVizTimers();
 const { entries: logEntries, log, clear: clearLog } = useVizLog();
 
 interface Iterator {

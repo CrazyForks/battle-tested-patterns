@@ -82,7 +82,7 @@ describe('Object Pool - Intermediate: Connection Pool', () => {
   it('should track active and idle counts', () => {
     const pool = new ConnectionPool(5);
     const c1 = pool.acquire()!;
-    const c2 = pool.acquire()!;
+    pool.acquire();
     expect(pool.activeCount).toBe(2);
     expect(pool.idleCount).toBe(0);
     pool.release(c1);

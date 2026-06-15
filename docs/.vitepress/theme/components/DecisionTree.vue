@@ -3,7 +3,7 @@ import { computed } from 'vue';
 import { withBase } from 'vitepress';
 import { useI18n } from '../composables/useI18n';
 
-const { t, isZh } = useI18n();
+const { isZh } = useI18n();
 const props = defineProps<{ variant: string }>();
 
 const zhNames: Record<string, string> = {
