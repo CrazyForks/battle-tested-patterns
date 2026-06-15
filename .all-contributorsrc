@@ -4,7 +4,8 @@
   "repoType": "github",
   "repoHost": "https://github.com",
   "files": [
-    "README.md"
+    "README.md",
+    "README.zh-CN.md"
   ],
   "imageSize": 100,
   "commit": false,
@@ -13,7 +14,7 @@
     {
       "login": "Totoro-jam",
       "name": "Totoro-jam",
-      "avatar_url": "https://avatars.githubusercontent.com/u/Totoro-jam",
+      "avatar_url": "https://avatars.githubusercontent.com/u/62227038?v=4",
       "profile": "https://github.com/Totoro-jam",
       "contributions": [
         "code",

@@ -96,6 +96,16 @@ Not ready for a full pattern? These are great ways to start:
 
 Look for issues labeled [`good first issue`](https://github.com/Totoro-jam/battle-tested-patterns/labels/good%20first%20issue).
 
+## Recognizing Contributors
+
+We use the [All Contributors](https://allcontributors.org/) bot to credit every kind of contribution (code, docs, design, translation, and more). After a contribution lands, comment on any issue or PR:
+
+```
+@all-contributors please add @username for code,doc
+```
+
+The bot opens a PR updating the contributor list; a maintainer merges it. See the [emoji key](https://allcontributors.org/docs/en/emoji-key) for contribution types.
+
 ## Reporting Issues
 
 - **Broken link**: Use the [broken-link template](ISSUE_TEMPLATE/broken-link.md)

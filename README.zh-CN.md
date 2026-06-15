@@ -263,8 +263,16 @@ pnpm dev                          # 本地文档站
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
 <!-- prettier-ignore-start -->
 <!-- markdownlint-disable -->
+<table>
+  <tbody>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/Totoro-jam"><img src="https://avatars.githubusercontent.com/u/62227038?v=4?s=100" width="100px;" alt="Totoro-jam"/><br /><sub><b>Totoro-jam</b></sub></a><br /><a href="https://github.com/Totoro-jam/battle-tested-patterns/commits?author=Totoro-jam" title="Code">💻</a> <a href="https://github.com/Totoro-jam/battle-tested-patterns/commits?author=Totoro-jam" title="Documentation">📖</a> <a href="#design-Totoro-jam" title="Design">🎨</a> <a href="#maintenance-Totoro-jam" title="Maintenance">🚧</a> <a href="#ideas-Totoro-jam" title="Ideas, Planning, & Feedback">🤔</a></td>
+    </tr>
+  </tbody>
+</table>
 
-感谢这些优秀的贡献者（[表情符号说明](https://allcontributors.org/docs/en/emoji-key)）：
+<!-- markdownlint-restore -->
+<!-- prettier-ignore-end -->
 
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 

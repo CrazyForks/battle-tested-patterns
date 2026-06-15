@@ -96,6 +96,16 @@ cd exercises/python && pytest         # 运行 Python 练习
 
 请查看标记为 [`good first issue`](https://github.com/Totoro-jam/battle-tested-patterns/labels/good%20first%20issue) 的 Issue。
 
+## 致谢贡献者
+
+我们使用 [All Contributors](https://allcontributors.org/) 机器人来记录各种形式的贡献（代码、文档、设计、翻译等）。贡献合并后，在任意 Issue 或 PR 下评论：
+
+```
+@all-contributors please add @username for code,doc
+```
+
+机器人会开一个 PR 更新贡献者列表，由维护者合并即可。贡献类型见 [emoji 说明](https://allcontributors.org/docs/en/emoji-key)。
+
 ## 报告问题
 
 - **失效链接**：使用 [broken-link 模板](ISSUE_TEMPLATE/broken-link.md)
