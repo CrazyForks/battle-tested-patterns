@@ -52,7 +52,8 @@ function handleKeydown(e: KeyboardEvent) {
       break;
     case ' ':
       e.preventDefault();
-      props.history.isPlaying.value ? props.history.pause() : props.history.play();
+      if (props.history.isPlaying.value) props.history.pause();
+      else props.history.play();
       break;
   }
 }

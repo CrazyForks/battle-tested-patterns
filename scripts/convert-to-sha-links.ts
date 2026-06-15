@@ -30,7 +30,9 @@ function resolveToken(): string {
   try {
     const token = execSync('gh auth token', { encoding: 'utf-8' }).trim();
     if (token) return token;
-  } catch {}
+  } catch {
+    // gh CLI unavailable or not authed — fall through to env var.
+  }
   // 2. Fallback to environment variable
   return process.env.GITHUB_TOKEN || '';
 }

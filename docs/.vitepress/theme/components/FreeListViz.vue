@@ -296,7 +296,7 @@ async function presetFragmentation() {
       <span class="fl-chain-label">{{ t('Free list chain:', 'Free List 链:') }}</span>
       <template v-if="freeListOrder.length > 0">
         <span class="fl-chain-item fl-chain-head">head</span>
-        <template v-for="(id, i) in freeListOrder" :key="'fl-' + id">
+        <template v-for="id in freeListOrder" :key="'fl-' + id">
           <svg class="fl-chain-arrow" viewBox="0 0 24 12" width="24" height="12" aria-hidden="true">
             <path d="M2 6 L18 6 M14 2 L18 6 L14 10" stroke="var(--viz-primary)" stroke-width="1.5" fill="none"/>
           </svg>

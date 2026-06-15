@@ -1,0 +1,18 @@
+# Dependencies & build output
+node_modules/
+docs/.vitepress/dist/
+docs/.vitepress/cache/
+docs/.vitepress/.temp/
+exercises/rust/target/
+coverage/
+
+# Lockfiles & generated
+pnpm-lock.yaml
+
+# Temp
+tmp/
+.tmp-code-verify/
+.pnpm-store/
+
+# Markdown is handled by markdownlint (lint:md), not Prettier
+**/*.md

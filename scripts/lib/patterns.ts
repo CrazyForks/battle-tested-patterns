@@ -204,7 +204,7 @@ export function extractGitHubLinks(text: string, baseLineOffset = 0): GitHubLink
     for (const rawUrl of matches) {
       const url = rawUrl.replace(/[)>\]]+$/, '');
       const hasLineNumber = /#L\d+/.test(url);
-      const isL1Only = /\#L1[^0-9]/.test(url) || url.endsWith('#L1');
+      const isL1Only = /#L1[^0-9]/.test(url) || url.endsWith('#L1');
       links.push({ url, hasLineNumber, isL1Only, line: baseLineOffset + i + 1 });
     }
   }

@@ -40,23 +40,22 @@ class SupervisedActor<S> {
       mailbox: [],
     });
 
-    const self = this;
     return {
       name,
-      send(msg: unknown) {
-        const child = self.children.get(name);
+      send: (msg: unknown) => {
+        const child = this.children.get(name);
         if (!child) return;
         try {
           child.state = child.handler(child.state, msg);
         } catch (err) {
           const error = err instanceof Error ? err.message : String(err);
-          self.restartLog.push({ name, error });
+          this.restartLog.push({ name, error });
           // Restart: reset to initial state
           child.state = structuredClone(child.initialState);
         }
       },
-      getState() {
-        return self.children.get(name)?.state;
+      getState: () => {
+        return this.children.get(name)?.state;
       },
     };
   }

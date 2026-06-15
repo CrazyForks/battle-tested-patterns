@@ -449,7 +449,7 @@ export default defineConfig({
                   .filter((s: any) => s.isWordLike)
                   .map((s: any) => s.segment.toLowerCase());
               }
-              return text.split(/[\s\-]+/).filter(Boolean).map(w => w.toLowerCase());
+              return text.split(/[\s-]+/).filter(Boolean).map(w => w.toLowerCase());
             },
           },
           searchOptions: {

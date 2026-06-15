@@ -53,6 +53,7 @@ const stateColor = computed(() => {
     case 'CLOSED': return 'var(--viz-success)';
     case 'OPEN': return 'var(--viz-danger)';
     case 'HALF_OPEN': return 'var(--viz-warning)';
+    default: return 'var(--viz-success)';
   }
 });
 

@@ -240,7 +240,7 @@ async function presetHotSpot() {
       <circle :cx="CX" :cy="CY" :r="R" fill="none" stroke="var(--viz-border)" stroke-width="1.5" />
 
       <!-- Ownership arcs -->
-      <template v-for="(ko, i) in keyOwnership" :key="'line-' + ko.id">
+      <template v-for="ko in keyOwnership" :key="'line-' + ko.id">
         <line
           v-if="ko.owner"
           :x1="ko.pos.x"

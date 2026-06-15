@@ -81,7 +81,9 @@ describe('Retry with Backoff - Basic', () => {
         },
         { maxRetries: 3, baseDelay: 5, maxDelay: 15 },
       );
-    } catch {}
+    } catch {
+      // Expected: the operation always throws; we assert on attempt count below.
+    }
 
     // All delays should be reasonable (not growing beyond maxDelay significantly)
     expect(attempts).toBe(4); // initial + 3 retries

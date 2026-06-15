@@ -47,7 +47,7 @@ function countMermaidParticipants(block: string): number {
   // Count participants, actors, nodes in various diagram types
   const participantLines = block.split('\n').filter(line =>
     /^\s*(participant|actor|subgraph)\s/.test(line) ||
-    /^\s*\w+[\[({\|]/.test(line) // flowchart nodes
+    /^\s*\w+[[({|]/.test(line) // flowchart nodes
   );
   return participantLines.length;
 }
