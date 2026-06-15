@@ -44,3 +44,67 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v5
+
+  # Notify IndexNow-enabled search engines (Bing, Yandex, etc.) of the latest
+  # URLs after a successful deploy. Google does NOT support IndexNow and still
+  # relies on the sitemap. This is best-effort: failures never block the deploy.
+  indexnow:
+    needs: deploy
+    runs-on: ubuntu-latest
+    env:
+      SITEMAP_URL: https://totoro-jam.github.io/battle-tested-patterns/sitemap.xml
+      INDEXNOW_KEY: a0d801eb69781b2720749052ca824452
+      KEY_LOCATION: https://totoro-jam.github.io/battle-tested-patterns/a0d801eb69781b2720749052ca824452.txt
+      HOST: totoro-jam.github.io
+    steps:
+      - name: Submit URLs to IndexNow
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+
+          # Give GitHub Pages a moment to serve the freshly deployed sitemap.
+          sleep 15
+
+          echo "Fetching sitemap: $SITEMAP_URL"
+          if ! curl -sfS --retry 3 --retry-delay 5 "$SITEMAP_URL" -o sitemap.xml; then
+            echo "::warning::Could not fetch sitemap; skipping IndexNow submission."
+            exit 0
+          fi
+
+          # Extract all <loc> URLs from the sitemap.
+          grep -oE '<loc>[^<]+</loc>' sitemap.xml \
+            | sed -E 's#</?loc>##g' > urls.txt || true
+
+          COUNT=$(wc -l < urls.txt | tr -d ' ')
+          echo "Found $COUNT URL(s) in sitemap."
+          if [ "$COUNT" -eq 0 ]; then
+            echo "::warning::No URLs found in sitemap; skipping IndexNow submission."
+            exit 0
+          fi
+
+          # Build the JSON payload (IndexNow allows up to 10,000 URLs per POST).
+          URL_JSON=$(sed 's/.*/"&"/' urls.txt | paste -sd, -)
+          PAYLOAD=$(cat <<EOF
+          {
+            "host": "$HOST",
+            "key": "$INDEXNOW_KEY",
+            "keyLocation": "$KEY_LOCATION",
+            "urlList": [$URL_JSON]
+          }
+          EOF
+          )
+
+          echo "Submitting $COUNT URL(s) to IndexNow..."
+          HTTP_CODE=$(curl -sS -o response.txt -w '%{http_code}' \
+            -X POST 'https://api.indexnow.org/indexnow' \
+            -H 'Content-Type: application/json; charset=utf-8' \
+            -d "$PAYLOAD")
+
+          echo "IndexNow responded with HTTP $HTTP_CODE"
+          cat response.txt || true
+
+          # 200 OK / 202 Accepted are both success per the IndexNow spec.
+          case "$HTTP_CODE" in
+            200|202) echo "IndexNow submission accepted." ;;
+            *) echo "::warning::IndexNow returned HTTP $HTTP_CODE (non-fatal)." ;;
+          esac
