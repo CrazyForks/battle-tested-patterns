@@ -54,6 +54,7 @@
 - **TypeScript**：strict 模式，无 `any`，Vitest 测试
 - **Rust**：地道风格，`#[cfg(test)]` 模块，`cargo test`
 - **Go**：优先标准库，表驱动测试，`go test`
+- **Markdown 中的 HTML**：在 Markdown 里手写容器包裹 Markdown 内容时，用 `<div>`，绝不用 `<p>`/`<span>`（避免非法的 `<p>` 套 `<p>` 嵌套，详见 `.sop/09`）
 - **提交**：[Conventional Commits](https://www.conventionalcommits.org/)（`feat:`、`fix:`、`docs:` 等）
 
 ## 本地运行

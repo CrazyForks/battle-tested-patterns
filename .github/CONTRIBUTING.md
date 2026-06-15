@@ -54,6 +54,7 @@ This is our core differentiator — every claim must be verifiable:
 - **TypeScript**: strict mode, no `any`, Vitest for tests
 - **Rust**: idiomatic, `#[cfg(test)]` modules, `cargo test`
 - **Go**: standard library preferred, table-driven tests, `go test`
+- **Markdown HTML**: when wrapping Markdown in a hand-written container, use `<div>`, never `<p>`/`<span>` (avoids invalid `<p>`-in-`<p>` nesting; see `.sop/09`)
 - **Commits**: [Conventional Commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, `docs:`, etc.)
 
 ## Running Locally

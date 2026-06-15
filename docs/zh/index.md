@@ -68,8 +68,8 @@ features:
 
 <PatternTimelineViz />
 
-<p style="text-align: center; margin-top: 2rem;">
+<div style="text-align: center; margin-top: 2rem;">
 
 [浏览全部 46 个模式 →](/zh/patterns/)
 
-</p>
+</div>

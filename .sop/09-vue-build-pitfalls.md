@@ -252,6 +252,50 @@ function patternName(en: string): string {
 
 Authoritative Chinese names are in `docs/zh/by-project/*.md` table headers. When adding a new component with pattern names, cross-reference those files for consistent translations.
 
+## Rule 8: Use `<div>`, Not `<p>`, to Wrap Markdown in `.md` Files
+
+### The Problem
+
+When you hand-write an HTML container in a Markdown file and put a blank line + standalone Markdown inside it, markdown-it renders that inner content as a block-level `<p>`. If the container itself is a `<p>` (or any phrasing element like `<span>`/`<a>`), you get a `<p>` nested inside a `<p>`, which is invalid HTML. VitePress (Vue) warns at dev time and it can cause hydration errors.
+
+### Bad (BREAKS HTML NESTING)
+
+```md
+<p style="text-align: center; margin-top: 2rem;">
+
+[Browse all 46 patterns →](/patterns/)
+
+</p>
+```
+
+The standalone link becomes its own `<p>`, producing `<p><p>...</p></p>`.
+
+### Good (block-level container)
+
+```md
+<div style="text-align: center; margin-top: 2rem;">
+
+[Browse all 46 patterns →](/patterns/)
+
+</div>
+```
+
+### Dev Warning Signature
+
+```
+[vitepress] warning: <p> cannot be child of <p>, according to HTML specifications.
+This can cause hydration errors or potentially disrupt future functionality.
+```
+
+This warning appears only in `pnpm dev` (Vue runtime) — `pnpm build` does NOT emit it, so run the dev server when editing hand-written HTML in Markdown.
+
+### How to Scan
+
+```bash
+# Find hand-written <p>/<span> opening tags in Markdown (should be <div> if they wrap Markdown)
+grep -rn '<p \|<p>\|<span ' docs --include='*.md'
+```
+
 ## Checklist Before Pushing Vue Changes
 
 - [ ] No literal `"` inside backtick templates within `:attr="..."` bindings
@@ -261,4 +305,5 @@ Authoritative Chinese names are in `docs/zh/by-project/*.md` table headers. When
 - [ ] All `setTimeout`/`setInterval` cleaned up with `onUnmounted`
 - [ ] All `<a :href>` internal links use `withBase()` from vitepress
 - [ ] All user-visible text has i18n support (not just descriptions, but names/labels too)
+- [ ] Hand-written HTML containers in `.md` use `<div>`, not `<p>`/`<span>`, when wrapping Markdown
 - [ ] `pnpm typecheck` passes (or verify via CI if local Node version differs)
