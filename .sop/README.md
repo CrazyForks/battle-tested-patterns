@@ -18,3 +18,4 @@ Follow the relevant SOP before starting work to ensure consistency and quality.
 | 11 | [Difficulty Classification](11-difficulty-classification.md) | Classifying pattern difficulty (beginner/intermediate/advanced) |
 | 12 | [Related Patterns Audit](12-related-patterns-audit.md) | Verifying bidirectional Related Patterns links |
 | 13 | [Content Quality Audit](13-content-quality-audit.md) | Multi-dimensional quality audit (EN/ZH sync, diagrams, property tables) |
+| 14 | [Lint & Format Toolchain](14-lint-toolchain.md) | ESLint/Stylelint/Prettier/lint-staged config, rule-disable decisions, pitfalls |

@@ -42,7 +42,7 @@ Follow [SOP 01: New Pattern](./../.sop/01-new-pattern.md). In short:
 
 This is our core differentiator — every claim must be verifiable:
 
-```
+```text
 ✅ https://github.com/facebook/react/blob/main/.../ReactFiberFlags.js#L18-L22
 ❌ https://github.com/facebook/react/tree/main/packages/  (directory, not precise)
 ❌ Links to feature branches (may be deleted)
@@ -66,7 +66,7 @@ pnpm test                             # Run all tests (exercises + docs componen
 pnpm test:exercises                   # Run TypeScript exercises only
 pnpm test:docs                        # Run Vue component tests only
 pnpm check                            # Run all checks (lint + typecheck + test + verify + content quality)
-pnpm lint                             # Lint markdown
+pnpm lint                             # Lint markdown + JS/TS/Vue (ESLint) + CSS (Stylelint)
 pnpm typecheck                        # TypeScript type check
 pnpm verify-code                      # Verify all code blocks compile
 pnpm verify-mermaid                   # Validate Mermaid diagram syntax
@@ -101,7 +101,7 @@ Look for issues labeled [`good first issue`](https://github.com/Totoro-jam/battl
 
 We use the [All Contributors](https://allcontributors.org/) bot to credit every kind of contribution (code, docs, design, translation, and more). After a contribution lands, comment on any issue or PR:
 
-```
+```text
 @all-contributors please add @username for code,doc
 ```
 

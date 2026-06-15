@@ -19,7 +19,7 @@ Each pattern has precise source links, multi-language implementations, and runna
 
 ## Source Link Standard
 
-```
+```text
 ✅ https://github.com/facebook/react/blob/main/packages/react-reconciler/src/ReactFiberFlags.js#L18-L22
 ✅ https://github.com/torvalds/linux/blob/master/include/uapi/linux/stat.h#L28-L35
 ❌ Directory-level links (not precise enough)
@@ -65,7 +65,7 @@ pnpm test         # Run ALL tests (exercises + docs components)
 pnpm test:exercises # Run TypeScript exercises only (Vitest)
 pnpm test:docs    # Run Vue component tests only
 pnpm check        # Run all checks (lint + typecheck + test + verify + content quality)
-pnpm lint         # Lint markdown files
+pnpm lint         # Lint markdown + JS/TS/Vue (ESLint) + CSS/Vue styles (Stylelint); see .sop/14
 pnpm typecheck    # TypeScript strict type check
 pnpm verify-code  # Verify all code blocks in patterns compile (TS/Rust/Go/Python)
 pnpm verify-mermaid # Validate Mermaid diagram syntax

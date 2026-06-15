@@ -10,7 +10,7 @@
 
 | Workflow | Trigger | Purpose |
 |----------|---------|---------|
-| `ci.yml` | push + PR | Lint, typecheck, verify-code, verify-mermaid, tests (TS + Rust + Go + Python + Vue), docs build, content quality (`check-content`: structure, EN-ZH parity, exercises, relations) |
+| `ci.yml` | push + PR | Lint (`pnpm lint` = markdown + ESLint + Stylelint, see [SOP 14](14-lint-toolchain.md)), typecheck, verify-code, verify-mermaid, tests (TS + Rust + Go + Python + Vue), docs build, content quality (`check-content`: structure, EN-ZH parity, exercises, relations) |
 | `deploy.yml` | push to main | Build VitePress → deploy GitHub Pages |
 | `verify-links.yml` | push (patterns changed) + weekly cron | HTTP check all production proof links |
 | `release.yml` | push tag `v*` | Generate release notes, create GitHub Release |
@@ -18,18 +18,21 @@
 ## Required Repository Settings
 
 ### GitHub Pages
-```
+
+```text
 Settings → Pages → Source → "GitHub Actions"
 ```
 
 ### Branch Protection (recommended)
-```
+
+```text
 Settings → Branches → Add rule for "main"
   → Require status checks: "CI / CI Pass" (single gate job covers all 9 checks)
   → Block force pushes
 ```
 
 ### Permissions
+
 All workflows declare their own `permissions` block — the repository default stays at "Read repository contents" (minimum privilege).
 
 ## Post-Push Verification
@@ -52,3 +55,6 @@ All workflows declare their own `permissions` block — the repository default s
 | `MD031 Fenced code blocks should be surrounded by blank lines` | Missing blank line before/after ` ``` ` fence | Add blank lines around all code fences |
 | `verify-code` failures | TypeScript code blocks in markdown that don't compile | Ensure all `ts` code blocks are valid; see [SOP 09](09-vue-build-pitfalls.md) |
 | `verify-mermaid` failures | Invalid Mermaid syntax in ` ```mermaid ` blocks | Fix diagram syntax; run `pnpm verify-mermaid` locally to see details |
+| ESLint `no-unused-vars` (warn/error) | Unused import or binding | Prefix intentional ones with `_`, else remove; keep side-effect calls bare. See [SOP 14](14-lint-toolchain.md) |
+| Stylelint `Unknown word (CssSyntaxError)` in `.vue` | `recommended-vue` not last in `extends` | Ensure `stylelint-config-recommended-vue` is the LAST entry. See [SOP 14](14-lint-toolchain.md) |
+| Stylelint errors on VitePress classes / vendor prefixes | New rule conflicts with intent | Don't auto-fix blindly (`--fix` strips Safari prefixes); disable the rule with a comment. See [SOP 14](14-lint-toolchain.md) |
