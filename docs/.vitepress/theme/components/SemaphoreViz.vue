@@ -612,12 +612,13 @@ async function presetMutex() {
   100% {
     opacity: 1;
   }
+
   50% {
     opacity: 0.6;
   }
 }
 
-@media (max-width: 640px) {
+@media (width <= 640px) {
   .sem-stats {
     gap: 0.5rem;
   }

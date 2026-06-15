@@ -555,7 +555,7 @@ async function presetBothVisitors() {
   white-space: pre;
 }
 
-@media (max-width: 640px) {
+@media (width <= 640px) {
   .vv-svg {
     max-width: 100%;
   }

@@ -716,9 +716,11 @@ async function presetVersionChainGrowth() {
 .mv-txn--active .mv-txn-status {
   color: var(--viz-primary);
 }
+
 .mv-txn--committed .mv-txn-status {
   color: var(--viz-success);
 }
+
 .mv-txn--aborted .mv-txn-status {
   color: var(--viz-danger);
 }
@@ -773,11 +775,12 @@ async function presetVersionChainGrowth() {
   border-color: var(--viz-primary);
 }
 
-@media (max-width: 640px) {
+@media (width <= 640px) {
   .mv-ver {
     min-width: 40px;
     padding: 0.2rem 0.375rem;
   }
+
   .mv-chain-key {
     min-width: 3rem;
     font-size: 0.75rem;

@@ -795,10 +795,12 @@ async function presetReadThroughTombstone() {
 .ts-stat-dot--active {
   background: var(--viz-success);
 }
+
 .ts-stat-dot--tombstoned {
   background: var(--viz-danger);
   opacity: 0.6;
 }
+
 .ts-stat-dot--free {
   background: var(--viz-border);
 }
@@ -1017,25 +1019,30 @@ async function presetReadThroughTombstone() {
     opacity: 0;
     transform: translateY(-4px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
   }
 }
 
-@media (max-width: 640px) {
+@media (width <= 640px) {
   .ts-grid {
     grid-template-columns: repeat(3, 1fr);
   }
+
   .ts-controls-grid {
     grid-template-columns: 1fr;
   }
+
   .ts-cell-key {
     font-size: 0.5625rem;
   }
+
   .ts-cell-value {
     font-size: 0.6875rem;
   }
+
   .ts-input {
     width: 60px;
     font-size: 0.6875rem;

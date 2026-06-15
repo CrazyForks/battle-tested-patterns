@@ -569,6 +569,7 @@ async function presetFanOut() {
 .am-stat--success {
   color: var(--viz-success);
 }
+
 .am-stat--warning {
   color: var(--viz-warning);
 }
@@ -670,7 +671,7 @@ async function presetFanOut() {
 
 .am-actor--active {
   border-color: var(--viz-primary);
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
+  box-shadow: 0 0 0 2px rgb(59 130 246 / 15%);
 }
 
 .am-actor-header {
@@ -757,18 +758,18 @@ async function presetFanOut() {
 }
 
 .am-msg--queued {
-  background: rgba(59, 130, 246, 0.08);
+  background: rgb(59 130 246 / 8%);
   border: 1px solid transparent;
 }
 
 .am-msg--processing {
-  background: rgba(59, 130, 246, 0.15);
+  background: rgb(59 130 246 / 15%);
   border: 1px solid var(--viz-primary);
   animation: viz-pulse 0.6s ease-in-out infinite;
 }
 
 .am-msg--done {
-  background: rgba(16, 185, 129, 0.1);
+  background: rgb(16 185 129 / 10%);
   border: 1px solid var(--viz-success);
   opacity: 0.6;
 }
@@ -812,18 +813,21 @@ async function presetFanOut() {
   padding: 1px 0;
 }
 
-@media (max-width: 640px) {
+@media (width <= 640px) {
   .am-actors {
     flex-direction: column;
     align-items: stretch;
   }
+
   .am-actor {
     max-width: none;
   }
+
   .am-send-row {
     flex-direction: column;
     align-items: stretch;
   }
+
   .am-send-arrow {
     text-align: center;
   }

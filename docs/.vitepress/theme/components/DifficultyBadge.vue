@@ -40,18 +40,18 @@ const label = computed(() => {
 .difficulty-beginner {
   background: var(--vp-c-green-soft);
   color: var(--vp-c-green-2);
-  border: 1px solid var(--vp-c-green-dimm-1, rgba(16, 185, 129, 0.2));
+  border: 1px solid var(--vp-c-green-dimm-1, rgb(16 185 129 / 20%));
 }
 
 .difficulty-intermediate {
   background: var(--vp-c-yellow-soft);
   color: var(--vp-c-yellow-2);
-  border: 1px solid var(--vp-c-yellow-dimm-1, rgba(234, 179, 8, 0.2));
+  border: 1px solid var(--vp-c-yellow-dimm-1, rgb(234 179 8 / 20%));
 }
 
 .difficulty-advanced {
   background: var(--vp-c-red-soft);
   color: var(--vp-c-red-2);
-  border: 1px solid var(--vp-c-red-dimm-1, rgba(244, 63, 94, 0.2));
+  border: 1px solid var(--vp-c-red-dimm-1, rgb(244 63 94 / 20%));
 }
 </style>

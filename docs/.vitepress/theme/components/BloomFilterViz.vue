@@ -391,24 +391,25 @@ const presetTests = ['cat', 'rat', 'fox', 'ant'];
 .bloom-bit--set .bloom-bit-val {
   color: #fff;
 }
+
 .bloom-bit--set .bloom-bit-idx {
-  color: rgba(255, 255, 255, 0.6);
+  color: rgb(255 255 255 / 60%);
 }
 
 .bloom-bit--highlight-add {
   animation: viz-pulse 0.6s ease;
-  box-shadow: 0 0 10px rgba(59, 130, 246, 0.4);
+  box-shadow: 0 0 10px rgb(59 130 246 / 40%);
 }
 
 .bloom-bit--highlight-hit {
   animation: viz-pulse 0.6s ease;
-  box-shadow: 0 0 10px rgba(16, 185, 129, 0.4);
+  box-shadow: 0 0 10px rgb(16 185 129 / 40%);
   border-color: var(--viz-success) !important;
 }
 
 .bloom-bit--highlight-miss {
   animation: viz-pulse 0.6s ease;
-  box-shadow: 0 0 10px rgba(239, 68, 68, 0.4);
+  box-shadow: 0 0 10px rgb(239 68 68 / 40%);
   border-color: var(--viz-danger) !important;
 }
 
@@ -531,12 +532,13 @@ const presetTests = ['cat', 'rat', 'fox', 'ant'];
 .viz-status--fp {
   border-left: 3px solid var(--viz-warning);
 }
+
 .viz-status--add {
   border-left: 3px solid var(--viz-primary);
 }
 
 /* Narrow screens: fold the 16-bit row into 8 columns × 2 rows */
-@media (max-width: 640px) {
+@media (width <= 640px) {
   .bloom-bits {
     grid-template-columns: repeat(8, 1fr);
     gap: 5px;

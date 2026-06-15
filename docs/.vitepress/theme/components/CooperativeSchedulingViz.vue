@@ -538,6 +538,7 @@ const chunkColors = [
 .cs-ball-status--ok {
   color: var(--viz-success);
 }
+
 .cs-ball-status--blocked {
   color: var(--viz-danger);
 }
@@ -624,7 +625,7 @@ const chunkColors = [
 }
 
 .cs-timeline-unit--yield {
-  background: rgba(16, 185, 129, 0.15);
+  background: rgb(16 185 129 / 15%);
   border: 1px dashed var(--viz-success);
   flex: 0 0 28px;
 }
@@ -666,7 +667,7 @@ const chunkColors = [
 }
 
 .cs-legend-dot--yield {
-  background: rgba(16, 185, 129, 0.15);
+  background: rgb(16 185 129 / 15%);
   border: 1px dashed var(--viz-success);
 }
 
@@ -675,34 +676,40 @@ const chunkColors = [
     opacity: 0;
     transform: scaleY(0.5);
   }
+
   to {
     opacity: 1;
     transform: scaleY(1);
   }
 }
 
-@media (max-width: 640px) {
+@media (width <= 640px) {
   .cs-top-row {
     flex-direction: column;
     align-items: stretch;
   }
+
   .cs-ball-area {
     flex-direction: row;
     gap: 0.5rem;
   }
+
   .cs-ball-track {
     width: 52px;
     height: 28px;
   }
+
   .cs-ball {
     top: 50%;
     left: 0;
     margin-top: -6px;
     margin-left: 0;
   }
+
   .cs-timeline-unit {
     flex: 0 0 10px;
   }
+
   .cs-timeline-unit--yield {
     flex: 0 0 20px;
   }

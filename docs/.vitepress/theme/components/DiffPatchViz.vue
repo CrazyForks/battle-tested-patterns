@@ -469,11 +469,11 @@ const diffPrefix = (type: string) => {
 }
 
 .dp-diff-line--add {
-  background: rgba(16, 185, 129, 0.12);
+  background: rgb(16 185 129 / 12%);
 }
 
 .dp-diff-line--del {
-  background: rgba(239, 68, 68, 0.12);
+  background: rgb(239 68 68 / 12%);
 }
 
 .dp-diff-prefix {
@@ -497,7 +497,7 @@ const diffPrefix = (type: string) => {
   white-space: pre;
 }
 
-@media (max-width: 640px) {
+@media (width <= 640px) {
   .dp-panels {
     grid-template-columns: 1fr;
   }

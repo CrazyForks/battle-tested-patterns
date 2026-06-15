@@ -624,6 +624,7 @@ function patternLink(link: string) {
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -634,23 +635,27 @@ function patternLink(link: string) {
     opacity: 0;
     transform: translateY(6px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
   }
 }
 
-@media (max-width: 640px) {
+@media (width <= 640px) {
   .pc-tabs {
     gap: 0.25rem;
   }
+
   .pc-tab {
     padding: 0.25rem 0.5rem;
     font-size: 0.6875rem;
   }
+
   .pc-tab-icon {
     display: none;
   }
+
   .pc-system-header {
     flex-wrap: wrap;
     gap: 0.5rem;

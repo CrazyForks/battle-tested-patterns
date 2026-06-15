@@ -429,6 +429,7 @@ async function presetOverflow() {
 .ringbuf-dot--head {
   background: var(--viz-success);
 }
+
 .ringbuf-dot--tail {
   background: var(--viz-warning);
 }
@@ -446,10 +447,11 @@ async function presetOverflow() {
   transition: transform var(--viz-transition);
 }
 
-@media (max-width: 640px) {
+@media (width <= 640px) {
   .ringbuf-layout {
     flex-direction: column;
   }
+
   .ringbuf-svg {
     width: 200px;
     height: 200px;

@@ -625,7 +625,7 @@ async function presetFrequentCheckpoints() {
 
 .cp-log-entry--replaying {
   border-color: var(--viz-warning);
-  background: rgba(245, 158, 11, 0.12);
+  background: rgb(245 158 11 / 12%);
   animation: cp-replay-flash 0.4s ease;
 }
 
@@ -689,13 +689,13 @@ async function presetFrequentCheckpoints() {
 
 .cp-state-box--crashed {
   border-color: var(--viz-danger);
-  background: rgba(239, 68, 68, 0.06);
+  background: rgb(239 68 68 / 6%);
   animation: cp-shake 0.4s ease;
 }
 
 .cp-state-box--recovering {
   border-color: var(--viz-warning);
-  background: rgba(245, 158, 11, 0.06);
+  background: rgb(245 158 11 / 6%);
 }
 
 .cp-state-value {
@@ -749,8 +749,8 @@ async function presetFrequentCheckpoints() {
   flex-direction: column;
   padding: 3px 6px;
   border-radius: var(--viz-radius-sm);
-  background: rgba(16, 185, 129, 0.08);
-  border: 1px solid rgba(16, 185, 129, 0.2);
+  background: rgb(16 185 129 / 8%);
+  border: 1px solid rgb(16 185 129 / 20%);
   margin-bottom: 2px;
 }
 
@@ -790,15 +790,19 @@ async function presetFrequentCheckpoints() {
   100% {
     transform: translateX(0);
   }
+
   20% {
     transform: translateX(-4px);
   }
+
   40% {
     transform: translateX(4px);
   }
+
   60% {
     transform: translateX(-3px);
   }
+
   80% {
     transform: translateX(2px);
   }
@@ -806,20 +810,23 @@ async function presetFrequentCheckpoints() {
 
 @keyframes cp-replay-flash {
   0% {
-    background: rgba(245, 158, 11, 0.3);
+    background: rgb(245 158 11 / 30%);
   }
+
   100% {
-    background: rgba(245, 158, 11, 0.12);
+    background: rgb(245 158 11 / 12%);
   }
 }
 
-@media (max-width: 640px) {
+@media (width <= 640px) {
   .cp-layout {
     flex-direction: column;
   }
+
   .cp-state-panel {
     flex: none;
   }
+
   .cp-log-list {
     max-height: 160px;
   }

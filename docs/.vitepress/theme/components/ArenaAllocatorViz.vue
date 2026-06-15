@@ -686,6 +686,7 @@ async function presetMixedSizes() {
 .arena-stat--primary {
   color: var(--viz-primary);
 }
+
 .arena-stat--success {
   color: var(--viz-success);
 }
@@ -854,7 +855,7 @@ async function presetMixedSizes() {
 }
 
 .arena-cell--alloc-start {
-  border-left: 2px solid rgba(255, 255, 255, 0.4);
+  border-left: 2px solid rgb(255 255 255 / 40%);
 }
 
 .arena-cell-label {
@@ -864,7 +865,7 @@ async function presetMixedSizes() {
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+  text-shadow: 0 1px 2px rgb(0 0 0 / 40%);
   pointer-events: none;
   max-width: 100%;
   padding: 0 1px;
@@ -994,9 +995,11 @@ async function presetMixedSizes() {
 .arena-history-badge--alloc {
   background: var(--viz-primary);
 }
+
 .arena-history-badge--reset {
   background: var(--viz-danger);
 }
+
 .arena-history-badge--new {
   background: var(--viz-success);
 }
@@ -1011,6 +1014,7 @@ async function presetMixedSizes() {
     opacity: 0;
     transform: scaleY(0.5);
   }
+
   to {
     opacity: 1;
     transform: scaleY(1);
@@ -1018,7 +1022,7 @@ async function presetMixedSizes() {
 }
 
 /* --- Mobile --- */
-@media (max-width: 640px) {
+@media (width <= 640px) {
   .arena-bar {
     height: 28px;
   }

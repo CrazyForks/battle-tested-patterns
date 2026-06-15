@@ -427,9 +427,11 @@ async function presetFragmentation() {
 .fl-stat--alloc {
   color: var(--viz-cell-filled);
 }
+
 .fl-stat--free {
   color: var(--viz-success);
 }
+
 .fl-stat--head {
   color: var(--viz-primary);
 }
@@ -477,7 +479,7 @@ async function presetFragmentation() {
 
 .fl-block--head {
   border-color: var(--viz-primary);
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25);
+  box-shadow: 0 0 0 2px rgb(59 130 246 / 25%);
 }
 
 .fl-block-id {
@@ -489,7 +491,7 @@ async function presetFragmentation() {
 }
 
 .fl-block--allocated .fl-block-id {
-  color: rgba(255, 255, 255, 0.7);
+  color: rgb(255 255 255 / 70%);
 }
 
 .fl-block-content {
@@ -509,7 +511,7 @@ async function presetFragmentation() {
 
 .fl-block-hint {
   font-size: 0.5rem;
-  color: rgba(255, 255, 255, 0.6);
+  color: rgb(255 255 255 / 60%);
   margin-top: 2px;
   white-space: nowrap;
 }
@@ -605,7 +607,7 @@ async function presetFragmentation() {
 
 .fl-input:focus {
   border-color: var(--viz-primary);
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
+  box-shadow: 0 0 0 2px rgb(59 130 246 / 15%);
 }
 
 .fl-input::placeholder {
@@ -636,6 +638,7 @@ async function presetFragmentation() {
     opacity: 0.5;
     transform: scale(0.92);
   }
+
   to {
     opacity: 1;
     transform: scale(1);
@@ -643,20 +646,24 @@ async function presetFragmentation() {
 }
 
 /* --- Responsive --- */
-@media (max-width: 640px) {
+@media (width <= 640px) {
   .fl-block {
     min-width: 42px;
     padding: 0.25rem 0.15rem;
   }
+
   .fl-block-content {
     font-size: 0.6875rem;
   }
+
   .fl-block-hint {
     display: none;
   }
+
   .fl-input {
     width: 90px;
   }
+
   .fl-controls {
     flex-direction: column;
   }

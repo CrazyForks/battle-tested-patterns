@@ -730,7 +730,7 @@ async function presetUpdateOverwrite() {
 
 .lsm-layer--highlight {
   border-color: var(--viz-primary);
-  box-shadow: 0 0 12px rgba(59, 130, 246, 0.2);
+  box-shadow: 0 0 12px rgb(59 130 246 / 20%);
 }
 
 .lsm-layer--searched {
@@ -766,15 +766,15 @@ async function presetUpdateOverwrite() {
 }
 
 .lsm-tag--mem {
-  background: rgba(245, 158, 11, 0.12);
+  background: rgb(245 158 11 / 12%);
   color: var(--viz-warning);
-  border: 1px solid rgba(245, 158, 11, 0.25);
+  border: 1px solid rgb(245 158 11 / 25%);
 }
 
 .lsm-tag--disk {
-  background: rgba(59, 130, 246, 0.08);
+  background: rgb(59 130 246 / 8%);
   color: var(--viz-primary);
-  border: 1px solid rgba(59, 130, 246, 0.2);
+  border: 1px solid rgb(59 130 246 / 20%);
 }
 
 .lsm-layer-count {
@@ -805,7 +805,7 @@ async function presetUpdateOverwrite() {
   border-radius: var(--viz-radius-sm);
   font-size: 0.75rem;
   font-family: var(--vp-font-family-mono);
-  background: rgba(59, 130, 246, 0.06);
+  background: rgb(59 130 246 / 6%);
   border: 1px solid var(--viz-border);
   transition: all var(--viz-transition);
   animation: viz-slide-in 0.25s ease;
@@ -818,8 +818,8 @@ async function presetUpdateOverwrite() {
 
 .lsm-entry--found {
   border-color: var(--viz-success);
-  background: rgba(16, 185, 129, 0.15);
-  box-shadow: 0 0 8px rgba(16, 185, 129, 0.2);
+  background: rgb(16 185 129 / 15%);
+  box-shadow: 0 0 8px rgb(16 185 129 / 20%);
   animation: viz-pulse 0.4s ease;
 }
 
@@ -941,13 +941,13 @@ async function presetUpdateOverwrite() {
 }
 
 .lsm-search-result--found {
-  background: rgba(16, 185, 129, 0.08);
+  background: rgb(16 185 129 / 8%);
   border: 1px solid var(--viz-success);
   color: var(--viz-text);
 }
 
 .lsm-search-result--miss {
-  background: rgba(239, 68, 68, 0.06);
+  background: rgb(239 68 68 / 6%);
   border: 1px solid var(--viz-danger);
   color: var(--viz-text);
 }
@@ -1011,22 +1011,26 @@ async function presetUpdateOverwrite() {
   100% {
     border-color: var(--viz-warning);
   }
+
   50% {
     border-color: var(--viz-danger);
   }
 }
 
-@media (max-width: 640px) {
+@media (width <= 640px) {
   .lsm-controls-grid {
     flex-direction: column;
     gap: 0.5rem;
   }
+
   .lsm-control-group {
     min-width: unset;
   }
+
   .lsm-input {
     width: 60px;
   }
+
   .lsm-entry {
     font-size: 0.6875rem;
     padding: 2px 4px;

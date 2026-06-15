@@ -320,7 +320,7 @@ async function presetClockSkew() {
   padding: 1rem 0;
 }
 
-@media (max-width: 640px) {
+@media (width <= 640px) {
   .lc-processes {
     flex-direction: column;
   }
@@ -373,17 +373,17 @@ async function presetClockSkew() {
 }
 
 .lc-event-local {
-  background: rgba(59, 130, 246, 0.15);
+  background: rgb(59 130 246 / 15%);
   color: var(--viz-primary);
 }
 
 .lc-event-send {
-  background: rgba(245, 158, 11, 0.15);
+  background: rgb(245 158 11 / 15%);
   color: var(--viz-warning);
 }
 
 .lc-event-recv {
-  background: rgba(16, 185, 129, 0.15);
+  background: rgb(16 185 129 / 15%);
   color: var(--viz-success);
 }
 
@@ -413,7 +413,7 @@ async function presetClockSkew() {
   color: var(--viz-warning);
   text-align: center;
   padding: 0.3rem;
-  background: rgba(245, 158, 11, 0.1);
+  background: rgb(245 158 11 / 10%);
   border-radius: var(--viz-radius-sm);
 }
 </style>

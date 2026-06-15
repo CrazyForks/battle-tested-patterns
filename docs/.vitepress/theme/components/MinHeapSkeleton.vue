@@ -56,6 +56,7 @@ const { t } = useI18n();
   0% {
     background-position: -200% 0;
   }
+
   100% {
     background-position: 200% 0;
   }
@@ -137,6 +138,7 @@ const { t } = useI18n();
 .viz-skel-btn--danger {
   width: 56px;
 }
+
 .viz-skel-btn--short {
   width: 56px;
 }

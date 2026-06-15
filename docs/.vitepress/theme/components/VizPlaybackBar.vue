@@ -279,6 +279,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown));
   appearance: none;
   -webkit-appearance: none;
   background: transparent;
+
   /* Fallback fill (set inline per-instance via --viz-playback-fill) */
   --viz-playback-fill: 0%;
 }
@@ -286,6 +287,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown));
 .viz-playback__scrubber::-webkit-slider-runnable-track {
   height: 3px;
   border-radius: 2px;
+
   /* Played portion in primary, remainder in border color */
   background: linear-gradient(
     to right,
@@ -302,7 +304,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown));
   border-radius: 50%;
   background: var(--viz-primary, #3b82f6);
   border: 2px solid var(--vp-c-bg, #fff);
-  box-shadow: 0 0.5px 2px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 0.5px 2px rgb(0 0 0 / 20%);
   transition: transform 0.15s ease;
 }
 
@@ -330,7 +332,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown));
   border-radius: 50%;
   background: var(--viz-primary, #3b82f6);
   border: 2px solid var(--vp-c-bg, #fff);
-  box-shadow: 0 0.5px 2px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 0.5px 2px rgb(0 0 0 / 20%);
 }
 
 .viz-playback__counter {
@@ -345,26 +347,31 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown));
 }
 
 /* Mobile: Apple HIG 44px touch targets (aligns with custom.css). */
-@media (max-width: 640px) {
+@media (width <= 640px) {
   .viz-playback {
     gap: 0.125rem;
   }
+
   .viz-playback__btn {
     width: 44px;
     height: 44px;
   }
+
   .viz-playback__btn svg {
     width: 20px;
     height: 20px;
   }
+
   .viz-playback__btn--play {
     width: 46px;
     height: 46px;
   }
+
   .viz-playback__btn--play svg {
     width: 22px;
     height: 22px;
   }
+
   .viz-playback__scrubber {
     height: 44px;
   }

@@ -535,9 +535,11 @@ async function presetDynamicGrowth() {
 .op-stat--primary {
   color: var(--viz-primary);
 }
+
 .op-stat--success {
   color: var(--viz-success);
 }
+
 .op-stat--danger {
   color: var(--viz-danger);
 }
@@ -673,15 +675,15 @@ async function presetDynamicGrowth() {
 }
 
 .op-grow-btn {
-  background: rgba(255, 255, 255, 0.2) !important;
+  background: rgb(255 255 255 / 20%) !important;
   color: #fff !important;
-  border-color: rgba(255, 255, 255, 0.4) !important;
+  border-color: rgb(255 255 255 / 40%) !important;
   font-size: 0.75rem !important;
   padding: 0.2rem 0.6rem !important;
 }
 
 .op-grow-btn:hover {
-  background: rgba(255, 255, 255, 0.35) !important;
+  background: rgb(255 255 255 / 35%) !important;
 }
 
 .op-acquire-row {
@@ -711,29 +713,36 @@ async function presetDynamicGrowth() {
   color: var(--viz-muted);
 }
 
-@media (max-width: 640px) {
+@media (width <= 640px) {
   .op-stats {
     gap: 0.375rem;
   }
+
   .op-stat {
     min-width: 40px;
   }
+
   .op-stat-value {
     font-size: 1rem;
   }
+
   .op-pool {
     grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
     gap: 0.375rem;
   }
+
   .op-card-content {
     padding: 0.375rem;
   }
+
   .op-card-name {
     font-size: 0.75rem;
   }
+
   .op-acquire-row {
     flex-direction: column;
   }
+
   .op-exhausted {
     font-size: 0.75rem;
     gap: 0.375rem;

@@ -475,7 +475,7 @@ function txt(obj: { en: string; zh: string }): string {
   gap: 0.375rem;
   padding: 0.25rem 0.625rem;
   border-radius: var(--viz-radius-sm);
-  background: rgba(59, 130, 246, 0.08);
+  background: rgb(59 130 246 / 8%);
   border: 1px solid var(--viz-primary);
   text-decoration: none;
   transition: all var(--viz-transition);
@@ -483,8 +483,8 @@ function txt(obj: { en: string; zh: string }): string {
 }
 
 .dt-leaf:hover {
-  background: rgba(59, 130, 246, 0.16);
-  box-shadow: 0 0 8px rgba(59, 130, 246, 0.12);
+  background: rgb(59 130 246 / 16%);
+  box-shadow: 0 0 8px rgb(59 130 246 / 12%);
 }
 
 .dt-leaf--plain {
@@ -514,19 +514,23 @@ function txt(obj: { en: string; zh: string }): string {
   font-style: italic;
 }
 
-@media (max-width: 640px) {
+@media (width <= 640px) {
   .dt {
     padding: 0.75rem;
   }
+
   .dt-branches {
     padding-left: 0.5rem;
   }
+
   .dt-branch {
     padding-left: 0.625rem;
   }
+
   .dt-q-text {
     font-size: 0.8125rem;
   }
+
   .dt-leaf {
     padding: 0.1875rem 0.5rem;
   }

@@ -519,6 +519,7 @@ async function presetStepByStep() {
 .it-stat-value--success {
   color: var(--viz-success);
 }
+
 .it-stat-value--saved {
   color: var(--viz-muted);
 }
@@ -547,12 +548,12 @@ async function presetStepByStep() {
 
 .it-stage--active {
   border-color: var(--viz-primary);
-  box-shadow: 0 0 12px rgba(59, 130, 246, 0.15);
+  box-shadow: 0 0 12px rgb(59 130 246 / 15%);
 }
 
 .it-stage--reject {
   border-color: var(--viz-danger);
-  box-shadow: 0 0 12px rgba(239, 68, 68, 0.12);
+  box-shadow: 0 0 12px rgb(239 68 68 / 12%);
 }
 
 .it-stage--collect {
@@ -614,20 +615,20 @@ async function presetStepByStep() {
 }
 
 .it-item--passed {
-  background: rgba(16, 185, 129, 0.12);
+  background: rgb(16 185 129 / 12%);
   border-color: var(--viz-success);
   color: var(--viz-success);
 }
 
 .it-item--rejected {
-  background: rgba(239, 68, 68, 0.08);
+  background: rgb(239 68 68 / 8%);
   border-color: var(--viz-danger);
   color: var(--viz-danger);
   text-decoration: line-through;
 }
 
 .it-item--mapped {
-  background: rgba(59, 130, 246, 0.1);
+  background: rgb(59 130 246 / 10%);
   border-color: var(--viz-primary);
   color: var(--viz-primary);
   width: auto;
@@ -684,7 +685,7 @@ async function presetStepByStep() {
   gap: 0.375rem;
   padding: 0.375rem 0.75rem;
   border-radius: var(--viz-radius-sm);
-  background: rgba(59, 130, 246, 0.08);
+  background: rgb(59 130 246 / 8%);
   border: 1px solid var(--viz-primary);
   margin: 0.5rem auto;
   width: fit-content;
@@ -703,30 +704,36 @@ async function presetStepByStep() {
   color: var(--viz-primary);
 }
 
-@media (max-width: 640px) {
+@media (width <= 640px) {
   .it-pipeline {
     flex-wrap: wrap;
     justify-content: center;
     gap: 4px;
   }
+
   .it-arrow {
     margin-top: 0;
   }
+
   .it-arrow svg {
     width: 18px;
   }
+
   .it-stage {
     min-width: 56px;
     padding: 0.375rem;
   }
+
   .it-item {
     width: 20px;
     height: 20px;
     font-size: 0.6rem;
   }
+
   .it-stats {
     gap: 0.5rem;
   }
+
   .it-stat-value {
     font-size: 1rem;
   }

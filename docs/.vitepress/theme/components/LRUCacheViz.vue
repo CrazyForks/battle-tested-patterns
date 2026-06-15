@@ -358,6 +358,7 @@ const emptySlots = computed(() => Math.max(0, CAPACITY - entries.value.length));
 .lru-label--mru {
   color: var(--viz-success);
 }
+
 .lru-label--lru {
   color: var(--viz-danger);
 }
@@ -383,7 +384,7 @@ const emptySlots = computed(() => Math.max(0, CAPACITY - entries.value.length));
 .lru-node--hit {
   animation: viz-pulse 0.5s ease;
   border-color: var(--viz-success);
-  box-shadow: 0 0 12px rgba(16, 185, 129, 0.3);
+  box-shadow: 0 0 12px rgb(16 185 129 / 30%);
 }
 
 .lru-node--insert {

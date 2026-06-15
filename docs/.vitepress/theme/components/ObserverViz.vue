@@ -282,7 +282,7 @@ async function presetEventStorm() {
   padding: 1rem 0;
 }
 
-@media (max-width: 640px) {
+@media (width <= 640px) {
   .obs-layout {
     flex-direction: column;
   }
@@ -305,7 +305,7 @@ async function presetEventStorm() {
 
 .obs-active {
   border-color: var(--viz-warning);
-  box-shadow: 0 0 12px rgba(245, 158, 11, 0.3);
+  box-shadow: 0 0 12px rgb(245 158 11 / 30%);
 }
 
 .obs-pub-label {

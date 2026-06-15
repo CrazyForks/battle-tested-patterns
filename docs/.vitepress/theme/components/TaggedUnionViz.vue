@@ -646,26 +646,32 @@ async function presetExhaustiveness() {
   color: var(--viz-success);
 }
 
-@media (max-width: 640px) {
+@media (width <= 640px) {
   .tu-type-btns {
     gap: 0.25rem;
   }
+
   .tu-type-btn {
     padding: 0.25rem 0.5rem;
     font-size: 0.6875rem;
   }
+
   .tu-var-value {
     font-size: 1rem;
   }
+
   .tu-memory-cells {
     overflow-x: auto;
   }
+
   .tu-mem-val {
     font-size: 0.5625rem;
   }
+
   .tu-match {
     font-size: 0.625rem;
   }
+
   .tu-arm-code {
     overflow: hidden;
     text-overflow: ellipsis;

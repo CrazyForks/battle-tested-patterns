@@ -408,7 +408,7 @@ async function presetBatchFlush() {
   padding: 1rem 0;
 }
 
-@media (max-width: 640px) {
+@media (width <= 640px) {
   .wal-layout {
     flex-direction: column;
     align-items: stretch;
@@ -446,13 +446,13 @@ async function presetBatchFlush() {
   border-radius: var(--viz-radius-sm);
   font-size: 0.7rem;
   font-family: var(--vp-font-family-mono);
-  background: rgba(59, 130, 246, 0.08);
+  background: rgb(59 130 246 / 8%);
   border: 1px solid transparent;
 }
 
 .wal-entry-flushed {
   opacity: 0.5;
-  background: rgba(16, 185, 129, 0.08);
+  background: rgb(16 185 129 / 8%);
 }
 
 .wal-entry-new {
@@ -482,6 +482,7 @@ async function presetBatchFlush() {
 .wal-yes {
   color: var(--viz-success);
 }
+
 .wal-no {
   color: var(--viz-warning);
 }
@@ -514,7 +515,7 @@ async function presetBatchFlush() {
   border-radius: var(--viz-radius-sm);
   font-size: 0.7rem;
   font-family: var(--vp-font-family-mono);
-  background: rgba(16, 185, 129, 0.08);
+  background: rgb(16 185 129 / 8%);
 }
 
 .wal-key {
@@ -545,6 +546,7 @@ async function presetBatchFlush() {
     opacity: 0;
     transform: translateY(-6px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);

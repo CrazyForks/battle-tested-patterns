@@ -804,17 +804,17 @@ async function presetComparisonDemo() {
 }
 
 .in-var--highlight-new {
-  background: rgba(59, 130, 246, 0.12);
+  background: rgb(59 130 246 / 12%);
   animation: viz-pulse 0.5s ease;
 }
 
 .in-var--highlight-reuse {
-  background: rgba(16, 185, 129, 0.12);
+  background: rgb(16 185 129 / 12%);
   animation: viz-pulse 0.5s ease;
 }
 
 .in-var--highlight-remove {
-  background: rgba(239, 68, 68, 0.1);
+  background: rgb(239 68 68 / 10%);
 }
 
 .in-var--compare-selected {
@@ -910,19 +910,19 @@ async function presetComparisonDemo() {
 
 .in-entry--highlight-new {
   border-color: var(--viz-primary);
-  background: rgba(59, 130, 246, 0.08);
+  background: rgb(59 130 246 / 8%);
   animation: viz-pulse 0.5s ease;
 }
 
 .in-entry--highlight-reuse {
   border-color: var(--viz-success);
-  background: rgba(16, 185, 129, 0.08);
+  background: rgb(16 185 129 / 8%);
   animation: viz-pulse 0.5s ease;
 }
 
 .in-entry--highlight-remove {
   border-color: var(--viz-danger);
-  background: rgba(239, 68, 68, 0.06);
+  background: rgb(239 68 68 / 6%);
 }
 
 .in-entry-value {
@@ -1054,7 +1054,7 @@ async function presetComparisonDemo() {
   border-style: solid;
   border-color: var(--viz-warning);
   color: var(--viz-text);
-  background: rgba(245, 158, 11, 0.06);
+  background: rgb(245 158 11 / 6%);
 }
 
 .in-compare-vs {
@@ -1104,13 +1104,13 @@ async function presetComparisonDemo() {
 }
 
 .in-compare-result--equal {
-  background: rgba(16, 185, 129, 0.1);
+  background: rgb(16 185 129 / 10%);
   color: var(--viz-success);
   border: 1px solid var(--viz-success);
 }
 
 .in-compare-result--not-equal {
-  background: rgba(239, 68, 68, 0.08);
+  background: rgb(239 68 68 / 8%);
   color: var(--viz-danger);
   border: 1px solid var(--viz-danger);
 }
@@ -1119,18 +1119,21 @@ async function presetComparisonDemo() {
 .in-status--new {
   border-left: 3px solid var(--viz-primary);
 }
+
 .in-status--reuse {
   border-left: 3px solid var(--viz-success);
 }
+
 .in-status--remove {
   border-left: 3px solid var(--viz-warning);
 }
+
 .in-status--gc {
   border-left: 3px solid var(--viz-danger);
 }
 
 /* ── Mobile ──────────────────────────────── */
-@media (max-width: 640px) {
+@media (width <= 640px) {
   .in-layout {
     grid-template-columns: 1fr;
   }

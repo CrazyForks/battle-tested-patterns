@@ -791,6 +791,7 @@ async function presetMissAndFallback() {
   0% {
     background: color-mix(in srgb, var(--viz-primary) 30%, transparent);
   }
+
   100% {
     background: color-mix(in srgb, var(--viz-primary) 15%, transparent);
   }
@@ -801,22 +802,26 @@ async function presetMissAndFallback() {
     opacity: 0;
     transform: translateY(-4px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
   }
 }
 
-@media (max-width: 640px) {
+@media (width <= 640px) {
   .rg-layout {
     grid-template-columns: 1fr;
   }
+
   .rg-table {
     font-size: 0.6875rem;
   }
+
   .rg-plugin-name {
     font-size: 0.6875rem;
   }
+
   .rg-input {
     font-size: 0.6875rem;
   }

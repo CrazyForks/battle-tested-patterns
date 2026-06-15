@@ -525,7 +525,7 @@ applyText();
   margin-bottom: 1rem;
 }
 
-@media (max-width: 640px) {
+@media (width <= 640px) {
   .fw-stats-panel {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -579,7 +579,7 @@ applyText();
   margin-bottom: 1rem;
 }
 
-@media (max-width: 640px) {
+@media (width <= 640px) {
   .fw-memory-compare {
     grid-template-columns: 1fr;
   }
@@ -655,7 +655,7 @@ applyText();
   margin-bottom: 0.75rem;
 }
 
-@media (max-width: 640px) {
+@media (width <= 640px) {
   .fw-layout {
     flex-direction: column;
     align-items: stretch;

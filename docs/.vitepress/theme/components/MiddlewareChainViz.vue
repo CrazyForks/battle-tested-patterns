@@ -582,10 +582,7 @@ async function presetSkipMiddleware() {
 
 .mw-toggle-slider {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   background: var(--viz-border);
   border-radius: 18px;
   transition: background 0.2s;
@@ -663,7 +660,7 @@ async function presetSkipMiddleware() {
   justify-content: center;
 }
 
-@media (max-width: 640px) {
+@media (width <= 640px) {
   .mw-chain {
     flex-wrap: wrap;
     justify-content: center;
@@ -696,12 +693,12 @@ async function presetSkipMiddleware() {
 
 .mw-endpoint-active {
   border-color: var(--viz-primary);
-  box-shadow: 0 0 8px rgba(59, 130, 246, 0.3);
+  box-shadow: 0 0 8px rgb(59 130 246 / 30%);
 }
 
 .mw-endpoint-error {
   border-color: var(--viz-danger);
-  box-shadow: 0 0 8px rgba(239, 68, 68, 0.3);
+  box-shadow: 0 0 8px rgb(239 68 68 / 30%);
 }
 
 .mw-arrow {
@@ -736,7 +733,7 @@ async function presetSkipMiddleware() {
 }
 
 .mw-node-active {
-  box-shadow: 0 0 12px rgba(245, 158, 11, 0.4);
+  box-shadow: 0 0 12px rgb(245 158 11 / 40%);
   transform: scale(1.08);
 }
 
@@ -745,7 +742,7 @@ async function presetSkipMiddleware() {
 }
 
 .mw-node-rejected {
-  box-shadow: 0 0 12px rgba(239, 68, 68, 0.5) !important;
+  box-shadow: 0 0 12px rgb(239 68 68 / 50%) !important;
   animation: mw-shake 0.3s ease;
 }
 
@@ -787,9 +784,11 @@ async function presetSkipMiddleware() {
   100% {
     transform: translateX(0) scale(1.08);
   }
+
   25% {
     transform: translateX(-3px) scale(1.08);
   }
+
   75% {
     transform: translateX(3px) scale(1.08);
   }

@@ -1036,6 +1036,7 @@ async function presetConcurrentRead() {
     opacity: 0;
     transform: translateY(8px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -1046,16 +1047,18 @@ async function presetConcurrentRead() {
   0% {
     transform: scale(1);
   }
+
   40% {
     transform: scale(1.1);
   }
+
   100% {
     transform: scale(1);
   }
 }
 
 /* Responsive */
-@media (max-width: 640px) {
+@media (width <= 640px) {
   .cow-steps {
     gap: 0.25rem;
   }

@@ -367,7 +367,7 @@ function fillColor() {
   justify-content: center;
 }
 
-@media (max-width: 640px) {
+@media (width <= 640px) {
   .bp-flow {
     flex-direction: column;
   }
@@ -388,6 +388,7 @@ function fillColor() {
 .bp-producer {
   border-color: var(--viz-primary);
 }
+
 .bp-consumer {
   border-color: var(--viz-success);
 }
@@ -501,6 +502,7 @@ function fillColor() {
   from {
     transform: scaleY(0.5);
   }
+
   to {
     transform: scaleY(1);
   }

@@ -72,6 +72,7 @@ const { t } = useI18n();
   0% {
     background-position: -200% 0;
   }
+
   100% {
     background-position: 200% 0;
   }
@@ -248,24 +249,29 @@ const { t } = useI18n();
   border-radius: var(--viz-radius-sm);
 }
 
-@media (max-width: 640px) {
+@media (width <= 640px) {
   .tl-skel-line {
     left: 16px;
   }
+
   .tl-skel-decade {
     justify-content: flex-start;
     padding-left: 16px;
   }
+
   .tl-skel-decade-label {
     transform: none;
   }
+
   .tl-skel-node {
     left: 16px;
   }
+
   .tl-skel-entry,
   .tl-skel-entry--left {
     flex-direction: row;
   }
+
   .tl-skel-entry--left .tl-skel-card,
   .tl-skel-entry--right .tl-skel-card {
     margin-left: 38px;

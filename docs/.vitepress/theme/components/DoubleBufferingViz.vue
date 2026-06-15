@@ -522,6 +522,7 @@ async function presetReactCommit() {
     transform: scale(0.7);
     opacity: 0.4;
   }
+
   100% {
     transform: scale(1);
     opacity: 1;
@@ -533,8 +534,9 @@ async function presetReactCommit() {
   100% {
     box-shadow: none;
   }
+
   50% {
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+    box-shadow: 0 0 0 3px rgb(59 130 246 / 30%);
   }
 }
 
@@ -543,12 +545,13 @@ async function presetReactCommit() {
   100% {
     transform: scale(1);
   }
+
   50% {
     transform: scale(1.2);
   }
 }
 
-@media (max-width: 640px) {
+@media (width <= 640px) {
   .db-layout {
     flex-direction: column;
   }
@@ -572,6 +575,7 @@ async function presetReactCommit() {
   100% {
     transform: rotate(90deg) scale(1);
   }
+
   50% {
     transform: rotate(90deg) scale(1.2);
   }

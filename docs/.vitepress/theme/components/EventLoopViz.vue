@@ -470,7 +470,7 @@ const phaseColor = computed(() => {
   gap: 0.75rem;
 }
 
-@media (max-width: 640px) {
+@media (width <= 640px) {
   .el-columns {
     grid-template-columns: 1fr;
   }
@@ -524,9 +524,11 @@ const phaseColor = computed(() => {
 .el-item--sync {
   background: var(--viz-primary);
 }
+
 .el-item--micro {
   background: var(--viz-success);
 }
+
 .el-item--macro {
   background: var(--viz-warning);
 }

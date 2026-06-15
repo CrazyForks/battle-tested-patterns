@@ -502,9 +502,11 @@ const states: { key: State; label: string; x: number; y: number }[] = [
 .cb-log-dot--success {
   background: var(--viz-success);
 }
+
 .cb-log-dot--failure {
   background: var(--viz-danger);
 }
+
 .cb-log-dot--rejected {
   background: var(--viz-muted);
   border: 1px dashed var(--viz-danger);

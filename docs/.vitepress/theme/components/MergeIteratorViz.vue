@@ -466,12 +466,13 @@ async function presetDuplicates() {
   flex-wrap: wrap;
 }
 
-@media (max-width: 640px) {
+@media (width <= 640px) {
   .mi-cell {
     width: 30px;
     height: 28px;
     font-size: 0.75rem;
   }
+
   .mi-label,
   .mi-output-label {
     min-width: 2.5rem;

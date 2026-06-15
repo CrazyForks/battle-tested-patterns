@@ -351,12 +351,13 @@ async function presetMaskCheck() {
   color: var(--viz-text);
 }
 
-@media (max-width: 640px) {
+@media (width <= 640px) {
   .bm-bit {
     width: 28px;
     height: 32px;
     font-size: 0.95rem;
   }
+
   .bm-flag {
     min-width: 44px;
     padding: 0.3rem 0.4rem;

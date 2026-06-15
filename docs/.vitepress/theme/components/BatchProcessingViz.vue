@@ -365,6 +365,7 @@ async function presetMultiBatch() {
 .bp-stat--primary {
   color: var(--viz-primary);
 }
+
 .bp-stat--success {
   color: var(--viz-success);
 }
@@ -413,13 +414,13 @@ async function presetMultiBatch() {
 .bp-slot--filled {
   border-style: solid;
   border-color: var(--viz-primary);
-  background: rgba(59, 130, 246, 0.1);
+  background: rgb(59 130 246 / 10%);
   animation: viz-slide-in 0.3s ease;
 }
 
 .bp-slot--flushing {
   border-color: var(--viz-success);
-  background: rgba(16, 185, 129, 0.15);
+  background: rgb(16 185 129 / 15%);
   animation: viz-pulse 0.5s ease;
 }
 
@@ -482,7 +483,7 @@ async function presetMultiBatch() {
   align-items: center;
   padding: 4px 8px;
   border-radius: var(--viz-radius-sm);
-  background: rgba(16, 185, 129, 0.08);
+  background: rgb(16 185 129 / 8%);
   font-size: 0.7rem;
   font-family: var(--vp-font-family-mono);
   animation: viz-slide-in 0.3s ease;
@@ -505,11 +506,12 @@ async function presetMultiBatch() {
   padding: 1rem;
 }
 
-@media (max-width: 640px) {
+@media (width <= 640px) {
   .bp-layout {
     flex-direction: column;
     align-items: stretch;
   }
+
   .bp-arrow {
     justify-content: center;
     padding-top: 0;

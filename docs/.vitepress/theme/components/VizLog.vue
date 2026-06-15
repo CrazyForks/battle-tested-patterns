@@ -197,12 +197,15 @@ function toggle() {
 .viz-log-entry--success {
   border-left-color: var(--viz-success);
 }
+
 .viz-log-entry--warning {
   border-left-color: var(--viz-warning);
 }
+
 .viz-log-entry--error {
   border-left-color: var(--viz-danger);
 }
+
 .viz-log-entry--highlight {
   border-left-color: var(--viz-primary);
   background: color-mix(in srgb, var(--viz-primary) 8%, transparent);

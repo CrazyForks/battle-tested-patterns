@@ -404,7 +404,7 @@ async function presetDanglingZero() {
   padding: 1rem 0;
 }
 
-@media (max-width: 640px) {
+@media (width <= 640px) {
   .rc-layout {
     flex-direction: column;
   }
@@ -483,7 +483,7 @@ async function presetDanglingZero() {
 
 .rc-object-freed {
   opacity: 0.3;
-  background: rgba(239, 68, 68, 0.05);
+  background: rgb(239 68 68 / 5%);
   text-decoration: line-through;
 }
 

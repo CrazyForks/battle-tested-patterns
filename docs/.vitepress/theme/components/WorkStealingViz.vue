@@ -281,7 +281,7 @@ function presetOneWorker() {
   padding: 1rem 0;
 }
 
-@media (max-width: 640px) {
+@media (width <= 640px) {
   .ws-workers {
     flex-direction: column;
   }
@@ -297,7 +297,7 @@ function presetOneWorker() {
 }
 
 .ws-worker-stealing {
-  box-shadow: 0 0 12px rgba(245, 158, 11, 0.4);
+  box-shadow: 0 0 12px rgb(245 158 11 / 40%);
   animation: ws-steal-flash 0.4s ease;
 }
 
@@ -373,9 +373,11 @@ function presetOneWorker() {
   0% {
     background: var(--vp-c-bg);
   }
+
   50% {
-    background: rgba(245, 158, 11, 0.1);
+    background: rgb(245 158 11 / 10%);
   }
+
   100% {
     background: var(--vp-c-bg);
   }

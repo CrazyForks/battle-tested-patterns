@@ -796,7 +796,7 @@ function linkFor(entry: TimelineEntry) {
   margin-top: 0.125rem;
 }
 
-@media (max-width: 640px) {
+@media (width <= 640px) {
   .tl-line {
     left: 16px;
   }

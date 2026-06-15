@@ -679,7 +679,7 @@ async function presetSameMethodDifferentImpl() {
 }
 
 .vt-obj-active {
-  box-shadow: 0 0 14px rgba(59, 130, 246, 0.25);
+  box-shadow: 0 0 14px rgb(59 130 246 / 25%);
 }
 
 .vt-obj-name {
@@ -721,7 +721,7 @@ async function presetSameMethodDifferentImpl() {
   font-family: var(--vp-font-family-mono);
   font-weight: 700;
   color: var(--viz-primary);
-  background: rgba(59, 130, 246, 0.08);
+  background: rgb(59 130 246 / 8%);
   padding: 1px 6px;
   border-radius: var(--viz-radius-sm);
 }
@@ -761,7 +761,7 @@ async function presetSameMethodDifferentImpl() {
 }
 
 .vt-vtable-active {
-  box-shadow: 0 0 14px rgba(59, 130, 246, 0.25);
+  box-shadow: 0 0 14px rgb(59 130 246 / 25%);
 }
 
 .vt-vtable-header {
@@ -844,7 +844,7 @@ async function presetSameMethodDifferentImpl() {
 .vt-func-active {
   border-color: var(--viz-success);
   border-style: solid;
-  box-shadow: 0 0 14px rgba(34, 197, 94, 0.25);
+  box-shadow: 0 0 14px rgb(34 197 94 / 25%);
   animation: viz-fade 0.4s ease;
 }
 
@@ -1014,7 +1014,7 @@ async function presetSameMethodDifferentImpl() {
   font-weight: 700;
 }
 
-@media (max-width: 640px) {
+@media (width <= 640px) {
   .vt-controls {
     flex-direction: column;
     align-items: stretch;
