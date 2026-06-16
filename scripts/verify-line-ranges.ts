@@ -18,7 +18,13 @@
 
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { discoverPatterns, discoverCaseStudies, extractSections, ROOT } from './lib/patterns.js';
+import {
+  discoverPatterns,
+  discoverCaseStudies,
+  discoverByProject,
+  extractSections,
+  ROOT,
+} from './lib/patterns.js';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -77,6 +83,7 @@ function parseProductionProofLinks(
   content: string,
   patternSlug: string,
   checkAll: boolean,
+  allSections = false,
 ): ParsedLink[] {
   const links: ParsedLink[] = [];
   const sections = extractSections(content);
@@ -88,6 +95,10 @@ function parseProductionProofLinks(
     } else if (/More Production Uses|更多生产案例/.test(section.heading)) {
       sectionType = 'more-uses';
     }
+
+    // By-project pages put source links in ordinary tables (no Production Proof
+    // heading). In allSections mode, treat every section's SHA links as proofs.
+    if (allSections && !sectionType) sectionType = 'proof';
 
     if (!sectionType) continue;
     if (sectionType === 'more-uses' && !checkAll) continue;
@@ -305,6 +316,7 @@ async function main() {
 
   const patterns = discoverPatterns();
   const caseStudies = discoverCaseStudies();
+  const byProject = discoverByProject();
   const sources = [...patterns, ...caseStudies];
   const allLinks: ParsedLink[] = [];
 
@@ -315,13 +327,22 @@ async function main() {
     allLinks.push(...links);
   }
 
+  // By-project pages keep their source links in ordinary tables (no Production
+  // Proof heading), so parse every section's SHA links via allSections mode.
+  for (const source of byProject) {
+    if (patternFilter && source.slug !== patternFilter) continue;
+    const content = readFileSync(source.enPath, 'utf-8');
+    const links = parseProductionProofLinks(content, source.slug, sectionAll, true);
+    allLinks.push(...links);
+  }
+
   if (allLinks.length === 0) {
     console.log('No SHA links with line numbers found.');
     process.exit(0);
   }
 
   console.log(
-    `Found ${allLinks.length} SHA link(s) to verify across ${patterns.length} patterns and ${caseStudies.length} case studies.`,
+    `Found ${allLinks.length} SHA link(s) to verify across ${patterns.length} patterns, ${caseStudies.length} case studies, and ${byProject.length} by-project pages.`,
   );
 
   // Load cache

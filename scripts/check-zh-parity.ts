@@ -20,6 +20,7 @@ import { readFileSync } from 'node:fs';
 import {
   discoverPatterns,
   discoverCaseStudies,
+  discoverByProject,
   extractCodeBlocks,
   extractSections,
   extractGitHubLinks,
@@ -204,7 +205,8 @@ function main(): void {
 
   const patterns = discoverPatterns();
   const caseStudies = discoverCaseStudies();
-  const all = [...patterns, ...caseStudies];
+  const byProject = discoverByProject();
+  const all = [...patterns, ...caseStudies, ...byProject];
   const filtered = filterPattern ? all.filter((p) => p.slug === filterPattern) : all;
 
   if (filtered.length === 0) {
@@ -213,7 +215,7 @@ function main(): void {
   }
 
   console.log(
-    `Checking ${patterns.length} pattern(s) + ${caseStudies.length} case study(ies)...\n`,
+    `Checking ${patterns.length} pattern(s) + ${caseStudies.length} case study(ies) + ${byProject.length} by-project page(s)...\n`,
   );
 
   for (const pf of filtered) {

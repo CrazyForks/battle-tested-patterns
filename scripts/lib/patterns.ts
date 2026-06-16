@@ -18,6 +18,8 @@ export const PATTERNS_DIR = join(DOCS_DIR, 'patterns');
 export const ZH_PATTERNS_DIR = join(DOCS_DIR, 'zh/patterns');
 export const CASE_STUDIES_DIR = join(DOCS_DIR, 'case-studies');
 export const ZH_CASE_STUDIES_DIR = join(DOCS_DIR, 'zh/case-studies');
+export const BY_PROJECT_DIR = join(DOCS_DIR, 'by-project');
+export const ZH_BY_PROJECT_DIR = join(DOCS_DIR, 'zh/by-project');
 
 // ─── Pattern Discovery ───────────────────────────────────────────────────────
 
@@ -70,6 +72,29 @@ export function discoverCaseStudies(): PatternFile[] {
     studies.push({ slug, enPath, zhPath, hasZh });
   }
   return studies;
+}
+
+/**
+ * Discover all by-project pages and their EN/ZH file paths.
+ *
+ * By-project pages are single files (docs/by-project/<slug>.md). They reuse the
+ * PatternFile shape so the existing verification tooling (line-range checks,
+ * EN/ZH parity) can process them uniformly.
+ */
+export function discoverByProject(): PatternFile[] {
+  const pages: PatternFile[] = [];
+  if (!statSync(BY_PROJECT_DIR, { throwIfNoEntry: false })?.isDirectory()) return pages;
+
+  for (const entry of readdirSync(BY_PROJECT_DIR).sort()) {
+    if (!entry.endsWith('.md')) continue;
+    const slug = entry.replace(/\.md$/, '');
+    const enPath = join(BY_PROJECT_DIR, entry);
+    const zhPath = join(ZH_BY_PROJECT_DIR, entry);
+    if (!statSync(enPath, { throwIfNoEntry: false })?.isFile()) continue;
+    const hasZh = !!statSync(zhPath, { throwIfNoEntry: false })?.isFile();
+    pages.push({ slug, enPath, zhPath, hasZh });
+  }
+  return pages;
 }
 
 /**
