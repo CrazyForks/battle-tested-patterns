@@ -19,6 +19,7 @@
 import { readFileSync } from 'node:fs';
 import {
   discoverPatterns,
+  discoverCaseStudies,
   extractCodeBlocks,
   extractSections,
   extractGitHubLinks,
@@ -202,14 +203,18 @@ function main(): void {
   console.log('check-zh-parity: Verifying EN/ZH content parity...\n');
 
   const patterns = discoverPatterns();
-  const filtered = filterPattern ? patterns.filter((p) => p.slug === filterPattern) : patterns;
+  const caseStudies = discoverCaseStudies();
+  const all = [...patterns, ...caseStudies];
+  const filtered = filterPattern ? all.filter((p) => p.slug === filterPattern) : all;
 
   if (filtered.length === 0) {
     console.error(`No patterns found${filterPattern ? ` matching "${filterPattern}"` : ''}`);
     process.exit(1);
   }
 
-  console.log(`Checking ${filtered.length} pattern(s)...\n`);
+  console.log(
+    `Checking ${patterns.length} pattern(s) + ${caseStudies.length} case study(ies)...\n`,
+  );
 
   for (const pf of filtered) {
     checkParity(pf);

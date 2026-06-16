@@ -27,6 +27,8 @@ The key insight: **these patterns are not independent features — they form a p
 
 See [Pattern Connections](/guide/pattern-connections) for the full interactive composition diagram.
 
+For a deep dive into how three of these patterns interlock — bitmask, min-heap, and cooperative scheduling — with every claim backed by source code, read the [React Fiber case study](/case-studies/react-fiber).
+
 ## More Patterns in React
 
 | Pattern | Where in React | What It Does |

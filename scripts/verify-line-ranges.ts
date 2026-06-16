@@ -18,7 +18,7 @@
 
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { discoverPatterns, extractSections, ROOT } from './lib/patterns.js';
+import { discoverPatterns, discoverCaseStudies, extractSections, ROOT } from './lib/patterns.js';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -304,12 +304,14 @@ async function main() {
   console.log('verify-line-ranges: Checking Production Proof line number content...\n');
 
   const patterns = discoverPatterns();
+  const caseStudies = discoverCaseStudies();
+  const sources = [...patterns, ...caseStudies];
   const allLinks: ParsedLink[] = [];
 
-  for (const pattern of patterns) {
-    if (patternFilter && pattern.slug !== patternFilter) continue;
-    const content = readFileSync(pattern.enPath, 'utf-8');
-    const links = parseProductionProofLinks(content, pattern.slug, sectionAll);
+  for (const source of sources) {
+    if (patternFilter && source.slug !== patternFilter) continue;
+    const content = readFileSync(source.enPath, 'utf-8');
+    const links = parseProductionProofLinks(content, source.slug, sectionAll);
     allLinks.push(...links);
   }
 
@@ -318,7 +320,9 @@ async function main() {
     process.exit(0);
   }
 
-  console.log(`Found ${allLinks.length} SHA link(s) to verify across ${patterns.length} patterns.`);
+  console.log(
+    `Found ${allLinks.length} SHA link(s) to verify across ${patterns.length} patterns and ${caseStudies.length} case studies.`,
+  );
 
   // Load cache
   const cache = loadCache();

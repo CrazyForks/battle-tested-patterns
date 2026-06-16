@@ -16,6 +16,8 @@ export const ROOT = join(import.meta.dirname, '../..');
 export const DOCS_DIR = join(ROOT, 'docs');
 export const PATTERNS_DIR = join(DOCS_DIR, 'patterns');
 export const ZH_PATTERNS_DIR = join(DOCS_DIR, 'zh/patterns');
+export const CASE_STUDIES_DIR = join(DOCS_DIR, 'case-studies');
+export const ZH_CASE_STUDIES_DIR = join(DOCS_DIR, 'zh/case-studies');
 
 // ─── Pattern Discovery ───────────────────────────────────────────────────────
 
@@ -45,6 +47,29 @@ export function discoverPatterns(): PatternFile[] {
     patterns.push({ slug, enPath, zhPath, hasZh });
   }
   return patterns;
+}
+
+/**
+ * Discover all case studies and their EN/ZH file paths.
+ *
+ * Case studies are single files (docs/case-studies/<slug>.md) rather than
+ * directories. They reuse the PatternFile shape so the existing verification
+ * tooling (line-range checks, EN/ZH parity) can process them uniformly.
+ */
+export function discoverCaseStudies(): PatternFile[] {
+  const studies: PatternFile[] = [];
+  if (!statSync(CASE_STUDIES_DIR, { throwIfNoEntry: false })?.isDirectory()) return studies;
+
+  for (const entry of readdirSync(CASE_STUDIES_DIR).sort()) {
+    if (!entry.endsWith('.md')) continue;
+    const slug = entry.replace(/\.md$/, '');
+    const enPath = join(CASE_STUDIES_DIR, entry);
+    const zhPath = join(ZH_CASE_STUDIES_DIR, entry);
+    if (!statSync(enPath, { throwIfNoEntry: false })?.isFile()) continue;
+    const hasZh = !!statSync(zhPath, { throwIfNoEntry: false })?.isFile();
+    studies.push({ slug, enPath, zhPath, hasZh });
+  }
+  return studies;
 }
 
 /**
