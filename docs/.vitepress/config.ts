@@ -302,7 +302,10 @@ export default defineConfig({
           '/case-studies/': [
             {
               text: 'Case Studies',
-              items: [{ text: 'React Fiber: Three Patterns', link: '/case-studies/react-fiber' }],
+              items: [
+                { text: 'React Fiber: Three Patterns', link: '/case-studies/react-fiber' },
+                { text: 'Git Commit: Three Patterns', link: '/case-studies/git-commit' },
+              ],
             },
           ],
         },
@@ -456,7 +459,10 @@ export default defineConfig({
           '/zh/case-studies/': [
             {
               text: '案例研究',
-              items: [{ text: 'React Fiber：三种模式', link: '/zh/case-studies/react-fiber' }],
+              items: [
+                { text: 'React Fiber：三种模式', link: '/zh/case-studies/react-fiber' },
+                { text: 'Git Commit：三种模式', link: '/zh/case-studies/git-commit' },
+              ],
             },
           ],
         },
