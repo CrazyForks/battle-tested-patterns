@@ -110,6 +110,7 @@ Standard Operating Procedures live in `.sop/`. Read them before:
 - Difficulty classification criteria → `.sop/11-difficulty-classification.md`
 - Related Patterns bidirectionality → `.sop/12-related-patterns-audit.md`
 - Content quality audit methodology → `.sop/13-content-quality-audit.md`
+- Writing multi-pattern case studies (evidence grading, composition proof, dual-perspective review) → `.sop/15-case-study.md`
 
 ## Node Version
 

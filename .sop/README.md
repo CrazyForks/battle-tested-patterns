@@ -19,3 +19,4 @@ Follow the relevant SOP before starting work to ensure consistency and quality.
 | 12 | [Related Patterns Audit](12-related-patterns-audit.md) | Verifying bidirectional Related Patterns links |
 | 13 | [Content Quality Audit](13-content-quality-audit.md) | Multi-dimensional quality audit (EN/ZH sync, diagrams, property tables) |
 | 14 | [Lint & Format Toolchain](14-lint-toolchain.md) | ESLint/Stylelint/Prettier/lint-staged config, rule-disable decisions, pitfalls |
+| 15 | [Case Study Authoring](15-case-study.md) | Writing multi-pattern case studies (evidence grading, composition proof, dual-perspective review) |
