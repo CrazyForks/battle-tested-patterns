@@ -4,6 +4,22 @@ All notable changes to this project will be documented in this file.
 
 See [commit history](https://github.com/Totoro-jam/battle-tested-patterns/commits/main) for detailed changes.
 
+## [1.14.0](https://github.com/Totoro-jam/battle-tested-patterns/compare/v1.13.0...v1.14.0) (2026-06-16)
+
+
+### Features
+
+* **theme:** add mobile back-to-top button and sticky navigation ([e5c08cb](https://github.com/Totoro-jam/battle-tested-patterns/commit/e5c08cb255e869687e4e978d2eb85a80e5ca5885))
+
+
+### Bug Fixes
+
+* **docs:** use &lt;div&gt; not &lt;p&gt; to wrap markdown, preventing invalid nesting ([c477570](https://github.com/Totoro-jam/battle-tested-patterns/commit/c477570d93eed3f93bf81e7a18d0b2ce8b361130))
+* **theme:** give pinned mobile navbar an opaque background ([635d46b](https://github.com/Totoro-jam/battle-tested-patterns/commit/635d46b66e6ddd91faae2280582ec9948a437b99))
+* **viz:** commit time-travel snapshot for missing write ops ([b66effa](https://github.com/Totoro-jam/battle-tested-patterns/commit/b66effaf1b34900ae2a8c365c14a3ae7574583f0))
+* **viz:** correct time-travel label and clear stale read panel ([b143752](https://github.com/Totoro-jam/battle-tested-patterns/commit/b143752c5c652acaf00e36fc401b7ef3c21cc54c))
+* **viz:** include structural fields in time-travel snapshots ([967eb80](https://github.com/Totoro-jam/battle-tested-patterns/commit/967eb804c6a9ab1ead26fd9c299a371deae4cf95))
+
 ## [1.13.0](https://github.com/Totoro-jam/battle-tested-patterns/compare/v1.12.0...v1.13.0) (2026-06-14)
 
 
