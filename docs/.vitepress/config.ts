@@ -171,6 +171,7 @@ export default defineConfig({
           { text: 'Guide', link: '/guide/what-is-this' },
           { text: 'Patterns', link: '/patterns/' },
           { text: 'By Project', link: '/by-project/react' },
+          { text: 'Case Studies', link: '/case-studies/react-fiber' },
         ],
         sidebar: {
           '/guide/': [
@@ -298,6 +299,12 @@ export default defineConfig({
               ],
             },
           ],
+          '/case-studies/': [
+            {
+              text: 'Case Studies',
+              items: [{ text: 'React Fiber: Three Patterns', link: '/case-studies/react-fiber' }],
+            },
+          ],
         },
       },
     },
@@ -309,6 +316,7 @@ export default defineConfig({
           { text: '指南', link: '/zh/guide/what-is-this' },
           { text: '模式', link: '/zh/patterns/' },
           { text: '按项目', link: '/zh/by-project/react' },
+          { text: '案例研究', link: '/zh/case-studies/react-fiber' },
         ],
         sidebar: {
           '/zh/guide/': [
@@ -443,6 +451,12 @@ export default defineConfig({
                 { text: '分布式系统', link: '/zh/by-project/distributed-systems' },
                 { text: '更多项目', link: '/zh/by-project/more-projects' },
               ],
+            },
+          ],
+          '/zh/case-studies/': [
+            {
+              text: '案例研究',
+              items: [{ text: 'React Fiber：三种模式', link: '/zh/case-studies/react-fiber' }],
             },
           ],
         },
