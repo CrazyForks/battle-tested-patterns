@@ -53,8 +53,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       SITEMAP_URL: https://totoro-jam.github.io/battle-tested-patterns/sitemap.xml
-      INDEXNOW_KEY: a0d801eb69781b2720749052ca824452
-      KEY_LOCATION: https://totoro-jam.github.io/battle-tested-patterns/a0d801eb69781b2720749052ca824452.txt
+      INDEXNOW_KEY: bfcd2abc8abd4e40a52162ce5d705972
+      KEY_LOCATION: https://totoro-jam.github.io/battle-tested-patterns/bfcd2abc8abd4e40a52162ce5d705972.txt
       HOST: totoro-jam.github.io
     steps:
       - name: Submit URLs to IndexNow
