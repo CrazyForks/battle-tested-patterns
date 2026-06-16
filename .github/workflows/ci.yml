@@ -51,6 +51,12 @@ jobs:
           python-version: '3.12'
       - run: pnpm install --frozen-lockfile
       - run: pnpm verify-code
+        # Compile untrusted PR code blocks offline so a malicious snippet cannot
+        # pull a dependency at build time (defence-in-depth; see security-audit SEC-M1).
+        env:
+          GOPROXY: 'off'
+          GOFLAGS: '-mod=mod'
+          CARGO_NET_OFFLINE: 'true'
 
   test-ts:
     name: Test (TypeScript)
