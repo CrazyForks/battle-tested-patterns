@@ -219,6 +219,7 @@ function growPool() {
     `Pool grown by ${GROW_AMOUNT} — now ${poolSize.value} total capacity`,
     `池扩容 ${GROW_AMOUNT} 个 — 当前总容量 ${poolSize.value}`,
   );
+  history.commit(snapshotPool(), `grow pool (+${GROW_AMOUNT})`);
 }
 
 function reset() {

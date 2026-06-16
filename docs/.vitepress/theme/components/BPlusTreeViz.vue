@@ -202,6 +202,8 @@ function loadDemo() {
     'Demo loaded: 9 keys inserted. Notice the balanced structure — all leaves at the same depth. This is the B+ tree invariant.',
     '示例已加载：已插入 9 个键。注意平衡结构 — 所有叶子在同一深度。这是 B+ 树的不变量。',
   );
+  log(message.value, 'info');
+  commitSnapshot('load demo (9 keys)');
 }
 
 async function presetSplitDemo() {

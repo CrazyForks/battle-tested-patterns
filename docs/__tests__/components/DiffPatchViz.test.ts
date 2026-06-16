@@ -46,4 +46,19 @@ describe('DiffPatchViz', () => {
     const wrapper = mount(DiffPatchViz);
     expect(wrapper.find('.viz-presets').exists()).toBe(true);
   });
+
+  it('modify records a time-travel step (regression: modify must commit)', async () => {
+    const wrapper = mount(DiffPatchViz);
+    // Before any write the playback bar is hidden (only the initial snapshot).
+    expect(wrapper.find('.viz-playback__counter').exists()).toBe(false);
+
+    await clickButton(wrapper, ['Modify', '修改']);
+    await flushPromises();
+
+    // modify() changes modifiedLines/diffResult/hasDiff/patched — it must commit
+    // so the edited state is reachable via time travel (counter shows 2/2).
+    const counter = wrapper.find('.viz-playback__counter');
+    expect(counter.exists()).toBe(true);
+    expect(counter.text()).toBe('2/2');
+  });
 });

@@ -120,6 +120,7 @@ function modify() {
     'Modified panel updated — click "Diff" to compute the LCS-based diff. This is the same algorithm git uses internally.',
     '修改面板已更新 — 点击"Diff"计算基于 LCS 的差异。这与 git 内部使用的算法相同。',
   );
+  commitSnapshot('modify');
 }
 
 function computeDiff() {

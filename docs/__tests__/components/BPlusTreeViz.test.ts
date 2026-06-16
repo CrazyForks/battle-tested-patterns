@@ -43,4 +43,19 @@ describe('BPlusTreeViz', () => {
     const wrapper = mount(BPlusTreeViz);
     expect(wrapper.find('.viz-presets').exists()).toBe(true);
   });
+
+  it('load demo records a time-travel step (regression: loadDemo must commit)', async () => {
+    const wrapper = mount(BPlusTreeViz);
+    // Before any write the playback bar is hidden (only the initial snapshot).
+    expect(wrapper.find('.viz-playback__counter').exists()).toBe(false);
+
+    await clickButton(wrapper, ['Demo', '示例']);
+    await flushPromises();
+
+    // loadDemo resets history then inserts 9 keys; it must commit one snapshot
+    // so the loaded tree is reachable via time travel (counter shows 2/2).
+    const counter = wrapper.find('.viz-playback__counter');
+    expect(counter.exists()).toBe(true);
+    expect(counter.text()).toBe('2/2');
+  });
 });

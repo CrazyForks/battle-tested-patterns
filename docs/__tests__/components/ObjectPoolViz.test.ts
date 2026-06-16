@@ -47,4 +47,18 @@ describe('ObjectPoolViz', () => {
     const presets = wrapper.find('.viz-presets');
     expect(presets.exists()).toBe(true);
   });
+
+  it('grow pool records a time-travel step (regression: growPool must commit)', async () => {
+    const wrapper = mount(ObjectPoolViz);
+    // Before any write the playback bar is hidden (only the initial snapshot).
+    expect(wrapper.find('.viz-playback__counter').exists()).toBe(false);
+
+    await clickButton(wrapper, ['Grow Pool +2', '扩容 +2']);
+
+    // After growing, the bar appears and the counter shows step 2 of 2
+    // (initial snapshot + the grow snapshot) — proving growPool committed.
+    const counter = wrapper.find('.viz-playback__counter');
+    expect(counter.exists()).toBe(true);
+    expect(counter.text()).toBe('2/2');
+  });
 });
