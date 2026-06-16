@@ -4,7 +4,7 @@ import { join } from 'node:path';
 const ROOT = join(import.meta.dirname, '..');
 const DOCS_DIR = join(ROOT, 'docs');
 const ROOT_READMES = ['README.md', 'README.zh-CN.md'].map((f) => join(ROOT, f));
-const GITHUB_URL_RE = /https:\/\/github\.com\/[^\s)>\]]+/g;
+const GITHUB_URL_RE = /https:\/\/github\.com\/[^\s)>\]"']+/g;
 
 interface LinkResult {
   file: string;
@@ -44,7 +44,7 @@ function extractLinks(content: string): Array<{ url: string; isProductionProof: 
 
     const urls = line.match(GITHUB_URL_RE) || [];
     for (const rawUrl of urls) {
-      const url = rawUrl.replace(/[)>\]]+$/, '');
+      const url = rawUrl.replace(/[)>\]"']+$/, '');
       links.push({ url, isProductionProof: inProofSection });
     }
   }
