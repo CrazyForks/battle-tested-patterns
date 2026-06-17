@@ -77,6 +77,16 @@ trustworthy:
 - **No bundling.** Do not paraphrase a single file as evidence for an
   architectural argument it does not itself make.
 
+**Prefer an in-source design comment over a redirecting short link.** Many
+projects keep an authoritative design narrative *inside* the source tree (e.g.
+the G/M/P header comment in Go's `runtime/proc.go`, or a `HACKING.md`). These
+are L1 (`source-code`, SHA-pinned, HTTP 200) and never break. Avoid official
+"short links" that 302-redirect to Google Docs or moved pages (e.g.
+`go.dev/s/go11sched`): `verify-links` will flag them as non-200, and they rot.
+If an in-source comment states the design, cite *that* as the composition
+evidence; reserve external `official-doc` links for material with no in-tree
+equivalent.
+
 ## 3. Version / Commit Locking
 
 Source code drifts; SHA permalinks do not. Every source link MUST be a SHA
@@ -131,6 +141,9 @@ study complete until both pass.
 - [ ] Are composition claims backed by design-level evidence, not hand-waving?
 - [ ] Would I, as a maintainer of this system, sign off on this description?
 - [ ] Are inferred claims honestly labelled and not overstated?
+- [ ] Are precise technical terms used consistently — even in mental-model and
+      colloquial passages? (e.g. Go shards per **P** (logical processor), not
+      per "worker"/M (thread); conflating the two misleads expert readers.)
 
 ## 6. Toolchain Integration
 
@@ -155,6 +168,13 @@ Notes on how the verifiers see case studies:
   a SHA bump.
 - Case studies are bilingual: keep `docs/case-studies/<slug>.md` and
   `docs/zh/case-studies/<slug>.md` structurally in sync (`check:content`).
+- `verify-lines` derives expected keywords from the file *slug*. For a case
+  study (slug `go-scheduler`) or a catch-all by-project page (slug
+  `more-projects`), the cited code rarely contains the slug as a literal string,
+  so a **"No pattern keywords found" warning is expected and non-blocking** —
+  it never exits non-zero. Only a `fail` (line range out of bounds) or `error`
+  (fetch failure) blocks. Confirm such warnings are false positives by opening
+  the link, then ignore them.
 
 ## 7. Authoring Checklist (run top to bottom)
 

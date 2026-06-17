@@ -219,7 +219,7 @@ A path from "I read this" to "I can recognise these patterns anywhere":
    and contrast its cooperative scheduler with Go's. Same pattern, different
    constraints (browser frame budget vs. OS threads).
 5. **Practise the recognition** — open the three pattern pages below and look for
-   "shard by worker, lock-free fast path, rare slow path" in another system.
+   "shard per P, lock-free fast path, rare slow path" in another system.
 
 ## Study These Patterns
 
