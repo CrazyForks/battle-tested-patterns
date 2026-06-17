@@ -305,6 +305,7 @@ export default defineConfig({
               items: [
                 { text: 'React Fiber: Three Patterns', link: '/case-studies/react-fiber' },
                 { text: 'Git Commit: Three Patterns', link: '/case-studies/git-commit' },
+                { text: 'Go Scheduler: Three Patterns', link: '/case-studies/go-scheduler' },
               ],
             },
           ],
@@ -462,6 +463,7 @@ export default defineConfig({
               items: [
                 { text: 'React Fiber：三种模式', link: '/zh/case-studies/react-fiber' },
                 { text: 'Git Commit：三种模式', link: '/zh/case-studies/git-commit' },
+                { text: 'Go 调度器：三种模式', link: '/zh/case-studies/go-scheduler' },
               ],
             },
           ],
