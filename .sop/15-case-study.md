@@ -42,6 +42,27 @@ A case study's **per-pattern** claims must reach **L1**. Architecture-level
 *composition* claims (how the patterns fit together) may rest on L2/L3 but MUST
 be labelled (see §4).
 
+## 0. Research Prerequisite: 20 sources before you write
+
+Before drafting a case study, **research 20 pieces of content the community and
+practitioners regard as authoritative/high-quality** for the chosen topic.
+Acceptable sources: official documentation, articles or conference talks by core
+maintainers, canonical books (DDIA, CSAPP, *The Linux Programming Interface*,
+…), peer-reviewed papers, and top-tier engineering blogs. The goal is to absorb
+how experts explain the system *before* writing, so the prose reaches the
+"senior architect + domain expert" bar.
+
+Then, for any source whose **topical match to your case study is > 80%**, add a
+link to it in the case study's **Further Reading** section. Every such link must
+be HTTP-200 verifiable (run `pnpm verify-links` after). Further Reading is not a
+dumping ground — it is the curated subset (typically 3–6 links) of those 20 that
+a reader should actually follow to go deeper, ordered as a learning path (§ the
+"Further Reading" convention the existing studies follow).
+
+> Rationale: depth comes from reading widely first. A case study written from a
+> single source reads thin; one distilled from 20 authoritative sources reads
+> like an expert wrote it.
+
 ## 1. Evidence Type Labelling
 
 Every source in a case study's evidence table carries an explicit evidence type.
@@ -179,6 +200,7 @@ Notes on how the verifiers see case studies:
 ## 7. Authoring Checklist (run top to bottom)
 
 - [ ] Topic chosen: a real system composing ≥ 2 documented patterns
+- [ ] Researched 20 authoritative sources first; >80%-match ones added to Further Reading (§0)
 - [ ] Each pattern claim has its own `source-code` SHA permalink (§2)
 - [ ] Composition claim has design-level evidence (RFC/doc/talk) (§2)
 - [ ] Every source is labelled with an evidence type (§1)

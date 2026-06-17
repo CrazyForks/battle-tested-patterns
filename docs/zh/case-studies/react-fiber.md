@@ -184,6 +184,7 @@ lane priority (bitmask)
 3. **跟随 React 18 的推理** —— [React 18 Working Group #27](https://github.com/reactwg/react-18/discussions/27) 展示了 React 团队关于协作式渲染与时间切片的原话。
 4. **然后按这个顺序读源码** —— flags（[ReactFiberFlags.js](https://github.com/facebook/react/blob/34b78a2897cc208260a88e6b62ecaf9ca2a9dfe4/packages/react-reconciler/src/ReactFiberFlags.js#L14-L36)）→ 它们如何冒泡（[bubbleProperties](https://github.com/facebook/react/blob/34b78a2897cc208260a88e6b62ecaf9ca2a9dfe4/packages/react-reconciler/src/ReactFiberCompleteWork.js#L791-L815)）→ 堆（[SchedulerMinHeap.js](https://github.com/facebook/react/blob/34b78a2897cc208260a88e6b62ecaf9ca2a9dfe4/packages/scheduler/src/SchedulerMinHeap.js#L17-L90)）→ 把它们串起来的循环（[Scheduler.js workLoop](https://github.com/facebook/react/blob/34b78a2897cc208260a88e6b62ecaf9ca2a9dfe4/packages/scheduler/src/forks/Scheduler.js#L188-L258)）。在建立模型*之后*再读代码，意味着每个函数都在印证你已经预期的东西，而不是一堵陌生名字砌成的墙。
 5. **练习这种识别力** —— 打开下面三个模式页并完成它们的练习；然后试着在你熟悉的另一个系统里，找出同样的三种角色（数据 / 排序 / 控制流）。
+6. **深入心智模型** —— Dan Abramov（React 核心作者）的 [React as a UI Runtime](https://overreacted.io/react-as-a-ui-runtime/) 把整个协调器框定为一个运行时，这会让你瞬间想通 Fiber *为什么*需要这三种模式。
 
 ## 延伸学习这些模式
 

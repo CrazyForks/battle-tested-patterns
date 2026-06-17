@@ -232,6 +232,10 @@ A path from "I read this" to "I can recognise these patterns anywhere":
 5. **Practise the recognition** — open the three pattern pages below and look for
    "struct of function pointers", "flags packed in an int", and "free on last
    release" in another system you know.
+6. **Read the reference-count primer** — the kernel's official
+   [kref documentation](https://www.kernel.org/doc/html/latest/core-api/kref.html)
+   explains the get/put discipline and the classic pitfalls, complementing the
+   `f_count` note above.
 
 ## Study These Patterns
 

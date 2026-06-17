@@ -223,6 +223,10 @@ A path from "I read this" to "I can recognise these patterns anywhere":
    constraints (browser frame budget vs. OS threads).
 5. **Practise the recognition** — open the three pattern pages below and look for
    "shard per P, lock-free fast path, rare slow path" in another system.
+6. **Read the runtime's own notes** — the
+   [runtime/HACKING.md](https://github.com/golang/go/blob/f5cdf4745455415c7a43cfc7d925214d4511489b/src/runtime/HACKING.md)
+   document explains the scheduler's conventions (Ps, Ms, work, parking) in the
+   maintainers' own words.
 
 ## Study These Patterns
 

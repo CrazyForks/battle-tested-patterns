@@ -149,6 +149,7 @@ read(fd, buf, n)
 3. **本地动手实验** —— 运行 `stat -c '%a %A' somefile` 看同一个 mode 既显示为八进制*又*显示为 `rwx` 字母，然后 `ls -l /proc/self/fd` 观察引用计数如何让"已删除但仍打开"的文件保活。
 4. **跨系统对比** —— 阅读 [Go 调度器案例研究](/zh/case-studies/go-scheduler)，注意 Go 的接口分发如何扮演与内核 vtable 相同的角色。同样的模式，不同的语言。
 5. **练习这种识别力** —— 打开下面三个模式页，在你熟悉的另一个系统里寻找"函数指针结构体""打包进一个整数的标志""在最后一次释放时回收"。
+6. **读引用计数入门** —— 内核官方的 [kref 文档](https://www.kernel.org/doc/html/latest/core-api/kref.html) 解释了 get/put 的纪律和经典陷阱，与上文的 `f_count` 说明互为补充。
 
 ## 延伸学习这些模式
 

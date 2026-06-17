@@ -140,6 +140,7 @@ commit hash = fingerprint of the entire reachable tree (Merkle DAG)
 2. **然后按这个顺序读源码** —— 内容哈希（[object-file.c](https://github.com/git/git/blob/1ff279f3404a482a83fb04c7457e41ab26884aea/object-file.c#L719-L730)）→ tree 如何把子节点哈希向上折叠（[cache-tree.c](https://github.com/git/git/blob/1ff279f3404a482a83fb04c7457e41ab26884aea/cache-tree.c#L435-L458)）→ 按需 diff（[diff.c](https://github.com/git/git/blob/1ff279f3404a482a83fb04c7457e41ab26884aea/diff.c#L5020-L5060)）。
 3. **本地动手实验** —— 运行 `git cat-file -p HEAD^{tree}` 看一个真实 tree 对象的条目，然后 `git hash-object` 一个文件、观察相同内容返回相同的名字。看到哈希保持稳定，会让写时复制和 Merkle 性质变得具体。
 4. **练习这种识别力** —— 打开下面三个模式页；然后在你熟悉的另一个系统里，寻找同样的三种角色（存储 / 完整性 / 比较），比如一个内容寻址缓存或一条区块链。
+5. **换个角度看它的讲解** —— Julia Evans 的 [Inside .git](https://jvns.ca/blog/2024/01/26/inside-git/) 交互式地走了一遍同一个对象模型，是阅读源码的绝佳补充。
 
 ## 延伸学习这些模式
 

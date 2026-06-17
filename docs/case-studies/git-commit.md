@@ -220,6 +220,9 @@ A path from "I read this" to "I can recognise these patterns anywhere":
 4. **Practise the recognition** — open the three pattern pages below; then look
    for the same three roles (storage / integrity / comparison) in another system
    you know, such as a content-addressed cache or a blockchain.
+5. **See it explained from another angle** — Julia Evans'
+   [Inside .git](https://jvns.ca/blog/2024/01/26/inside-git/) walks the same
+   object model interactively, a great complement to reading the source.
 
 ## Study These Patterns
 

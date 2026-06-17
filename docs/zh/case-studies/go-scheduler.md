@@ -144,6 +144,7 @@ go func()  ──► enqueue G on current P's local run queue
 3. **然后按这个顺序读源码** —— per-P 循环（[schedule](https://github.com/golang/go/blob/f5cdf4745455415c7a43cfc7d925214d4511489b/src/runtime/proc.go#L4143-L4200)）→ 空闲 P 如何再平衡（[stealWork](https://github.com/golang/go/blob/f5cdf4745455415c7a43cfc7d925214d4511489b/src/runtime/proc.go#L3836-L3903)）→ 把同一个 per-P 思想应用到内存（[sync.Pool](https://github.com/golang/go/blob/f5cdf4745455415c7a43cfc7d925214d4511489b/src/sync/pool.go#L52-L97)）。
 4. **跨语言对比** —— 阅读 [React Fiber 案例研究](/zh/case-studies/react-fiber)，把它的协作式调度器与 Go 的对比。同样的模式，不同的约束（浏览器帧预算 vs. OS 线程）。
 5. **练习这种识别力** —— 打开下面三个模式页，在你熟悉的另一个系统里寻找"按 P 分片、无锁快路径、罕见慢路径"。
+6. **读运行时自己的笔记** —— [runtime/HACKING.md](https://github.com/golang/go/blob/f5cdf4745455415c7a43cfc7d925214d4511489b/src/runtime/HACKING.md) 文档用维护者自己的话解释了调度器的约定（P、M、work、parking）。
 
 ## 延伸学习这些模式
 

@@ -294,6 +294,10 @@ codebase":
 5. **Practise the recognition** — open the three pattern pages below and do their
    exercises; then try to spot the same three roles (data / ordering /
    control-flow) in another system you know.
+6. **Go deeper into the mental model** — Dan Abramov's
+   [React as a UI Runtime](https://overreacted.io/react-as-a-ui-runtime/)
+   (a React core author) frames the whole reconciler as a runtime, which makes
+   *why* Fiber needs these three patterns click.
 
 ## Study These Patterns
 
