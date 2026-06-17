@@ -53,7 +53,11 @@ func schedule() {
 
 The loop's job is "what runs next on *this* thread". It first checks the P's own
 local run queue (the cheap, common case), then the global queue, and only if both
-are empty does it reach for the next pattern.
+are empty does it reach for the next pattern. (Two details for the curious: every
+61st scheduling tick it checks the global queue *first*, so a P that never
+empties its local queue cannot starve global work; and `findRunnable` also polls
+the network poller and may run a GC worker. The local→global→steal sketch is the
+spine, not the whole anatomy.)
 
 ::: tip Mental model
 Think of each P as a worker with its own to-do list (the local run queue).

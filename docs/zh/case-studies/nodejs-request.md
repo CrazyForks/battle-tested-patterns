@@ -99,7 +99,7 @@ function writeOrBuffer(stream, state, chunk, encoding, callback) {
 服务一个 HTTP 请求，三个模式以一个循环交接：
 
 1. **事件循环**（`uv_run`）阻塞在 `epoll` 里，直到客户端套接字有字节，然后运行该套接字的回调——没有线程被花在等待上。
-2. **观察者**（`emit`）把那次就绪转成具名事件：HTTP 解析器在请求上 emit `'data'` 和 `'end'`，你的 `on(...)` 监听器随之运行。
+2. **观察者**（`emit`）把那次就绪转成具名事件：请求流（`IncomingMessage`，一个由 `llhttp` 解析器驱动的 Readable）emit `'data'` 和 `'end'`，你的 `on(...)` 监听器随之运行。
 3. **背压**（`writeOrBuffer`）治理回复：当客户端慢时 `res.write()` 返回 `false`，于是处理器暂停直到 `'drain'`——而那个 `'drain'` 本身也是由循环经 emitter 送达的一个事件。
 
 ```text

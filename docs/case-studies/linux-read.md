@@ -84,9 +84,12 @@ bits.
 /* ...group (00070) and other (00007) follow the same layout... */
 ```
 
-A permission check is then a single masked compare — `mode & S_IRUSR` — rather
-than a structure walk. The same packed integer travels from the on-disk inode all
-the way to the syscall, and every check is one bitwise AND.
+The check happens at `open()` time, not on every `read()`: `inode_permission`
+compares the requested access against the inode's `i_mode` bits — a fast
+`mode & S_IRWXU`-style test that is the first gate (ACLs, capabilities, and
+LSMs can extend it). Once `open()` succeeds you hold an authorised `fd`, so the
+per-`read()` hot path pays no permission cost. The point stands: the common
+case is one bitwise AND, not a structure walk.
 
 ::: tip Mental model
 `rwxrwxrwx` is nine yes/no answers compressed into nine bits. "Can the owner

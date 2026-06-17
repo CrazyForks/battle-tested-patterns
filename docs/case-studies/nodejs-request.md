@@ -142,8 +142,9 @@ Serve one HTTP request and the three patterns hand off in a cycle:
 
 1. **Event loop** (`uv_run`) blocks in `epoll` until the client's socket has
    bytes, then runs the socket's callback — no thread was spent waiting.
-2. **Observer** (`emit`) turns that readiness into named events: the HTTP parser
-   emits `'data'` and `'end'` on the request, and your `on(...)` listeners run.
+2. **Observer** (`emit`) turns that readiness into named events: the request
+   stream (`IncomingMessage`, a Readable driven by the `llhttp` parser) emits
+   `'data'` and `'end'`, and your `on(...)` listeners run.
 3. **Backpressure** (`writeOrBuffer`) governs the reply: `res.write()` returns
    `false` when the client is slow, so the handler pauses until `'drain'` — and
    that `'drain'` is itself an event delivered by the loop via the emitter.
@@ -178,7 +179,7 @@ the "combined by design" claim is supported by that design-level material.
 
 ## Production Proof
 
-Source links are pinned to Node.js commit
+All source links are pinned to Node.js commit
 `19c46abbefdb8711b913d7237b3c1299367f87d7` (libuv code lives under `deps/uv`).
 Per-pattern claims are `source-code` (L1); the composition relationship is
 backed by official documentation (`official-doc`).
@@ -200,8 +201,8 @@ backed by official documentation (`official-doc`).
   connections not by doing work faster, but by never blocking the one thread it
   has — idle sockets are free.
 - **Backpressure is a contract, not magic.** `write()` returning `false` only
-  helps if the caller waits for `'drain'`. Ignoring it trades a thread-per-conn
-  problem for an out-of-memory one.
+  helps if the caller waits for `'drain'`. Ignoring it trades a
+  thread-per-connection problem for an out-of-memory one.
 - **This echoes the React Fiber and Go studies.** All three are cooperative,
   event/loop-driven schedulers; comparing how each yields and resumes sharpens
   the pattern across very different runtimes.

@@ -13,13 +13,14 @@ description: A deep dive into how React's Fiber reconciler combines bitmask flag
 
 ## The Problem Fiber Solves
 
-Before Fiber (React 15 and earlier), reconciliation was recursive and
-**synchronous**: once React started walking the component tree to compute
-updates, it could not stop until it finished. On a large tree, that single
-uninterruptible call stack could occupy the main thread for tens of
-milliseconds — long enough to drop animation frames, delay clicks, and make
-typing feel laggy. The browser has one main thread; if React holds it, nothing
-else (paint, input, layout) can happen.
+Before Fiber (React 15 and earlier), reconciliation — React's process of
+diffing the new component tree against the old one to decide which DOM nodes to
+change — was recursive and **synchronous**: once React started walking the
+component tree to compute updates, it could not stop until it finished. On a
+large tree, that single uninterruptible call stack could occupy the main thread
+for tens of milliseconds — long enough to drop animation frames, delay clicks,
+and introduce visible input latency. The browser has one main thread; if React
+holds it, nothing else (paint, input, layout) can happen.
 
 Fiber (shipped in React 16, refined through React 18) re-architected
 reconciliation around one idea: **make rendering interruptible**. To interrupt
@@ -110,13 +111,18 @@ export const DefaultLane  = 0b0000000000000000000000000100000;
 
 Because lanes are bits, React can hold *a set of pending priorities* in one
 integer, merge them with OR, and extract the most urgent with bit tricks
-(`getHighestPriorityLanes`). There are actually **two** priority layers here:
-the reconciler reasons in *lanes*, then maps the chosen lane to one of the
-Scheduler's coarse priority *levels* (e.g. `ImmediatePriority`,
-`NormalPriority`); the Scheduler turns that level into a concrete
-**expiration time**, which is the `sortIndex` its min-heap orders on. So the
-hand-off is: **bitmask (lanes) picks the priority; that priority maps to a
-Scheduler level; the heap orders by the resulting expiration time.**
+(`getHighestPriorityLanes`). The priority then flows through **three steps**
+before it reaches the heap:
+
+1. **lane** — the reconciler reasons in lanes (a bitmask).
+2. **Scheduler level** — the chosen lane maps to one of the Scheduler's coarse
+   priority levels (e.g. `ImmediatePriority`, `NormalPriority`).
+3. **expiration time** — the Scheduler turns that level into a concrete
+   expiration time, which becomes the task's `sortIndex` — the key the
+   min-heap (next section) orders on.
+
+So the hand-off is: **bitmask (lanes) picks the priority; the heap orders by the
+resulting expiration time.**
 
 → For the pattern in isolation, see [Bitmask](/patterns/bitmask/).
 
@@ -177,6 +183,11 @@ completion regardless (urgent work is never starved), while non-expired work
 yields the moment `shouldYieldToHost()` says the slice is up. The continuation
 is posted via `MessageChannel`, so the browser gets a real turn before React
 picks up where it left off.
+
+> The snippet above is simplified. The real condition also checks
+> `hasTimeRemaining`, and the ~5ms slice is `shouldYieldToHost()`'s own deadline
+> (the `frameInterval`), not the `expirationTime > currentTime` comparison —
+> that comparison only decides whether *this* task may be deferred at all.
 
 ::: tip Mental model
 Cooperative scheduling is "render a little, look up, render a little." Compare it

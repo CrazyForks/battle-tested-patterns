@@ -59,7 +59,7 @@ struct file_operations {
 /* ...group (00070) and other (00007) follow the same layout... */
 ```
 
-于是一次权限检查就是一次掩码比较——`mode & S_IRUSR`——而非一次结构遍历。这同一个打包整数从磁盘上的 inode 一路传到系统调用，每次检查都是一次按位与。
+检查发生在 `open()` 时，而非每次 `read()`：`inode_permission` 把请求的访问权限与 inode 的 `i_mode` 位比较——一次 `mode & S_IRWXU` 式的快速测试，它是第一道闸（ACL、capabilities、LSM 可以扩展它）。一旦 `open()` 成功，你就持有一个已授权的 `fd`，于是每次 `read()` 的热路径不再付任何权限成本。结论不变：常见情况是一次按位与，而非一次结构遍历。
 
 ::: tip 心智模型
 `rwxrwxrwx` 是九个是/否答案压进九个位。"owner 能读吗？"不是一次查找——它就是 `mode & 0o400`。八进制的 `0700`、`0640`、`0755` 只是一次取其中三个位。一个整数、九种权限、O(1) 检查。
