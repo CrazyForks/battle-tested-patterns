@@ -25,7 +25,7 @@ description: 深入剖析单次 read() 系统调用如何组合用于 VFS 分发
 
 ## 模式 1 —— Vtable：一次调用，多种实现
 
-内核中每个打开的文件都指向一个 `file_operations` 结构体：一张函数指针表。`read()` 不知道、也不关心这是什么类型的文件——它只是调用 `file->f_op->read_iter(...)`。ext4、套接字、`/proc` 各自提供它们*自己的* `file_operations`，于是同一个系统调用落到正确的代码里。
+内核中每个打开的文件都指向一个 `file_operations` 结构体：一张函数指针表。`read()` 不知道、也不关心这是什么类型的文件——它调用进文件的 `file_operations`。（`vfs_read` 会先尝试 `->read`，当 `->read` 缺失时经 `new_sync_read` 回退到 `->read_iter`——现代文件系统只提供 `->read_iter`。）ext4、套接字、`/proc` 各自提供它们*自己的* `file_operations`，于是同一个系统调用落到正确的代码里。
 
 ```c
 struct file_operations {
@@ -83,6 +83,10 @@ struct kobject *kobject_get(struct kobject *kobj)
 ```
 
 每个持有者在开始使用对象时调用 `kobject_get`（count++），用完时调用 `kobject_put`（count--）；对象 *仅* 在计数归零时被释放。这正是"删除一个打开的文件"安全的原因：`unlink` 减掉一个引用，但字节会一直存活到最后一个读者的 `put`。
+
+::: warning 实际保活文件的是哪个计数器
+`kref`（这里通过 `kobject_get` 展示）是内核**通用**的引用计数惯用法——读懂该模式最清晰的地方。`read()` 路径上的 `struct file` 并非真的是一个 `kobject`；它用自己的 `f_count`（一个 `atomic_long`，由 `get_file` 自增、由 `fput` 释放），inode 用 `i_count`。机制不同，但模式——仅在最后一次释放时回收——是一致的。
+:::
 
 ::: tip 心智模型
 一个 `kref` 是一个"此刻有多少人正持有它"的计数器。这个资源像一个房间，仅当 *最后* 一个人离开时才自动上锁并清扫。删除文件只意味着"前门的名牌没了"——任何已经在里面的人都保留自己的副本，直到他们也走出去。

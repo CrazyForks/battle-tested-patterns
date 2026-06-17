@@ -39,8 +39,10 @@ alone — what is instructive is *how they compose*.
 
 Every open file in the kernel points at a `file_operations` struct: a table of
 function pointers. `read()` does not know or care what kind of file it is — it
-just calls `file->f_op->read_iter(...)`. ext4, a socket, and `/proc` each supply
-their *own* `file_operations`, so the same syscall lands in the right code.
+calls into the file's `file_operations`. (`vfs_read` first tries `->read`, and
+falls back to `->read_iter` via `new_sync_read` when `->read` is absent —
+modern filesystems supply only `->read_iter`.) ext4, a socket, and `/proc` each
+supply their *own* `file_operations`, so the same syscall lands in the right code.
 
 ```c
 struct file_operations {
@@ -117,6 +119,14 @@ Every holder calls `kobject_get` (count++) when it starts using the object and
 `kobject_put` (count--) when done; the object is released *only* when the count
 reaches zero. This is what makes "delete an open file" safe: `unlink` drops one
 reference, but the bytes survive until the last reader's `put`.
+
+::: warning Which counter actually holds the file
+`kref` (shown here via `kobject_get`) is the kernel's **generic** reference-count
+idiom — the clearest place to read the pattern. The `struct file` on the `read()`
+path is not literally a `kobject`; it uses its own `f_count` (an `atomic_long`,
+bumped by `get_file`, dropped by `fput`), and the inode uses `i_count`. The
+mechanism differs, but the pattern — free only on the last release — is identical.
+:::
 
 ::: tip Mental model
 A `kref` is a "how many people are holding this right now" counter. The resource

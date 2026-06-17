@@ -35,9 +35,12 @@ compose*.
 ## Pattern 1 — Cooperative scheduling: the per-thread loop
 
 Each M (thread) runs `schedule()`, the heart of the runtime. It finds the next
-runnable goroutine and switches to it; goroutines give the thread back at safe
-points (function preludes, channel ops, syscalls) rather than being hard-preempted
-on every instruction.
+runnable goroutine and switches to it. Goroutines yield **cooperatively** at
+safe points (function preludes, channel ops, syscalls) for the common case;
+since Go 1.14 the runtime *also* supports signal-based **asynchronous
+preemption**, so a goroutine stuck in a tight loop with no safe point can still
+be stopped. The scheduling loop below is the cooperative half — the part you
+read to understand how a thread picks its next goroutine.
 
 ```go
 func schedule() {

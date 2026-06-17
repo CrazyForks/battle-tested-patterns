@@ -113,6 +113,15 @@ Under the hood this runs a Myers-style minimal-edit-distance diff (in `xdiff/`),
 turning "snapshot A" and "snapshot B" into the smallest set of line
 insertions/deletions that explains the change.
 
+::: warning Logical model vs. on-disk storage
+"Stores whole snapshots" is the **logical** model: every version is a complete,
+content-addressed object. On disk, Git later repacks these into *packfiles* that
+delta-compress similar objects (zlib + delta chains), so it does not literally
+keep a full uncompressed copy per version. The two are not in conflict — diffs
+are still computed on demand from the logical snapshots; packing is a separate
+storage optimisation.
+:::
+
 ::: tip Mental model
 Snapshots are the source of truth; diffs are a *view* computed from them. This
 inverts the naive design (store diffs, reconstruct snapshots): Git stores

@@ -110,10 +110,13 @@ export const DefaultLane  = 0b0000000000000000000000000100000;
 
 Because lanes are bits, React can hold *a set of pending priorities* in one
 integer, merge them with OR, and extract the most urgent with bit tricks
-(`getHighestPriorityLanes`). That extracted priority is what becomes a task's
-**expiration time** — which is exactly the key the scheduler's min-heap sorts
-on. This is the first hand-off between two of our patterns: **bitmask produces
-the priority; the heap orders by it.**
+(`getHighestPriorityLanes`). There are actually **two** priority layers here:
+the reconciler reasons in *lanes*, then maps the chosen lane to one of the
+Scheduler's coarse priority *levels* (e.g. `ImmediatePriority`,
+`NormalPriority`); the Scheduler turns that level into a concrete
+**expiration time**, which is the `sortIndex` its min-heap orders on. So the
+hand-off is: **bitmask (lanes) picks the priority; that priority maps to a
+Scheduler level; the heap orders by the resulting expiration time.**
 
 → For the pattern in isolation, see [Bitmask](/patterns/bitmask/).
 

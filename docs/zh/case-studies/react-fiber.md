@@ -75,7 +75,7 @@ export const SyncLane     = 0b0000000000000000000000000000010;
 export const DefaultLane  = 0b0000000000000000000000000100000;
 ```
 
-因为 lane 是位，React 能把*一组待处理的优先级*装进一个整数、用 OR 合并它们、再用位运算技巧（`getHighestPriorityLanes`）提取出最紧急的那个。被提取出的优先级随后变成一个任务的**过期时间**——而这恰恰是调度器的 min-heap 用来排序的键。这就是我们三个模式之间的第一次交接：**bitmask 产出优先级；heap 据此排序。**
+因为 lane 是位，React 能把*一组待处理的优先级*装进一个整数、用 OR 合并它们、再用位运算技巧（`getHighestPriorityLanes`）提取出最紧急的那个。这里其实有**两层**优先级：reconciler 用 *lane* 思考，然后把选中的 lane 映射到 Scheduler 的某个粗粒度优先级*等级*（如 `ImmediatePriority`、`NormalPriority`）；Scheduler 再把该等级转成一个具体的**过期时间**，这才是它的 min-heap 用来排序的 `sortIndex`。所以交接链是：**bitmask（lanes）挑出优先级；该优先级映射到一个 Scheduler 等级；heap 按由此得到的过期时间排序。**
 
 → 单独了解该模式，见 [Bitmask](/zh/patterns/bitmask/)。
 
