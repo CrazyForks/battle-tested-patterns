@@ -124,6 +124,12 @@ before it reaches the heap:
 So the hand-off is: **bitmask (lanes) picks the priority; the heap orders by the
 resulting expiration time.**
 
+For a concrete trace: a click handler's update is tagged `SyncLane` → maps to
+`ImmediatePriority` → becomes a very small (near-zero) expiration time → so its
+task sorts to the very top of the min-heap and runs before any
+lower-priority work. A background update would get a larger expiration time and
+sit lower in the heap.
+
 → For the pattern in isolation, see [Bitmask](/patterns/bitmask/).
 
 ## Pattern 2 — Min-heap: ordering the work
@@ -160,8 +166,8 @@ see the Min Heap pattern's Challenge Questions for the CFS-vs-React contrast.)
 The work loop pulls the highest-priority task off the heap and runs it — but
 **checks a deadline between units of work**. If the current time slice (~5ms)
 has elapsed and the task has not expired, it `break`s out of the loop and
-schedules a continuation, handing the main thread back to the browser so it can
-paint and process input before React resumes.
+schedules a continuation, handing the main thread back to the *host* (the
+browser environment) so it can paint and process input before React resumes.
 
 ```js
 function workLoop(initialTime) {

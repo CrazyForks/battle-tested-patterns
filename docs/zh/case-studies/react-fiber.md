@@ -83,6 +83,11 @@ export const DefaultLane  = 0b0000000000000000000000000100000;
 
 所以交接链是：**bitmask（lanes）挑出优先级；heap 按由此得到的过期时间排序。**
 
+举个具体的追踪：一个点击处理函数的更新被标记为 `SyncLane` → 映射到
+`ImmediatePriority` → 变成一个非常小（接近零）的过期时间 → 于是它的任务排到 min-heap
+的最顶端，在任何更低优先级的工作之前运行。而一个后台更新会得到更大的过期时间，沉到堆
+的更低处。
+
 → 单独了解该模式，见 [Bitmask](/zh/patterns/bitmask/)。
 
 ## 模式 2 —— Min-heap：为工作排序
@@ -105,7 +110,7 @@ export function pop(heap)  { /* swap root with last + siftDown */ }
 
 ## 模式 3 —— 协作式调度：交还线程
 
-工作循环从堆里取出优先级最高的任务并运行它——但**在工作单元之间检查一个截止时间**。如果当前时间片（约 5ms）已经用完且任务尚未过期，它会 `break` 出循环并安排一个延续（continuation），把主线程交还给浏览器，让它在 React 恢复之前能够绘制并处理输入。
+工作循环从堆里取出优先级最高的任务并运行它——但**在工作单元之间检查一个截止时间**。如果当前时间片（约 5ms）已经用完且任务尚未过期，它会 `break` 出循环并安排一个延续（continuation），把主线程交还给*宿主*（host，即浏览器环境），让它在 React 恢复之前能够绘制并处理输入。
 
 ```js
 function workLoop(initialTime) {
