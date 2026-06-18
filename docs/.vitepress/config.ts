@@ -308,6 +308,10 @@ export default defineConfig({
                 { text: 'Go Scheduler: Three Patterns', link: '/case-studies/go-scheduler' },
                 { text: 'Linux read(): Three Patterns', link: '/case-studies/linux-read' },
                 { text: 'Node.js Request: Three Patterns', link: '/case-studies/nodejs-request' },
+                {
+                  text: 'Redis Single Thread: Three Patterns',
+                  link: '/case-studies/redis-single-thread',
+                },
               ],
             },
           ],
@@ -468,6 +472,7 @@ export default defineConfig({
                 { text: 'Go 调度器：三种模式', link: '/zh/case-studies/go-scheduler' },
                 { text: 'Linux read()：三种模式', link: '/zh/case-studies/linux-read' },
                 { text: 'Node.js 请求：三种模式', link: '/zh/case-studies/nodejs-request' },
+                { text: 'Redis 单线程：三种模式', link: '/zh/case-studies/redis-single-thread' },
               ],
             },
           ],
