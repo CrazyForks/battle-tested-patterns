@@ -4,6 +4,44 @@ All notable changes to this project will be documented in this file.
 
 See [commit history](https://github.com/Totoro-jam/battle-tested-patterns/commits/main) for detailed changes.
 
+## [1.15.0](https://github.com/Totoro-jam/battle-tested-patterns/compare/v1.14.1...v1.15.0) (2026-06-18)
+
+
+### Features
+
+* **case-study:** add LevelDB LSM multi-pattern case study (EN+ZH) ([8cbcd23](https://github.com/Totoro-jam/battle-tested-patterns/commit/8cbcd2326a934d564445833b28c92f7507435b7b))
+* **case-study:** add PostgreSQL MVCC multi-pattern case study (EN+ZH) ([54d89b3](https://github.com/Totoro-jam/battle-tested-patterns/commit/54d89b38895cff68e0b84c689e522d7176b61946))
+* **case-study:** add Redis single-thread multi-pattern case study (EN+ZH) ([37e9a13](https://github.com/Totoro-jam/battle-tested-patterns/commit/37e9a13045a3a58112e6fab54790a36242dbf3f9))
+* **scripts:** add structure checks for case studies (C1-C5) ([28252e6](https://github.com/Totoro-jam/battle-tested-patterns/commit/28252e60cd3cb7703acb0a76de0b1a0f0af6d9cc))
+* **scripts:** extend line-range & zh-parity checks to by-project pages ([99b6bf9](https://github.com/Totoro-jam/battle-tested-patterns/commit/99b6bf9e5c817925902bdb1ca1c0152be493c82a))
+* **scripts:** extend line-range & zh-parity checks to case studies ([965e2cb](https://github.com/Totoro-jam/battle-tested-patterns/commit/965e2cb1aab84d24fc932897630ce9c10177784c))
+
+
+### Bug Fixes
+
+* **by-project:** correct Linux vtable line range to file_operations ([9a1589e](https://github.com/Totoro-jam/battle-tested-patterns/commit/9a1589e21695c84c1b14f8aa0b84118ae4678437))
+* **ci:** correct first-interaction v3 input names to underscores ([387253c](https://github.com/Totoro-jam/battle-tested-patterns/commit/387253c52a372de29154be6b0f4848d1a02f6aa3))
+* **ci:** skip welcome workflow for bots like dependabot ([af2ed2f](https://github.com/Totoro-jam/battle-tested-patterns/commit/af2ed2f45efd912f2db7e198a35fe92d98365a8e))
+* **deps:** upgrade vitest to 4 and fix node type resolution ([2471fd1](https://github.com/Totoro-jam/battle-tested-patterns/commit/2471fd140a4d552b7ccc7b842a7334fef5db6631))
+
+
+### Documentation
+
+* **case-study:** add Git commit multi-pattern case study (EN+ZH) ([839b6ef](https://github.com/Totoro-jam/battle-tested-patterns/commit/839b6efe855fafff18e4882f82850358761373e9))
+* **case-study:** add Go scheduler multi-pattern case study (EN+ZH) ([d62c3d4](https://github.com/Totoro-jam/battle-tested-patterns/commit/d62c3d4efeeebedacac849bf5967aff4c813ae4d))
+* **case-study:** add Linux read() multi-pattern case study (EN+ZH) ([cd341b6](https://github.com/Totoro-jam/battle-tested-patterns/commit/cd341b655a2c7ddb3120fd5918850c8c0312898e))
+* **case-study:** add Node.js request multi-pattern case study (EN+ZH) ([999ceb2](https://github.com/Totoro-jam/battle-tested-patterns/commit/999ceb2279215e52b8f05f18e503f23c47dca9cb))
+* **case-study:** add React Fiber multi-pattern case study (EN+ZH) ([70c243c](https://github.com/Totoro-jam/battle-tested-patterns/commit/70c243cbc9ea0b0d07424bb5e0ac43da36f60349))
+* **case-study:** deepen React Fiber study with lanes, flag bubbling, mental models ([b102414](https://github.com/Totoro-jam/battle-tested-patterns/commit/b102414552c6d39f2083f19c3c936d9293692a37))
+* **case-study:** polish react-fiber after a fresh three-role review ([829df7f](https://github.com/Totoro-jam/battle-tested-patterns/commit/829df7fbc6a6e89725dbefc44ab5b80554b33d7e))
+* **case-study:** refine 4 studies after a 3-role review pass ([bf7ed8f](https://github.com/Totoro-jam/battle-tested-patterns/commit/bf7ed8fa024c077d8cf6db1343412b2d659903b8))
+* **case-study:** tighten technical precision across all 4 studies ([145a2d1](https://github.com/Totoro-jam/battle-tested-patterns/commit/145a2d1967c128c1989fa63f89d239677045ecd9))
+* **git-commit:** apply three-role review fixes ([1d472c6](https://github.com/Totoro-jam/battle-tested-patterns/commit/1d472c659a65e90c15dd599e4813d99daaeee39c))
+* **guide:** clarify when to use feat vs docs in commit convention ([5834d1e](https://github.com/Totoro-jam/battle-tested-patterns/commit/5834d1e00ab618624702fdd606b78ea7aa326f22))
+* **sop,case-study:** iterate SOP 15 and fix per-P wording ([baef70a](https://github.com/Totoro-jam/battle-tested-patterns/commit/baef70a55c15305815bdb7d1a79c3145f999b4a2))
+* **sop,case-study:** require 20-source research; enrich Further Reading ([ed2db61](https://github.com/Totoro-jam/battle-tested-patterns/commit/ed2db618578e74f678c2fb30f2534f6835b421c9))
+* **sop:** add SOP 15 case study authoring methodology ([2680f8a](https://github.com/Totoro-jam/battle-tested-patterns/commit/2680f8a28844cc7e369c7ea2441d59a74a1af80b))
+
 ## [1.14.1](https://github.com/Totoro-jam/battle-tested-patterns/compare/v1.14.0...v1.14.1) (2026-06-16)
 
 
