@@ -209,7 +209,8 @@ Add `## Challenge Questions` section at the end of the pattern doc:
 
 ### 9. Submit PR
 
-- [ ] Use Conventional Commit: `feat: add <pattern-name> pattern`
+- [ ] Use Conventional Commit: `feat: add <pattern-name> pattern` (a whole new
+      content unit is always `feat:` — see Commit Convention in CLAUDE.md)
 - [ ] Fill in the PR template checklist
 - [ ] Ensure CI is green
 
