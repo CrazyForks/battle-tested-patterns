@@ -34,8 +34,8 @@ three patterns working together. None is novel alone — what is instructive is
 
 ## Pattern 1 — Copy-on-write: content-addressed objects
 
-Git never stores a file under its path. It stores the file's *content* under the
-**hash of that content**. The function that turns bytes into a name is
+Git never stores a file under its path. It stores the file's *content* — called a
+**blob** in Git's terminology — under the **hash of that content**. The function that turns bytes into a name is
 `hash_object_file`:
 
 ```c
@@ -49,7 +49,8 @@ void hash_object_file(const struct git_hash_algo *algo, const void *buf,
 }
 ```
 
-The `oid` (object id) it produces *is* the storage key. This gives
+The `oid` (object id) it produces *is* the storage key (e.g. an empty file hashes
+to `e69de29bb2d1d6434b8b29ae775ad8c2e48c5391`). This gives
 copy-on-write for free: if two commits contain the same file, both reference the
 same object id, so the bytes are stored **once**. A new commit only writes
 objects whose content actually changed; everything else is shared by reference.
@@ -97,7 +98,7 @@ that everything downstream commits to.
 Because objects are immutable and content-addressed, Git does **not** store
 "what changed" — it stores whole snapshots and *computes* the difference when
 you ask (`git diff`, `git log -p`, rename detection). `run_diff` is the entry
-point that produces the edit script between two blobs:
+point that produces the edit script between two versions of a file:
 
 ```c
 static void run_diff(struct diff_filepair *p, struct diff_options *o)
@@ -183,7 +184,7 @@ documentation (`official-doc`).
 |-----------------|--------|----------|----------------------|
 | Copy-on-write | [object-file.c#L719-L730](https://github.com/git/git/blob/1ff279f3404a482a83fb04c7457e41ab26884aea/object-file.c#L719-L730) | source-code | `hash_object_file` names content by its hash → identical content stored once |
 | Merkle tree | [cache-tree.c#L435-L458](https://github.com/git/git/blob/1ff279f3404a482a83fb04c7457e41ab26884aea/cache-tree.c#L435-L458) | source-code | Each tree entry embeds its child's `oid->hash`, then the tree itself is hashed |
-| Diff / patch | [diff.c#L5020-L5060](https://github.com/git/git/blob/1ff279f3404a482a83fb04c7457e41ab26884aea/diff.c#L5020-L5060) | source-code | `run_diff` computes the edit script between two blob versions on demand |
+| Diff / patch | [diff.c#L5020-L5060](https://github.com/git/git/blob/1ff279f3404a482a83fb04c7457e41ab26884aea/diff.c#L5020-L5060) | source-code | `run_diff` computes the edit script between two versions of a file on demand |
 | Composition (by design) | [Pro Git — Git Objects](https://git-scm.com/book/en/v2/Git-Internals-Git-Objects) | official-doc | Official explanation of the content-addressed object model commits are built on |
 
 ## Takeaways
