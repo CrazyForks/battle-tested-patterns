@@ -16,15 +16,15 @@ jobs:
     steps:
       - uses: actions/first-interaction@v3
         with:
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          issue-message: |
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          issue_message: |
             Thanks for opening your first issue! 🎉
 
             If you're reporting a broken link, please include the pattern name and the URL that's failing.
             If you're suggesting a new pattern, check our [contribution guide](https://github.com/Totoro-jam/battle-tested-patterns/blob/main/.github/CONTRIBUTING.md) and [SOP 01](https://github.com/Totoro-jam/battle-tested-patterns/blob/main/.sop/01-new-pattern.md) for what makes a good pattern.
 
             We'll respond as soon as we can!
-          pr-message: |
+          pr_message: |
             Thanks for your first pull request! 🎉
 
             Please make sure:
