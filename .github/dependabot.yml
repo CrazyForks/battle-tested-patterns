@@ -9,10 +9,22 @@ updates:
     schedule:
       interval: weekly
     ignore:
-      # eslint-plugin-vue does not yet support ESLint 10 (forces ESLint < 10);
-      # ESLint 10 removed context.getSourceCode(), breaking vue/* rules.
-      # Track vuejs/eslint-plugin-vue#3017; lift this once the plugin ships v10 support.
+      # The ESLint ecosystem must be upgraded as one group, gated on
+      # eslint-plugin-vue supporting ESLint 10 (it still forces ESLint < 10;
+      # ESLint 10 removed context.getSourceCode(), breaking vue/* rules).
+      # Track vuejs/eslint-plugin-vue#3017; lift these once the plugin ships v10,
+      # then bump the whole ecosystem together and verify `pnpm lint` passes.
       - dependency-name: 'eslint'
+        update-types: ['version-update:semver-major']
+      - dependency-name: '@eslint/js'
+        update-types: ['version-update:semver-major']
+      - dependency-name: 'eslint-plugin-vue'
+        update-types: ['version-update:semver-major']
+      - dependency-name: 'vue-eslint-parser'
+        update-types: ['version-update:semver-major']
+      - dependency-name: 'eslint-config-prettier'
+        update-types: ['version-update:semver-major']
+      - dependency-name: 'typescript-eslint'
         update-types: ['version-update:semver-major']
   - package-ecosystem: cargo
     directory: /exercises/rust
