@@ -47,14 +47,36 @@ Every pattern in `docs/patterns/` **must** contain these sections:
 
 ## Commit Convention
 
-Use [Conventional Commits](https://www.conventionalcommits.org/):
+Use [Conventional Commits](https://www.conventionalcommits.org/). This is a
+**content-as-product** docs site, so the version number should reflect
+*content milestones*, not just code changes. Pick the type by **reader-facing
+impact**, not by which files changed.
 
-- `feat:` — new pattern or language implementation
-- `fix:` — fix incorrect content or broken link
-- `docs:` — documentation improvements
-- `ci:` — workflow changes
-- `chore:` — tooling, config, dependencies
-- `test:` — exercise/test changes
+| Type | When to use | Version bump | In CHANGELOG? |
+|------|-------------|--------------|---------------|
+| `feat:` | **New reader-facing content as a whole unit** — a new pattern, a new language impl, a **whole new case study**, a new guide page | minor | ✅ Features |
+| `fix:` | Fix incorrect content or a broken link | patch | ✅ Bug Fixes |
+| `docs:` | **Revising / expanding existing reader-facing content** — deepening a case study, polishing a pattern, edits under `docs/` | none | ✅ Documentation |
+| `refactor:` | Restructuring content or code without behaviour change | none | ✅ Code Refactoring |
+| `perf:` | Build/runtime performance improvements | patch | ✅ Performance |
+| `test:` | Exercise / component test changes | none | hidden |
+| `ci:` | Workflow / CI changes | none | hidden |
+| `build:` | Build system / bundling | none | hidden |
+| `chore:` | **Internal-only artefacts** — `.sop/` updates, tooling, config, deps, `CLAUDE.md` | none | hidden |
+
+**Key rules (固化):**
+
+- **New whole content unit → `feat`** (a new case study, pattern, or guide page).
+  This is the only way it bumps the version and lands in *Features* — a real
+  content milestone.
+- **Revising existing content → `docs`.** Shows up under *Documentation* but
+  does **not** bump the version (avoids version churn for typo/polish edits).
+- **`.sop/` updates → `chore(sop):`, NOT `docs`.** The SOP is for *people who
+  build the book*, not *people who read it* — it never ships to the site, so it
+  stays out of the reader-facing CHANGELOG. (Historically these used
+  `docs(sop):`; use `chore(sop):` going forward.)
+- CHANGELOG sections are configured in `release-please-config.json`
+  (`changelog-sections`); `docs`/`refactor` are visible, internal types hidden.
 
 ## Commands
 

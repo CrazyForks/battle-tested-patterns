@@ -5,7 +5,18 @@
       "package-name": "battle-tested-patterns",
       "changelog-path": "CHANGELOG.md",
       "include-component-in-tag": false,
-      "last-release-sha": "3dfd4631b7f61091c3e87c98553d9d05503a4d91"
+      "last-release-sha": "3dfd4631b7f61091c3e87c98553d9d05503a4d91",
+      "changelog-sections": [
+        { "type": "feat", "section": "Features" },
+        { "type": "fix", "section": "Bug Fixes" },
+        { "type": "docs", "section": "Documentation", "hidden": false },
+        { "type": "perf", "section": "Performance Improvements" },
+        { "type": "refactor", "section": "Code Refactoring", "hidden": false },
+        { "type": "test", "section": "Tests", "hidden": true },
+        { "type": "ci", "section": "Continuous Integration", "hidden": true },
+        { "type": "build", "section": "Build System", "hidden": true },
+        { "type": "chore", "section": "Miscellaneous Chores", "hidden": true }
+      ]
     }
   },
   "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json"
