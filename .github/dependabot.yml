@@ -8,6 +8,12 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    ignore:
+      # eslint-plugin-vue does not yet support ESLint 10 (forces ESLint < 10);
+      # ESLint 10 removed context.getSourceCode(), breaking vue/* rules.
+      # Track vuejs/eslint-plugin-vue#3017; lift this once the plugin ships v10 support.
+      - dependency-name: 'eslint'
+        update-types: ['version-update:semver-major']
   - package-ecosystem: cargo
     directory: /exercises/rust
     schedule:
