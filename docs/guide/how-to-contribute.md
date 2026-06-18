@@ -38,7 +38,8 @@ pnpm test       # Run all tests (exercises + docs components)
 ### Improve Documentation
 
 - Fix typos, clarify explanations, improve diagrams
-- Use commit type `docs:`
+- Use commit type `docs:` for revising existing content; use `feat:` when you
+  add a whole new content unit (a new pattern, case study, or guide page)
 
 ## Quality Bar
 
@@ -64,3 +65,12 @@ test: add advanced exercise for min-heap
 ci: add Go test step to CI workflow
 chore: update dependencies
 ```
+
+Pick the type by **reader-facing impact**, not by which files changed:
+
+- **A whole new content unit** (pattern, case study, guide page) → `feat:`
+  (this is what bumps the version and lands in the changelog as a milestone).
+- **Revising existing content** (deepening, polishing, fixing wording) → `docs:`
+  (shown in the changelog, but does not bump the version).
+- **Internal-only changes** — `.sop/` updates, tooling, config → `chore:`
+  (kept out of the reader-facing changelog).

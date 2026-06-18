@@ -38,7 +38,7 @@ pnpm test       # 运行所有测试（exercises + docs 组件）
 ### 改进文档
 
 - 修正拼写、澄清说明、改进图示
-- 使用 commit 类型 `docs:`
+- 修订已有内容用 commit 类型 `docs:`；新增整个内容单元（新模式、案例研究或指南页）时用 `feat:`
 
 ## 质量标准
 
@@ -64,3 +64,12 @@ test: add advanced exercise for min-heap
 ci: add Go test step to CI workflow
 chore: update dependencies
 ```
+
+按**面向读者的影响**选择类型，而非按改了哪些文件：
+
+- **新增整个内容单元**（模式、案例研究、指南页）→ `feat:`
+  （这才会提升版本号，并作为里程碑出现在 changelog 中）。
+- **修订已有内容**（深化、润色、修正措辞）→ `docs:`
+  （会显示在 changelog 中，但不提升版本号）。
+- **纯内部改动** —— `.sop/` 更新、工具链、配置 → `chore:`
+  （不进入面向读者的 changelog）。
