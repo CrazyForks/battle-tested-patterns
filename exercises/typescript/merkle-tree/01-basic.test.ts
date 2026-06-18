@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { createHash } from 'crypto';
+import { createHash } from 'node:crypto';
 
 /**
  * Merkle Tree - Basic: Build a Merkle tree, get root hash, verify proof.
