@@ -11,6 +11,13 @@
  * - S7: Challenge Questions format (:::details syntax)
  * - S8: Real-World Analogy section existence
  *
+ * Case studies (docs/case-studies/) use a lighter skeleton (C1–C5):
+ * - C1: Frontmatter (title, description)
+ * - C2: Required sections (Production Proof, Takeaways, Further Reading, Study These Patterns)
+ * - C3: A "The Problem … Solves" framing section
+ * - C4: A "How … Compose" section
+ * - C5: ≥2 "Pattern N —" sections
+ *
  * Usage:
  *   tsx scripts/check-structure.ts              # Check all patterns
  *   tsx scripts/check-structure.ts --pattern circuit-breaker  # Check one
@@ -22,6 +29,7 @@ import { join } from 'node:path';
 import {
   DOCS_DIR,
   discoverPatterns,
+  discoverCaseStudies,
   findMarkdownFiles,
   parseFrontmatter,
   extractSections,
@@ -213,6 +221,109 @@ function checkPatternStructure(pf: PatternFile): void {
   }
 }
 
+// ─── Case Study Structure ────────────────────────────────────────────────────
+//
+// Case studies (docs/case-studies/<slug>.md) follow the SOP 15 shape, which is
+// looser than the pattern template. We enforce a lightweight skeleton so every
+// study keeps the evidence-driven structure the existing five established.
+
+const CASE_REQUIRED_SECTIONS_EN = [
+  'Production Proof',
+  'Takeaways',
+  'Further Reading',
+  'Study These Patterns',
+];
+const CASE_REQUIRED_SECTIONS_ZH = ['生产验证', '要点', '延伸阅读', '延伸学习这些模式'];
+
+function checkCaseStudyStructure(cs: PatternFile): void {
+  const files = [{ path: cs.enPath, lang: 'en' }];
+  if (cs.hasZh) files.push({ path: cs.zhPath, lang: 'zh' });
+
+  for (const { path, lang } of files) {
+    const content = readFileSync(path, 'utf-8');
+    const isEn = lang === 'en';
+
+    // C1: Frontmatter (title + description; difficulty is not required here)
+    const fm = parseFrontmatter(content);
+    if (!fm) {
+      report({ file: path, severity: 'error', message: 'Missing frontmatter', rule: 'C1' });
+    } else {
+      for (const field of ['title', 'description']) {
+        if (!fm.fields.has(field)) {
+          report({
+            file: path,
+            severity: 'error',
+            message: `Missing frontmatter field: ${field}`,
+            rule: 'C1',
+          });
+        }
+      }
+    }
+
+    const sections = extractSections(content);
+    const headings = sections.map((s) => s.heading);
+    const headingSet = new Set(headings);
+
+    // C2: Exact-match required sections
+    const required = isEn ? CASE_REQUIRED_SECTIONS_EN : CASE_REQUIRED_SECTIONS_ZH;
+    for (const r of required) {
+      if (!headingSet.has(r)) {
+        report({
+          file: path,
+          severity: 'error',
+          message: `Missing required section: "${r}"`,
+          rule: 'C2',
+        });
+      }
+    }
+
+    // C3: A problem-framing section (title varies by project)
+    const hasProblem = isEn
+      ? headings.some((h) => h.startsWith('The Problem'))
+      : headings.some((h) => h.endsWith('解决的问题'));
+    if (!hasProblem) {
+      report({
+        file: path,
+        severity: 'error',
+        message: isEn
+          ? 'Missing a "The Problem … Solves" framing section'
+          : '缺少「… 解决的问题」开篇章节',
+        rule: 'C3',
+      });
+    }
+
+    // C4: A composition section (the core of a multi-pattern study)
+    const hasCompose = isEn
+      ? headings.some((h) => h.includes('Compose'))
+      : headings.some((h) => h.includes('如何组合'));
+    if (!hasCompose) {
+      report({
+        file: path,
+        severity: 'error',
+        message: isEn ? 'Missing a "How … Compose" section' : '缺少「… 如何组合」章节',
+        rule: 'C4',
+      });
+    }
+
+    // C5: At least two per-pattern sections (a study composes ≥2 patterns)
+    const patternSections = isEn
+      ? headings.filter((h) => /^Pattern\s+\d+\s+[—-]/.test(h))
+      : headings.filter((h) => /^模式\s*\d+\s*[—-]/.test(h));
+    if (patternSections.length < 2) {
+      report({
+        file: path,
+        severity: 'error',
+        message: `A case study must compose ≥2 patterns; found ${patternSections.length} "Pattern N —" section(s)`,
+        rule: 'C5',
+      });
+    }
+
+    if (verbose) {
+      console.log(`  ✓ ${cs.slug} (${lang})`);
+    }
+  }
+}
+
 function checkGuideFrontmatter(): void {
   const guideDirs = [
     join(DOCS_DIR, 'guide'),
@@ -260,6 +371,17 @@ function main(): void {
 
   for (const pf of filtered) {
     checkPatternStructure(pf);
+  }
+
+  // Case studies (skip when filtering to a single pattern)
+  if (!filterPattern) {
+    const caseStudies = discoverCaseStudies();
+    if (caseStudies.length > 0) {
+      console.log(`Checking ${caseStudies.length} case study(ies)...\n`);
+      for (const cs of caseStudies) {
+        checkCaseStudyStructure(cs);
+      }
+    }
   }
 
   // Also check guide/by-project frontmatter
