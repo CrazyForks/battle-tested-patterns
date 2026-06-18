@@ -12,6 +12,8 @@ permissions:
 
 jobs:
   welcome:
+    # Only greet human first-time contributors; skip bots (dependabot, etc.)
+    if: github.actor != 'dependabot[bot]' && github.event.sender.type != 'Bot'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/first-interaction@v3
