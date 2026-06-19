@@ -26,7 +26,7 @@ Those are the claims that mislead developers into expecting guarantees the code
 does not provide.
 
 **Companion skill:** Inventory using the `adopt-pattern` skill's catalog, or the
-published index at <https://totoro-jam.github.io/battle-tested-patterns/patterns/>.
+pattern docs at <https://github.com/Totoro-jam/battle-tested-patterns/tree/main/docs/patterns>.
 This skill is the inverse of `adopt-pattern`: that one runs the catalog forward
 (add a pattern); this one runs it backward (grade patterns already there).
 

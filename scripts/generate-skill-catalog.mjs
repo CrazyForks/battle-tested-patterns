@@ -21,6 +21,11 @@ const skillPath = join(repoRoot, 'skills', 'adopt-pattern', 'SKILL.md');
 const START = '<!-- CATALOG:START -->';
 const END = '<!-- CATALOG:END -->';
 
+// Doc links point at the GitHub source markdown (not the Pages domain): stable
+// across a future custom domain or a failed site deploy, and consistent with
+// the project's "precise source links → GitHub" house style.
+const DOC_BASE = 'https://github.com/Totoro-jam/battle-tested-patterns/blob/main/docs/patterns';
+
 /** Pull `description` and `difficulty` out of a pattern doc's YAML frontmatter. */
 function readFrontmatter(slug) {
   const docPath = join(repoRoot, 'docs', 'patterns', slug, 'index.md');
@@ -92,7 +97,8 @@ function renderCatalog(categories) {
       const blurb = p.description || p.cue;
       // Angle-bracket the URL: an autolink keeps the raw URL visible for the
       // agent while satisfying markdownlint MD034 (no bare URLs).
-      out.push(`| **${p.name}** | ${p.cue} — ${blurb} | ${p.difficulty || '—'} | <${p.url}> |`);
+      const doc = `${DOC_BASE}/${p.slug}/index.md`;
+      out.push(`| **${p.name}** | ${p.cue} — ${blurb} | ${p.difficulty || '—'} | <${doc}> |`);
     }
     out.push('');
   }
