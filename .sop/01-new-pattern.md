@@ -152,6 +152,7 @@ Add `## Challenge Questions` section at the end of the pattern doc:
 - [ ] Update `docs/zh/by-project/*.md` — sync Chinese versions
 - [ ] Update `README.md` cheat sheet table — add to correct category (Data Structures / Concurrency / Systems / Memory / Behavioral)
 - [ ] Update `README.zh-CN.md` cheat sheet table — sync Chinese version
+- [ ] Regenerate the agent-skill catalog: `pnpm gen:skill-catalog` (the `adopt-pattern` skill derives its catalog from the `README.md` glance table + each doc's frontmatter)
 - [ ] Update `docs/guide/pattern-connections.md` — if pattern fits an existing system case study (React/Redis/Go/Linux/PostgreSQL/Kafka), add it to the relevant section and summary table
 - [ ] Update `docs/zh/guide/pattern-connections.md` — sync Chinese version
 
@@ -161,7 +162,7 @@ Add `## Challenge Questions` section at the end of the pattern doc:
 - [ ] Run `pnpm verify-code` — all code blocks compile (TS/Python/Rust/Go)
 - [ ] Run `pnpm verify-mermaid` — all Mermaid diagrams have valid syntax
 - [ ] Run `pnpm lint` — markdown + ESLint + Stylelint clean (see [SOP 14](14-lint-toolchain.md))
-- [ ] Run `pnpm check:content` — content quality checks pass (structure, parity, exercises, relations)
+- [ ] Run `pnpm check:content` — content quality checks pass (structure, parity, exercises, relations, skill-catalog freshness)
 - [ ] Run `pnpm build` — docs site builds
 - [ ] Run `pnpm verify-links` — source links alive
 
