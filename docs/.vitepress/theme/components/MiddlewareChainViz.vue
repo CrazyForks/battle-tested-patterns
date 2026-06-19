@@ -25,6 +25,18 @@ interface Middleware {
 
 const middlewares = reactive<Middleware[]>([
   {
+    name: 'Logger',
+    label: { en: 'Logger', zh: '日志' },
+    color: 'var(--viz-success)',
+    enabled: true,
+    behavior: 'pass',
+    configurable: false,
+    desc: {
+      en: 'Logs request (outermost — wraps everything)',
+      zh: '记录请求（最外层 —— 包裹一切）',
+    },
+  },
+  {
     name: 'Auth',
     label: { en: 'Auth', zh: '认证' },
     color: 'var(--viz-primary)',
@@ -41,15 +53,6 @@ const middlewares = reactive<Middleware[]>([
     behavior: 'pass',
     configurable: true,
     desc: { en: 'Enforces request rate limits', zh: '执行请求频率限制' },
-  },
-  {
-    name: 'Logger',
-    label: { en: 'Logger', zh: '日志' },
-    color: 'var(--viz-success)',
-    enabled: true,
-    behavior: 'pass',
-    configurable: false,
-    desc: { en: 'Logs request (always passes)', zh: '记录请求（始终通过）' },
   },
   {
     name: 'Validator',
@@ -300,8 +303,8 @@ async function presetHappyPath() {
   reset();
   presetRunning = true;
   message.value = t(
-    'Happy path: all middleware passes. Watch the request flow forward through Auth→RateLimit→Logger→Validator→Handler, then the response flows backward. This is the "onion model" used by Koa and ASP.NET Core.',
-    '正常路径：所有 Middleware 通过。观察请求向前流经 Auth→RateLimit→Logger→Validator→Handler，然后响应向后流。这是 Koa 和 ASP.NET Core 使用的"洋葱模型"。',
+    'Happy path: all middleware passes. Watch the request flow forward through Logger→Auth→RateLimit→Validator→Handler, then the response flows backward (Handler→…→Logger). Logger is outermost so it wraps and times everything. This is the "onion model" used by Koa and ASP.NET Core.',
+    '正常路径：所有 Middleware 通过。观察请求向前流经 Logger→Auth→RateLimit→Validator→Handler，然后响应向后流（Handler→…→Logger）。日志在最外层，因此它包裹并计时一切。这是 Koa 和 ASP.NET Core 使用的"洋葱模型"。',
   );
   await delay(800);
   if (!presetRunning || isAborted()) return;
@@ -321,10 +324,11 @@ async function presetAuthReject() {
   if (presetRunning) return;
   reset();
   presetRunning = true;
-  middlewares[0].behavior = 'reject';
+  const auth = middlewares.find((m) => m.name === 'Auth');
+  if (auth) auth.behavior = 'reject';
   message.value = t(
-    'Auth rejection: the first middleware rejects — no downstream middleware runs at all. This is the "fail fast" principle: Auth check at the edge saves CPU for Validator and Handler.',
-    'Auth 拒绝：第一个 Middleware 拒绝 — 下游 Middleware 完全不执行。这是"快速失败"原则：在边缘进行 Auth 检查为 Validator 和 Handler 节省 CPU。',
+    'Auth rejection: Logger (outermost) records the request, then Auth — the first gate that can reject — short-circuits. RateLimit, Validator, and Handler never run. This is the "fail fast" principle: rejecting early saves downstream CPU.',
+    'Auth 拒绝：Logger（最外层）记录请求，随后 Auth —— 第一个会拒绝的关卡 —— 短路。RateLimit、Validator 和 Handler 都不执行。这是"快速失败"原则：尽早拒绝为下游节省 CPU。',
   );
   await delay(800);
   if (!presetRunning || isAborted()) return;
@@ -332,11 +336,14 @@ async function presetAuthReject() {
   await delay(500);
   if (!presetRunning || isAborted()) return;
   message.value = t(
-    'Only Auth ran — it rejected immediately. RateLimit, Logger, Validator, and Handler were never invoked — short-circuit saves resources. This is why API gateways put auth first.',
-    '只有 Auth 执行了 — 它立即拒绝。RateLimit、Logger、Validator 和 Handler 从未调用 — 短路节省资源。这就是 API 网关将 auth 放在最前面的原因。',
+    'Logger ran (it observes, never rejects), then Auth rejected immediately — RateLimit, Validator, and Handler were never invoked. Short-circuiting saves resources. This is why API gateways put auth as the first rejecting gate, just inside logging.',
+    'Logger 执行了（它只观察、从不拒绝），随后 Auth 立即拒绝 —— RateLimit、Validator 和 Handler 从未调用。短路节省资源。这就是 API 网关把 auth 作为第一个拒绝关卡（紧贴日志内侧）的原因。',
   );
   vizLog(
-    t('Fail fast: auth at the edge saves downstream CPU', '快速失败：边缘 auth 节省下游 CPU'),
+    t(
+      'Fail fast: auth rejects early (just inside logging) to save downstream CPU',
+      '快速失败：auth 尽早拒绝（紧贴日志内侧）以节省下游 CPU',
+    ),
     'highlight',
   );
   presetRunning = false;
@@ -346,11 +353,13 @@ async function presetSkipMiddleware() {
   if (presetRunning) return;
   reset();
   presetRunning = true;
-  middlewares[1].enabled = false;
-  middlewares[3].enabled = false;
+  const rateLimit = middlewares.find((m) => m.name === 'RateLimit');
+  const validator = middlewares.find((m) => m.name === 'Validator');
+  if (rateLimit) rateLimit.enabled = false;
+  if (validator) validator.enabled = false;
   message.value = t(
-    'Minimal pipeline: RateLimit and Validator disabled. Only Auth→Logger→Handler remain. This shows how middleware is composable — you pick what you need per route. Express uses app.use() for global and router.use() for per-route.',
-    '最小管道：RateLimit 和 Validator 已禁用。只剩 Auth→Logger→Handler。这展示了 Middleware 的可组合性 — 每个路由选择需要的。Express 使用 app.use() 全局和 router.use() 按路由。',
+    'Minimal pipeline: RateLimit and Validator disabled. Only Logger→Auth→Handler remain. This shows how middleware is composable — you pick what you need per route. Express uses app.use() for global and router.use() for per-route.',
+    '最小管道：RateLimit 和 Validator 已禁用。只剩 Logger→Auth→Handler。这展示了 Middleware 的可组合性 — 每个路由选择需要的。Express 使用 app.use() 全局和 router.use() 按路由。',
   );
   await delay(800);
   if (!presetRunning || isAborted()) return;

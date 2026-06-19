@@ -117,8 +117,8 @@ function addKey() {
   const owner = findOwner(h);
   animHash.value = h;
   message.value = t(
-    `Key "${id}" hashes to ${h.toFixed(2)} → walks clockwise to node ${owner?.id ?? 'none'}. Lookup is O(log N) via binary search on the sorted node ring.`,
-    `键 "${id}" 哈希到 ${h.toFixed(2)} → 顺时针走到节点 ${owner?.id ?? '无'}。通过排序节点列表，顺时针查找是 O(log N)。`,
+    `Key "${id}" hashes to ${h.toFixed(2)} → walks clockwise to the first node at or past it (node ${owner?.id ?? 'none'}). Production rings binary-search the sorted positions for O(log N) lookup.`,
+    `键 "${id}" 哈希到 ${h.toFixed(2)} → 顺时针走到第一个位置 ≥ 它的节点（节点 ${owner?.id ?? '无'}）。生产环境在排序好的位置上做二分查找，达到 O(log N)。`,
   );
   log(message.value, 'info');
   safeTimeout(() => {

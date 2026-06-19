@@ -11,7 +11,7 @@ const { t } = useI18n();
 const { safeInterval, safeTimeout, delay, clearAll, speed, isAborted } = useVizTimers();
 const { entries: logEntries, log, clear: clearLog } = useVizLog();
 
-const capacity = 8;
+const capacity = 5;
 const refillRate = 2;
 const tokens = ref(capacity);
 const requestLog = ref<{ time: number; accepted: boolean }[]>([]);
@@ -126,8 +126,8 @@ async function presetBurstAndRecover() {
   if (!presetRunning || isAborted()) return;
   startRefill();
   message.value = t(
-    "8 accepted, 2 rejected. Now refilling at 2/sec. In 4 seconds the bucket will be full again. Stripe's API allows bursts of 25 requests, then refills at 25/sec — generous for integration testing, strict for abuse.",
-    '8 个接受，2 个拒绝。现在以 2/秒补充。4 秒后桶将再次满。Stripe API 允许 25 个请求的突发，然后以 25/秒补充 — 对集成测试宽松，对滥用严格。',
+    "5 accepted (bucket capacity), 5 rejected. Now refilling at 2/sec. In ~2.5 seconds the bucket will be full again. Stripe's API allows bursts of 25 requests, then refills at 25/sec — generous for integration testing, strict for abuse.",
+    '5 个接受（桶容量），5 个拒绝。现在以 2/秒补充。约 2.5 秒后桶将再次满。Stripe API 允许 25 个请求的突发，然后以 25/秒补充 — 对集成测试宽松，对滥用严格。',
   );
   log(message.value, 'highlight');
   presetRunning = false;
@@ -151,8 +151,8 @@ async function presetSteadyState() {
   }
   if (!presetRunning || isAborted()) return;
   message.value = t(
-    'All 6 requests accepted — tokens never dropped below 7 because refill outpaces consumption. This is the ideal: clients stay within their quota and never see 429 Too Many Requests.',
-    '全部 6 个请求被接受 — 令牌从未低于 7 因为补充速度超过消耗。这是理想状态：客户端保持在配额内，永远不会看到 429 Too Many Requests。',
+    'All 6 requests accepted — tokens stayed near full because refill (2/sec) outpaces consumption (1/sec). This is the ideal: clients stay within their quota and never see 429 Too Many Requests.',
+    '全部 6 个请求被接受 — 令牌保持接近满，因为补充（2/秒）超过消耗（1/秒）。这是理想状态：客户端保持在配额内，永远不会看到 429 Too Many Requests。',
   );
   log(message.value, 'highlight');
   presetRunning = false;

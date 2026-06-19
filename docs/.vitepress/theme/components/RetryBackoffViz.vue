@@ -62,8 +62,11 @@ const maxPossibleDelay = computed(() => {
 });
 
 function addJitter(baseDelay: number): { jitter: number; total: number } {
+  // Additive (one-directional) jitter, matching the pattern's formula
+  //   delay = base * 2^attempt + random(0, jitter)
+  // Jitter is always >= 0; it never shortens the base backoff.
   const maxJitter = baseDelay * 0.3;
-  const jitter = Math.round((Math.random() * 2 - 1) * maxJitter);
+  const jitter = Math.round(Math.random() * maxJitter);
   return { jitter, total: Math.max(50, baseDelay + jitter) };
 }
 
@@ -98,8 +101,8 @@ async function startRequest() {
 
     if (i > 0) {
       message.value = t(
-        `Waiting ${totalDelay}ms before attempt #${i + 1} (${BASE_DELAY}ms × 2^${i - 1} = ${attemptDelay}ms ${jitter >= 0 ? '+' : ''}${jitter}ms jitter). Exponential backoff prevents thundering herd.`,
-        `等待 ${totalDelay}ms 后进行第 ${i + 1} 次尝试（${BASE_DELAY}ms × 2^${i - 1} = ${attemptDelay}ms ${jitter >= 0 ? '+' : ''}${jitter}ms 抖动）。指数退避防止惊群效应。`,
+        `Waiting ${totalDelay}ms before attempt #${i + 1} — retry #${i} backs off ${BASE_DELAY}ms × 2^${i - 1} = ${attemptDelay}ms + ${jitter}ms jitter. Exponential backoff prevents thundering herd.`,
+        `等待 ${totalDelay}ms 后进行第 ${i + 1} 次尝试 —— 第 ${i} 次重试退避 ${BASE_DELAY}ms × 2^${i - 1} = ${attemptDelay}ms + ${jitter}ms 抖动。指数退避防止惊群效应。`,
       );
       const scaledDelay = Math.min(totalDelay / 2, 1500);
       await delay(scaledDelay);
@@ -317,7 +320,7 @@ async function presetNoBackoff() {
 
     <!-- Formula display -->
     <div class="rb-formula">
-      delay = min(base &times; 2<sup>attempt</sup>, cap) &plusmn; random jitter
+      delay = min(base &times; 2<sup>attempt</sup> + random(0, jitter), cap)
     </div>
 
     <!-- Attempt timeline -->

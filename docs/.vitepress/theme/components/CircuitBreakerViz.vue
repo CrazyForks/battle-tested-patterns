@@ -17,7 +17,9 @@ const state = ref<State>('CLOSED');
 const failureCount = ref(0);
 const successCount = ref(0);
 const threshold = 3;
-const halfOpenMax = 2;
+// HALF_OPEN allows exactly ONE probe call; a single success closes the
+// circuit (matches the pattern's state table and all language impls).
+const halfOpenMax = 1;
 const message = ref(
   t(
     'Circuit is CLOSED — all requests pass through. Try sending failures to trip the breaker!',
@@ -97,16 +99,10 @@ function sendSuccess() {
       failureCount.value = 0;
       successCount.value = 0;
       message.value = t(
-        `${halfOpenMax} consecutive successes in HALF-OPEN → CLOSED! Service is healthy again. Traffic resumes.`,
-        `HALF-OPEN 中连续 ${halfOpenMax} 次成功 → 关闭！服务恢复健康，流量恢复。`,
+        'Probe call succeeded in HALF-OPEN → CLOSED! The single trial request confirmed the service recovered. Traffic resumes.',
+        'HALF-OPEN 中探测调用成功 → 关闭！这一次试探请求确认服务已恢复，流量恢复。',
       );
       log(message.value, 'success');
-    } else {
-      message.value = t(
-        `Probe success in HALF-OPEN (${successCount.value}/${halfOpenMax}). Testing if service has truly recovered...`,
-        `HALF-OPEN 中探测成功（${successCount.value}/${halfOpenMax}）。验证服务是否真正恢复...`,
-      );
-      log(message.value, 'info');
     }
   } else {
     failureCount.value = 0;

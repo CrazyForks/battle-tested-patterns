@@ -12,12 +12,13 @@ describe('RateLimiterViz', () => {
     vi.useRealTimers();
   });
 
-  it('renders SVG token bucket', () => {
+  it('renders SVG token bucket at capacity 5 (matches the pattern Core Idea diagram)', () => {
     const wrapper = mount(RateLimiterViz);
     const svg = wrapper.find('.rl-svg');
     expect(svg.exists()).toBe(true);
     const rects = wrapper.findAll('.rl-token-active');
-    expect(rects.length).toBe(8);
+    // capacity=5 / rate=2/sec aligns with the pattern body's ASCII diagram.
+    expect(rects.length).toBe(5);
   });
 
   it('send request consumes a token', async () => {
@@ -25,7 +26,7 @@ describe('RateLimiterViz', () => {
     await clickButton(wrapper, ['Send Request', '发送请求']);
 
     const activeTokens = wrapper.findAll('.rl-token-active');
-    expect(activeTokens.length).toBe(7);
+    expect(activeTokens.length).toBe(4);
   });
 
   it('burst sends multiple requests', async () => {
@@ -61,6 +62,6 @@ describe('RateLimiterViz', () => {
     await clickReset(wrapper);
 
     const activeTokens = wrapper.findAll('.rl-token-active');
-    expect(activeTokens.length).toBe(8);
+    expect(activeTokens.length).toBe(5);
   });
 });
