@@ -6,7 +6,7 @@ export interface LogEntry {
   index: number;
 }
 
-export function useVizLog(max = 30) {
+export function useVizLog(max = 60) {
   const entries = ref<LogEntry[]>([]);
   let counter = 0;
 

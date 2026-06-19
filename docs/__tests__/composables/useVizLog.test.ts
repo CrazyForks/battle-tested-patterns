@@ -45,9 +45,9 @@ describe('useVizLog', () => {
     });
   });
 
-  it('default max is 30', () => {
+  it('default max is 60', () => {
     const { entries, log } = useVizLog();
-    for (let i = 0; i < 35; i++) log(`entry ${i}`, 'info');
-    expect(entries.value).toHaveLength(30);
+    for (let i = 0; i < 65; i++) log(`entry ${i}`, 'info');
+    expect(entries.value).toHaveLength(60);
   });
 });
