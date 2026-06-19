@@ -25,6 +25,7 @@ import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { cpus } from 'node:os';
 import ts from 'typescript';
+import { IS_CI, resolveToolchains } from './lib/toolchain.ts';
 
 const execFileAsync = promisify(execFile);
 
@@ -32,8 +33,6 @@ const ROOT = join(import.meta.dirname, '..');
 const DOCS_DIR = join(ROOT, 'docs', 'patterns');
 const TMP_DIR = join(ROOT, '.tmp-code-verify');
 
-/** Treat missing toolchains as failures in CI; skip them locally. */
-const IS_CI = process.env.CI === 'true' || process.env.CI === '1';
 /** Bounded concurrency for compiler subprocesses (Rust/Python). */
 const CONCURRENCY = Math.max(2, Math.min(cpus().length, 8));
 
@@ -442,17 +441,6 @@ async function mapLimit<T, R>(
   return results;
 }
 
-// ─── Toolchain detection ─────────────────────────────────────────────────────
-
-async function hasToolchain(cmd: string, args: string[] = ['--version']): Promise<boolean> {
-  try {
-    await execFileAsync(cmd, args, { timeout: 10000 });
-    return true;
-  } catch {
-    return false;
-  }
-}
-
 // ─── Orchestration ───────────────────────────────────────────────────────────
 
 async function main() {
@@ -469,28 +457,16 @@ async function main() {
   const byLang = (lang: Lang) => allBlocks.filter((b) => b.lang === lang && !b.skip);
   const skipped = allBlocks.filter((b) => b.skip);
 
-  const [hasRust, hasGo, hasPython] = await Promise.all([
-    hasToolchain('rustc'),
-    hasToolchain('go', ['version']),
-    hasToolchain('python3'),
+  // Probe toolchains and enforce CI fail-hard / local-skip policy (shared lib).
+  const [rust, go, python] = await resolveToolchains([
+    { cmd: 'rustc', label: 'Rust' },
+    { cmd: 'go', args: ['version'], label: 'Go' },
+    { cmd: 'python3', label: 'Python' },
   ]);
-
-  // Hard fail in CI if a toolchain is missing — otherwise non-TS docs go
-  // silently unverified (the historical gap this refactor closes).
-  const missing: string[] = [];
-  if (!hasRust) missing.push('rustc');
-  if (!hasGo) missing.push('go');
-  if (!hasPython) missing.push('python3');
-  if (IS_CI && missing.length > 0) {
-    console.error(`❌ Missing toolchains in CI: ${missing.join(', ')}`);
-    console.error('   CI must provide all toolchains so docs code is truly verified.');
-    process.exit(1);
-  }
-  for (const m of missing) {
-    console.log(
-      `⚠️  ${m} not found — ${m === 'rustc' ? 'Rust' : m === 'go' ? 'Go' : 'Python'} blocks skipped locally\n`,
-    );
-  }
+  const hasRust = rust.available;
+  const hasGo = go.available;
+  const hasPython = python.available;
+  console.log('');
 
   const results: BlockResult[] = [];
 

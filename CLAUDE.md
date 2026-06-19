@@ -83,8 +83,9 @@ impact**, not by which files changed.
 ```bash
 pnpm dev          # Start VitePress dev server
 pnpm build        # Build docs site
-pnpm test         # Run ALL tests (exercises + docs components)
+pnpm test         # Run JS-side tests (TS exercises via Vitest + docs components)
 pnpm test:exercises # Run TypeScript exercises only (Vitest)
+pnpm test:all     # Run exercise tests across ALL four languages (TS/Rust/Go/Python); missing toolchains skip locally, fail in CI
 pnpm test:docs    # Run Vue component tests only
 pnpm check        # Run all checks (lint + typecheck + test + verify + content quality)
 pnpm lint         # Lint markdown + JS/TS/Vue (ESLint) + CSS/Vue styles (Stylelint); see .sop/14
@@ -98,9 +99,9 @@ pnpm check:structure # Verify doc structure: frontmatter, sections, tab order, p
 pnpm check:zh-parity # Verify EN/ZH code blocks, links, and Mermaid parity
 pnpm check:exercises # Verify exercise + answer files exist for all patterns
 pnpm check:relations # Verify Related Patterns bidirectionality and sidebar consistency
-cd exercises/rust && cargo test    # Run Rust exercises
-cd exercises/go && go test ./...   # Run Go exercises
-cd exercises/python && pytest      # Run Python exercises
+cd exercises/rust && cargo test    # Run Rust exercises (or: pnpm test:rust)
+cd exercises/go && go test ./...   # Run Go exercises (or: pnpm test:go)
+cd exercises/python && pytest      # Run Python exercises (or: pnpm test:python)
 ```
 
 ## Skills
