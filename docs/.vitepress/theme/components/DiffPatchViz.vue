@@ -117,8 +117,8 @@ function modify() {
   hasDiff.value = false;
   patched.value = false;
   message.value = t(
-    'Modified panel updated — click "Diff" to compute the LCS-based diff. This is the same algorithm git uses internally.',
-    '修改面板已更新 — 点击"Diff"计算基于 LCS 的差异。这与 git 内部使用的算法相同。',
+    'Modified panel updated — click "Diff" to compute a greedy forward-scan diff (the algorithm shown in this pattern). Git uses Myers\' diff internally for a minimal script.',
+    '修改面板已更新 — 点击"Diff"用贪心前向扫描计算差异（即本模式展示的算法）。Git 内部使用 Myers diff 以得到最小脚本。',
   );
   commitSnapshot('modify');
 }
@@ -127,47 +127,48 @@ function computeDiff() {
   const a = originalLines.value;
   const b = modifiedLines.value;
 
-  const m = a.length;
-  const n = b.length;
-  const dp: number[][] = Array.from({ length: m + 1 }, () => Array(n + 1).fill(0));
+  // Greedy forward scan — the same algorithm shown in the pattern's
+  // Implementation section. Walk both lists with two pointers:
+  //   - lines match            → keep, advance both
+  //   - old line not ahead in b → delete, advance old
+  //   - otherwise              → insert, advance new
+  // then drain whatever remains. Simple and clear; not a minimal edit
+  // script (production tools like git use Myers' diff for that).
+  const result: DiffLine[] = [];
+  let oldIdx = 0;
+  let newIdx = 0;
 
-  for (let i = 1; i <= m; i++) {
-    for (let j = 1; j <= n; j++) {
-      if (a[i - 1] === b[j - 1]) {
-        dp[i][j] = dp[i - 1][j - 1] + 1;
-      } else {
-        dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
-      }
-    }
-  }
-
-  let i = m;
-  let j = n;
-  const stack: DiffLine[] = [];
-  while (i > 0 || j > 0) {
-    if (i > 0 && j > 0 && a[i - 1] === b[j - 1]) {
-      stack.push({ type: 'keep', text: a[i - 1] });
-      i--;
-      j--;
-    } else if (j > 0 && (i === 0 || dp[i][j - 1] >= dp[i - 1][j])) {
-      stack.push({ type: 'add', text: b[j - 1] });
-      j--;
+  while (oldIdx < a.length && newIdx < b.length) {
+    if (a[oldIdx] === b[newIdx]) {
+      result.push({ type: 'keep', text: a[oldIdx]! });
+      oldIdx++;
+      newIdx++;
+    } else if (!b.some((line, bi) => bi >= newIdx && line === a[oldIdx])) {
+      result.push({ type: 'del', text: a[oldIdx]! });
+      oldIdx++;
     } else {
-      stack.push({ type: 'del', text: a[i - 1] });
-      i--;
+      result.push({ type: 'add', text: b[newIdx]! });
+      newIdx++;
     }
   }
+  while (oldIdx < a.length) {
+    result.push({ type: 'del', text: a[oldIdx]! });
+    oldIdx++;
+  }
+  while (newIdx < b.length) {
+    result.push({ type: 'add', text: b[newIdx]! });
+    newIdx++;
+  }
 
-  stack.reverse();
-  diffResult.value = stack;
+  diffResult.value = result;
   hasDiff.value = true;
 
-  const adds = stack.filter((l) => l.type === 'add').length;
-  const dels = stack.filter((l) => l.type === 'del').length;
-  const keeps = stack.filter((l) => l.type === 'keep').length;
+  const adds = result.filter((l) => l.type === 'add').length;
+  const dels = result.filter((l) => l.type === 'del').length;
+  const keeps = result.filter((l) => l.type === 'keep').length;
   message.value = t(
-    `Diff computed via LCS (Longest Common Subsequence): +${adds} additions, -${dels} deletions, ${keeps} unchanged. Time complexity: O(m×n) where m=${m}, n=${n}.`,
-    `通过 LCS（最长公共子序列）计算差异：+${adds} 新增，-${dels} 删除，${keeps} 未变。时间复杂度：O(m×n)，m=${m}，n=${n}。`,
+    `Diff computed via a greedy forward scan: +${adds} additions, -${dels} deletions, ${keeps} unchanged. Time complexity: O(n·m) — simple and clear, though not a guaranteed-minimal edit script.`,
+    `通过贪心前向扫描计算差异：+${adds} 新增，-${dels} 删除，${keeps} 未变。时间复杂度：O(n·m) —— 简单清晰，但不保证是最小编辑脚本。`,
   );
   log(message.value, 'success');
   commitSnapshot('computeDiff');
@@ -228,8 +229,8 @@ async function presetMinimalDiff() {
   computeDiff();
   log(
     t(
-      'LCS-based diff finds the minimum edit distance — precisely what changed, nothing more.',
-      '基于 LCS 的 diff 找到最小编辑距离 — 精确显示变更，不多不少。',
+      'The greedy forward scan keeps matching lines and pairs the rest as delete/insert — clear, though not the provably minimal edit distance.',
+      '贪心前向扫描保留匹配的行、将其余配为删除/插入 —— 清晰，但不是可证明的最小编辑距离。',
     ),
     'highlight',
   );
@@ -241,8 +242,8 @@ async function presetInsertBlock() {
   reset();
   presetRunning = true;
   message.value = t(
-    'Inserting a validation block — the diff algorithm finds that existing lines are "kept" and new lines are "added". The LCS ensures minimum edit distance.',
-    '插入验证代码块 — 差异算法发现现有行被"保留"而新行被"添加"。LCS 确保最小编辑距离。',
+    'Inserting a validation block — the diff finds that existing lines are "kept" and new lines are "added". The greedy scan keeps the unchanged lines and inserts the rest.',
+    '插入验证代码块 — 差异发现现有行被"保留"而新行被"添加"。贪心扫描保留未变的行、插入其余的行。',
   );
   await delay(800);
   if (!presetRunning || isAborted()) return;

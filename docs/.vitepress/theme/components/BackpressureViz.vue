@@ -16,6 +16,11 @@ const queue = ref<number[]>([]);
 const produced = ref(0);
 const consumed = ref(0);
 const dropped = ref(0);
+const blocked = ref(0);
+// Strategy mirrors the pattern's strategy table: Block (default, lossless —
+// producer waits for space) vs Drop (lossy — discard when full).
+const strategy = ref<'block' | 'drop'>('block');
+const producerWaiting = ref(false);
 const producerRate = ref(3);
 const consumerRate = ref(1);
 const message = ref(
@@ -36,10 +41,12 @@ interface BackpressureSnapshot {
   produced: number;
   consumed: number;
   dropped: number;
+  blocked: number;
+  producerWaiting: boolean;
 }
 
 const history = useVizHistory<BackpressureSnapshot>(
-  { queue: [], produced: 0, consumed: 0, dropped: 0 },
+  { queue: [], produced: 0, consumed: 0, dropped: 0, blocked: 0, producerWaiting: false },
   {
     getMessage: () => message.value,
     onRestore(snap, msg) {
@@ -49,6 +56,8 @@ const history = useVizHistory<BackpressureSnapshot>(
       produced.value = snap.produced;
       consumed.value = snap.consumed;
       dropped.value = snap.dropped;
+      blocked.value = snap.blocked;
+      producerWaiting.value = snap.producerWaiting;
       producerActive.value = false;
       consumerActive.value = false;
       if (msg !== undefined) message.value = msg;
@@ -56,26 +65,46 @@ const history = useVizHistory<BackpressureSnapshot>(
   },
 );
 
+function snapshot(): BackpressureSnapshot {
+  return {
+    queue: [...queue.value],
+    produced: produced.value,
+    consumed: consumed.value,
+    dropped: dropped.value,
+    blocked: blocked.value,
+    producerWaiting: producerWaiting.value,
+  };
+}
+
 function producerTick() {
   if (!producerActive.value) return;
   if (queue.value.length >= QUEUE_CAP) {
+    if (strategy.value === 'block') {
+      // Block strategy (default, lossless): the producer does NOT discard —
+      // it waits for the consumer to free a slot. No item is produced this
+      // tick; nothing is lost. This is what Go channels and Node.js streams
+      // (write() returning false → wait for 'drain') actually do.
+      blocked.value++;
+      producerWaiting.value = true;
+      message.value = t(
+        `BACKPRESSURE! Producer BLOCKED — queue full at ${QUEUE_CAP}. The producer waits for a free slot instead of dropping. (Go channels & Node.js streams' 'drain' work this way.)`,
+        `背压！生产者被阻塞 —— 队列已满（${QUEUE_CAP}）。生产者等待空位而非丢弃数据。（Go channel 与 Node.js streams 的 'drain' 即如此。）`,
+      );
+      log(message.value, 'warning');
+      history.commit(snapshot(), `block (waiting)`);
+      return;
+    }
+    // Drop strategy (lossy, opt-in): discard the newest item when full.
     dropped.value++;
     message.value = t(
-      `BACKPRESSURE! Item #${nextItem} DROPPED — queue full at ${QUEUE_CAP}. In TCP, this triggers window shrinking; in RxJS, this drops or buffers.`,
-      `背压！项目 #${nextItem} 被丢弃 — 队列已满（${QUEUE_CAP}）。在 TCP 中，这会触发窗口收缩；在 RxJS 中，会丢弃或缓冲。`,
+      `Item #${nextItem} DROPPED — queue full at ${QUEUE_CAP}. Drop is the lossy strategy (metrics/telemetry); the buffer is bounded but data is lost.`,
+      `项目 #${nextItem} 被丢弃 —— 队列已满（${QUEUE_CAP}）。丢弃是有损策略（用于指标/遥测）；缓冲区有界但数据会丢失。`,
     );
     log(message.value, 'error');
-    history.commit(
-      {
-        queue: [...queue.value],
-        produced: produced.value,
-        consumed: consumed.value,
-        dropped: dropped.value,
-      },
-      `drop #${nextItem}`,
-    );
+    history.commit(snapshot(), `drop #${nextItem}`);
     nextItem++;
   } else {
+    producerWaiting.value = false;
     queue.value.push(nextItem);
     produced.value++;
     const fill = Math.round((queue.value.length / QUEUE_CAP) * 100);
@@ -92,15 +121,7 @@ function producerTick() {
       );
       log(message.value, 'info');
     }
-    history.commit(
-      {
-        queue: [...queue.value],
-        produced: produced.value,
-        consumed: consumed.value,
-        dropped: dropped.value,
-      },
-      `produce #${nextItem}`,
-    );
+    history.commit(snapshot(), `produce #${nextItem}`);
     nextItem++;
   }
 }
@@ -110,17 +131,11 @@ function consumerTick() {
   if (queue.value.length > 0) {
     const item = queue.value.shift()!;
     consumed.value++;
+    // Draining a slot releases a blocked producer (Block strategy).
+    if (producerWaiting.value) producerWaiting.value = false;
     message.value = t(`Consumed #${item}`, `已消费 #${item}`);
     log(message.value, 'success');
-    history.commit(
-      {
-        queue: [...queue.value],
-        produced: produced.value,
-        consumed: consumed.value,
-        dropped: dropped.value,
-      },
-      `consume #${item}`,
-    );
+    history.commit(snapshot(), `consume #${item}`);
   }
 }
 
@@ -166,6 +181,8 @@ function reset() {
   produced.value = 0;
   consumed.value = 0;
   dropped.value = 0;
+  blocked.value = 0;
+  producerWaiting.value = false;
   nextItem = 1;
   message.value = t('Reset! Configure rates and start.', '已重置！配置速率并开始。');
   clearLog();
@@ -176,13 +193,14 @@ function presetOverload() {
   if (presetRunning) return;
   reset();
   presetRunning = true;
+  strategy.value = 'block';
   producerRate.value = 5;
   consumerRate.value = 1;
   startProducer();
   startConsumer();
   message.value = t(
-    'Overload: producer 5x faster than consumer. Watch the queue fill up and items get dropped — this is why Node.js streams have highWaterMark.',
-    '过载：生产者比消费者快 5 倍。观察队列填满和项目被丢弃 — 这就是 Node.js streams 有 highWaterMark 的原因。',
+    'Overload (Block strategy): producer 5x faster than consumer. The queue fills, then the producer BLOCKS and waits for space — no data lost. This is why Node.js streams have highWaterMark + drain.',
+    '过载（阻塞策略）：生产者比消费者快 5 倍。队列填满后生产者阻塞、等待空位 —— 不丢数据。这就是 Node.js streams 有 highWaterMark + drain 的原因。',
   );
   log(message.value, 'highlight');
 }
@@ -191,6 +209,7 @@ function presetBalanced() {
   if (presetRunning) return;
   reset();
   presetRunning = true;
+  strategy.value = 'block';
   producerRate.value = 2;
   consumerRate.value = 2;
   startProducer();
@@ -206,6 +225,7 @@ function presetBurst() {
   if (presetRunning) return;
   reset();
   presetRunning = true;
+  strategy.value = 'block';
   producerRate.value = 5;
   consumerRate.value = 3;
   startProducer();
@@ -217,13 +237,13 @@ function presetBurst() {
     if (!presetRunning) return;
     startConsumer();
     message.value = t(
-      "Consumer started! Watch the queue drain. With rate 3/s vs 5/s producer, the consumer can't keep up — backpressure will eventually kick in.",
-      '消费者已启动！观察队列排空。消费速率 3/s vs 生产 5/s，消费者跟不上 — 背压最终会触发。',
+      "Consumer started! Watch the queue drain. With rate 3/s vs 5/s producer, the consumer can't keep up — the producer blocks until space frees up.",
+      '消费者已启动！观察队列排空。消费速率 3/s vs 生产 5/s，消费者跟不上 — 生产者将阻塞，直到有空位。',
     );
     log(
       t(
-        'The queue absorbs burst traffic as a shock absorber — but sustained rate mismatch will eventually cause drops.',
-        '队列作为减震器吸收突发流量 — 但持续的速率不匹配最终会导致丢弃。',
+        'The queue absorbs burst traffic as a shock absorber — but a sustained rate mismatch eventually blocks the producer (lossless), not drops.',
+        '队列作为减震器吸收突发流量 — 但持续的速率不匹配最终会阻塞生产者（无损），而非丢弃。',
       ),
       'highlight',
     );
@@ -250,9 +270,10 @@ function fillColor() {
 
     <div class="bp-flow">
       <!-- Producer -->
-      <div class="bp-actor bp-producer">
+      <div class="bp-actor bp-producer" :class="{ 'bp-actor-waiting': producerWaiting }">
         <div class="bp-actor-label">{{ t('Producer', '生产者') }}</div>
         <div class="bp-actor-rate">{{ producerRate }}/s</div>
+        <div v-if="producerWaiting" class="bp-actor-state">{{ t('WAITING', '等待中') }}</div>
       </div>
 
       <div class="bp-arrow">→</div>
@@ -296,9 +317,31 @@ function fillColor() {
       <span class="bp-stat"
         >{{ t('Consumed:', '已消费:') }} <strong>{{ consumed }}</strong></span
       >
-      <span class="bp-stat bp-stat-drop"
+      <span v-if="strategy === 'block'" class="bp-stat bp-stat-block"
+        >{{ t('Blocked:', '已阻塞:') }} <strong>{{ blocked }}</strong></span
+      >
+      <span v-else class="bp-stat bp-stat-drop"
         >{{ t('Dropped:', '已丢弃:') }} <strong>{{ dropped }}</strong></span
       >
+    </div>
+
+    <!-- Strategy toggle -->
+    <div class="bp-strategy">
+      <span class="viz-label">{{ t('When full:', '满时策略：') }}</span>
+      <button
+        class="viz-btn"
+        :class="{ 'viz-btn--primary': strategy === 'block' }"
+        @click="strategy = 'block'"
+      >
+        {{ t('Block (lossless)', '阻塞（无损）') }}
+      </button>
+      <button
+        class="viz-btn"
+        :class="{ 'viz-btn--primary': strategy === 'drop' }"
+        @click="strategy = 'drop'"
+      >
+        {{ t('Drop (lossy)', '丢弃（有损）') }}
+      </button>
     </div>
 
     <!-- Rate controls -->
@@ -389,6 +432,30 @@ function fillColor() {
   border-color: var(--viz-primary);
 }
 
+.bp-actor-waiting {
+  border-color: var(--viz-warning);
+  animation: bp-wait-pulse 0.8s ease-in-out infinite;
+}
+
+.bp-actor-state {
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--viz-warning);
+  letter-spacing: 0.05em;
+}
+
+@keyframes bp-wait-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.55;
+  }
+}
+
 .bp-consumer {
   border-color: var(--viz-success);
 }
@@ -470,6 +537,18 @@ function fillColor() {
 
 .bp-stat-drop {
   color: var(--viz-danger);
+}
+
+.bp-stat-block {
+  color: var(--viz-warning);
+}
+
+.bp-strategy {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.5rem;
 }
 
 .bp-rates {

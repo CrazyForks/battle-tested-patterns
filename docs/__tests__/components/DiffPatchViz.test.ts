@@ -61,4 +61,30 @@ describe('DiffPatchViz', () => {
     expect(counter.exists()).toBe(true);
     expect(counter.text()).toBe('2/2');
   });
+
+  it('uses a greedy forward scan, not LCS (semantic alignment with the pattern body)', async () => {
+    // Regression for the viz-vs-body semantic audit: the pattern's
+    // Implementation section documents a greedy forward scan ("not a
+    // guaranteed-minimal edit script"). The component must demonstrate THAT
+    // algorithm — never claim LCS / minimum edit distance.
+    const wrapper = mount(DiffPatchViz);
+
+    // "Minimal Change" preset renames a parameter on line 1; lines 2-4 unchanged.
+    // Greedy scan: line 1 mismatches → delete old[0], insert new[0]; then 3 keeps.
+    await clickButton(wrapper, ['Minimal Change', '最小改动']);
+    await vi.advanceTimersByTimeAsync(2000);
+    await flushPromises();
+
+    const diffLines = wrapper.findAll('.dp-diff-line');
+    const adds = diffLines.filter((l) => l.classes().includes('dp-diff-line--add'));
+    const dels = diffLines.filter((l) => l.classes().includes('dp-diff-line--del'));
+    // 1 deletion + 1 insertion + 3 unchanged = 5 rows total.
+    expect(dels).toHaveLength(1);
+    expect(adds).toHaveLength(1);
+    expect(diffLines).toHaveLength(5);
+
+    // The narration must describe the greedy scan, never LCS / minimum edit.
+    const status = wrapper.find('.viz-status').text();
+    expect(status).not.toMatch(/LCS|Longest Common|minimum edit|最小编辑/);
+  });
 });
