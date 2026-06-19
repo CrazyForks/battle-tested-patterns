@@ -37,7 +37,8 @@ alone — what is instructive is *how they compose*.
 
 ## Pattern 1 — Vtable: one call, many implementations
 
-Every open file in the kernel points at a `file_operations` struct: a table of
+Every open file in the kernel points at a `file_operations` struct (via the
+`f_op` field on `struct file`): a table of
 function pointers. `read()` does not know or care what kind of file it is — it
 calls into the file's `file_operations`. (`vfs_read` first tries `->read`, and
 falls back to `->read_iter` via `new_sync_read` when `->read` is absent —

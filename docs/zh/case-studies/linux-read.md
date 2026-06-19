@@ -25,7 +25,7 @@ description: 深入剖析单次 read() 系统调用如何组合用于 VFS 分发
 
 ## 模式 1 —— Vtable：一次调用，多种实现
 
-内核中每个打开的文件都指向一个 `file_operations` 结构体：一张函数指针表。`read()` 不知道、也不关心这是什么类型的文件——它调用进文件的 `file_operations`。（`vfs_read` 会先尝试 `->read`，当 `->read` 缺失时经 `new_sync_read` 回退到 `->read_iter`——现代文件系统只提供 `->read_iter`。）ext4、套接字、`/proc` 各自提供它们*自己的* `file_operations`，于是同一个系统调用落到正确的代码里。
+内核中每个打开的文件都指向一个 `file_operations` 结构体（通过 `struct file` 上的 `f_op` 字段）：一张函数指针表。`read()` 不知道、也不关心这是什么类型的文件——它调用进文件的 `file_operations`。（`vfs_read` 会先尝试 `->read`，当 `->read` 缺失时经 `new_sync_read` 回退到 `->read_iter`——现代文件系统只提供 `->read_iter`。）ext4、套接字、`/proc` 各自提供它们*自己的* `file_operations`，于是同一个系统调用落到正确的代码里。
 
 ```c
 struct file_operations {
