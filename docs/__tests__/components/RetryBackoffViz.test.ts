@@ -66,4 +66,14 @@ describe('RetryBackoffViz', () => {
     // Must be at least 280 to fit English placeholder text
     expect(width).toBeGreaterThanOrEqual(280);
   });
+
+  it('formula bar uses additive jitter, not ± (semantic alignment)', () => {
+    // Regression for the viz-vs-body semantic audit: the pattern formula is
+    // additive — delay = min(base*2^attempt + random(0, jitter), cap).
+    // The bar must NOT show the old two-directional '± random jitter'.
+    const wrapper = mount(RetryBackoffViz);
+    const formula = wrapper.find('.rb-formula').text();
+    expect(formula).toContain('random(0, jitter)');
+    expect(formula).not.toContain('±');
+  });
 });

@@ -80,4 +80,42 @@ describe('CircuitBreakerViz', () => {
     // Still CLOSED because counter was reset by the success
     expect(wrapper.text()).toContain('CLOSED');
   });
+
+  it('a single probe success in HALF_OPEN closes the circuit (semantic alignment)', async () => {
+    // Regression for the viz-vs-body semantic audit: the pattern's state
+    // table says HALF_OPEN "Allow one probe call. Success → CLOSED." The
+    // component must close on ONE success, not require two.
+    const wrapper = mount(CircuitBreakerViz);
+
+    // Trip to OPEN with 3 failures (threshold = 3).
+    for (let i = 0; i < 3; i++) {
+      await clickButton(wrapper, ['Send Failure', '发送失败']);
+    }
+    expect(wrapper.find('.viz-status').text()).toMatch(/→ OPEN|打开/);
+
+    // Timeout elapses → HALF_OPEN (one probe allowed).
+    await clickButton(wrapper, ['Timeout Reset', '超时重置']);
+    expect(wrapper.find('.viz-status').text()).toMatch(/HALF-OPEN/);
+
+    // A SINGLE successful probe must close the circuit immediately.
+    await clickButton(wrapper, ['Send Success', '发送成功']);
+    expect(wrapper.find('.viz-status').text()).toMatch(
+      /HALF-OPEN → CLOSED|HALF-OPEN 中探测调用成功 → 关闭/,
+    );
+  });
+
+  it('a single failure in HALF_OPEN re-trips to OPEN', async () => {
+    const wrapper = mount(CircuitBreakerViz);
+    for (let i = 0; i < 3; i++) {
+      await clickButton(wrapper, ['Send Failure', '发送失败']);
+    }
+    await clickButton(wrapper, ['Timeout Reset', '超时重置']);
+    expect(wrapper.find('.viz-status').text()).toMatch(/HALF-OPEN/);
+
+    // One failed probe re-opens the circuit.
+    await clickButton(wrapper, ['Send Failure', '发送失败']);
+    expect(wrapper.find('.viz-status').text()).toMatch(
+      /HALF-OPEN → back to OPEN|HALF-OPEN 中失败 → 重新打开/,
+    );
+  });
 });

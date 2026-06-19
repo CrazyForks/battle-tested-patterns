@@ -51,4 +51,19 @@ describe('ConsistentHashViz', () => {
     const wrapper = mount(ConsistentHashViz);
     expect(wrapper.find('.viz-presets').exists()).toBe(true);
   });
+
+  it('add-key narration describes the clockwise walk it shows, not a false binary search (semantic alignment)', async () => {
+    // Regression for the viz-vs-body semantic audit: findOwner() does a
+    // linear clockwise scan, so the narration must describe that — and only
+    // attribute O(log N) binary search to production rings, not to the demo.
+    const wrapper = mount(ConsistentHashViz);
+    await clickButton(wrapper, ['Add Key', '添加键']);
+    vi.advanceTimersByTime(600);
+    await flushPromises();
+
+    const status = wrapper.find('.viz-status').text();
+    expect(status).toMatch(/clockwise|顺时针/);
+    // Must NOT claim the demo's own lookup is binary search.
+    expect(status).not.toMatch(/Lookup is O\(log N\) via binary search/);
+  });
 });
