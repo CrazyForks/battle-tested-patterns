@@ -54,6 +54,17 @@ Instead of dedicating one thread per connection (expensive context switches, hig
 
 <EventLoopViz />
 
+::: tip Two "event loops", one name
+This page covers the **reactor** sense of the event loop: the OS-level loop in
+libuv/Redis that multiplexes I/O across phases (`timers → poll → check → …`),
+proven in the source links below. JavaScript's language-level loop is a
+*narrower* slice of the same idea — a call stack draining **microtasks**
+(`Promise.then`) and **macrotasks** (`setTimeout`) in a fixed order. To build
+intuition for that JS slice specifically, [JSV9000](https://www.jsv9000.app/)
+is an excellent interactive visualizer: paste JS and watch the call stack,
+microtask queue, and macrotask queue drain step by step.
+:::
+
 ## Production Proof
 
 | Project | Source | Usage |

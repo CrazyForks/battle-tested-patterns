@@ -54,6 +54,10 @@ difficulty: "intermediate"
 
 <EventLoopViz />
 
+::: tip 同名的两个"事件循环"
+本页讲的是事件循环的 **反应器（reactor）** 含义：libuv/Redis 中那个操作系统层的循环，按阶段（`timers → poll → check → …`）多路复用 I/O，由下方的源码链接佐证。JavaScript 语言层的循环是同一思想的一个 *更窄* 的切片——一个调用栈，按固定顺序排空 **微任务**（`Promise.then`）与 **宏任务**（`setTimeout`）。若想专门建立对 JS 这一层的直觉，[JSV9000](https://www.jsv9000.app/) 是一个很好的交互式可视化工具：粘贴 JS 代码，逐步观察调用栈、微任务队列与宏任务队列的排空过程。
+:::
+
 ## 生产验证
 
 | 项目 | 源码 | 用途 |
