@@ -4,6 +4,48 @@ All notable changes to this project will be documented in this file.
 
 See [commit history](https://github.com/Totoro-jam/battle-tested-patterns/commits/main) for detailed changes.
 
+## [1.16.0](https://github.com/Totoro-jam/battle-tested-patterns/compare/v1.15.0...v1.16.0) (2026-06-20)
+
+
+### Features
+
+* **case-studies:** add SQLite, Kafka, and Lucene three-pattern studies ([987234c](https://github.com/Totoro-jam/battle-tested-patterns/commit/987234c98c133a4dfe7f2643104e3540c362cbaa))
+* **skills:** add adopt-pattern and audit-patterns agent skills ([e6177b0](https://github.com/Totoro-jam/battle-tested-patterns/commit/e6177b09c43059e4a822e96f71b879647aae57d1))
+* **skills:** add pattern skills as installable Claude Code plugin ([b9f5696](https://github.com/Totoro-jam/battle-tested-patterns/commit/b9f569664d751edf380bad866e5994f8460d8336))
+* **skills:** make skills installable as a Claude Code plugin via marketplace ([8bafd16](https://github.com/Totoro-jam/battle-tested-patterns/commit/8bafd16ee4b7c1d9c4c12ff8b7e8f4b3f70e2aaa))
+
+
+### Bug Fixes
+
+* **check-relations:** make R3 actually validate the catalog pages ([0757ddf](https://github.com/Totoro-jam/battle-tested-patterns/commit/0757ddf30bf2477c5a37cc739cb2765dfdf45e5a))
+* **ci:** use test:ts in CI TypeScript job, fix remaining doc references ([aecd3df](https://github.com/Totoro-jam/battle-tested-patterns/commit/aecd3dfd00afd5a32025b000a78e14d6d79ad702))
+* **lru-cache:** correct zh tradeoff translation in Production Proof ([f6d473b](https://github.com/Totoro-jam/battle-tested-patterns/commit/f6d473b75c54f40df094c10de65e1fb8b4cd614c))
+* **skip-list:** replace fake Rust answer with a real skip list ([a696ad0](https://github.com/Totoro-jam/battle-tested-patterns/commit/a696ad0a43f358554d0317436dba8e75bafbce76))
+* **test:** add Python minimum version check (≥ 3.10) to toolchain probe ([e37feed](https://github.com/Totoro-jam/battle-tested-patterns/commit/e37feed63aa54a3dbee6d574b1a6c91e29b36110))
+* **test:** add Python version guard + diagnostic to test:python script ([72cb51a](https://github.com/Totoro-jam/battle-tested-patterns/commit/72cb51a664e9eae68bd76e962fcb519ee93469df))
+* **test:** smart Python interpreter discovery for macOS conda users ([da0c965](https://github.com/Totoro-jam/battle-tested-patterns/commit/da0c965bc08944857a8e58040884a0486f6316b7))
+* **viz:** align 5 more demos with their pattern bodies ([413e329](https://github.com/Totoro-jam/battle-tested-patterns/commit/413e32964a8d4531bc6303c25241dc6df47ec286))
+* **viz:** align diff-patch & backpressure demos with their pattern bodies ([56eee78](https://github.com/Totoro-jam/battle-tested-patterns/commit/56eee7898166f82462b55e281e205c9e9aefe3a9))
+
+
+### Documentation
+
+* add Agent Skills install section to README (EN + ZH) ([74c7014](https://github.com/Totoro-jam/battle-tested-patterns/commit/74c7014b978182c053fddb9422efa65b005fc8ef))
+* add raymondfeng as a contributor for code, doc, and ideas ([#50](https://github.com/Totoro-jam/battle-tested-patterns/issues/50)) ([0698508](https://github.com/Totoro-jam/battle-tested-patterns/commit/06985085b98d74f7aef65cfd06bdce6e1b882e8b))
+* **case-studies:** apply three-role review fixes to linux-read & go-scheduler ([0ad02fe](https://github.com/Totoro-jam/battle-tested-patterns/commit/0ad02fe32fee956089203cd943a130bf924350df))
+* **event-loop:** clarify reactor vs JS loop, link JSV9000 ([a59ac95](https://github.com/Totoro-jam/battle-tested-patterns/commit/a59ac959aad2e843bc7e7418205b1ee5df24b81c))
+* **go-scheduler:** fix Production Proof header to match evidence types ([2963772](https://github.com/Totoro-jam/battle-tested-patterns/commit/2963772d4215b7c6f8f1249380c4e40718fa018b))
+* **patterns:** update exercise run command to test:ts in 92 pattern docs ([125f753](https://github.com/Totoro-jam/battle-tested-patterns/commit/125f75346402a179d2dcff0ef677294c3e800047))
+* suppress pre-existing markdownlint MD036/MD032 in README patterns table ([c0527f6](https://github.com/Totoro-jam/battle-tested-patterns/commit/c0527f62e618ec781a9dec1d93d0c8e7e752e07e))
+* sync CLAUDE.md and CONTRIBUTING with new test:python behavior ([15d1052](https://github.com/Totoro-jam/battle-tested-patterns/commit/15d10523f11deda1c70390fde77a923e0fadf7e4))
+* sync SOP 04/08, PR template, and diagnose skill with unified test commands ([a033324](https://github.com/Totoro-jam/battle-tested-patterns/commit/a03332460af577a101987aea05fa78b9844efe4f))
+
+
+### Code Refactoring
+
+* **test:** rename scripts for semantic clarity and sync docs ([f8d944d](https://github.com/Totoro-jam/battle-tested-patterns/commit/f8d944d61ca698286b36823c86f720209df7aa2e))
+* **viz:** raise default useVizLog max from 30 to 60 ([02cb71b](https://github.com/Totoro-jam/battle-tested-patterns/commit/02cb71b671b6409560358a5bb3e3dde3550e8352))
+
 ## [1.15.0](https://github.com/Totoro-jam/battle-tested-patterns/compare/v1.14.1...v1.15.0) (2026-06-18)
 
 
