@@ -83,18 +83,44 @@ async function checkUrl(
 }
 
 async function main() {
-  const isCI = process.argv.includes('--ci');
-  const files = [
-    ...findMarkdownFiles(DOCS_DIR),
-    ...ROOT_READMES.filter((f) => {
-      try {
-        statSync(f);
-        return true;
-      } catch {
-        return false;
-      }
-    }),
-  ];
+  const argv = process.argv.slice(2);
+  const isCI = argv.includes('--ci');
+
+  // `--changed <file...>`: only verify the given files (PR-diff mode). Keeps the
+  // CI gate deterministic — a PR touching 2 docs checks ~handful of links, well
+  // under GitHub's anonymous rate limit. With no `--changed`, scan everything
+  // (unchanged default behaviour, used by the weekly cron / local full run).
+  const changedIdx = argv.indexOf('--changed');
+  let files: string[];
+  if (changedIdx !== -1) {
+    files = argv
+      .slice(changedIdx + 1)
+      .filter((a) => a.endsWith('.md'))
+      .map((f) => (f.startsWith('/') ? f : join(ROOT, f)))
+      .filter((f) => {
+        try {
+          return statSync(f).isFile();
+        } catch {
+          return false;
+        }
+      });
+    if (files.length === 0) {
+      console.log('No changed markdown files to verify.');
+      process.exit(0);
+    }
+  } else {
+    files = [
+      ...findMarkdownFiles(DOCS_DIR),
+      ...ROOT_READMES.filter((f) => {
+        try {
+          statSync(f);
+          return true;
+        } catch {
+          return false;
+        }
+      }),
+    ];
+  }
 
   if (files.length === 0) {
     console.log('No markdown files found.');

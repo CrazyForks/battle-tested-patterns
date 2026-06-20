@@ -147,6 +147,39 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm check:content
 
+  # Verify source links ONLY for docs touched by this PR. Scoping to the diff
+  # keeps the request count tiny (well under GitHub's anonymous rate limit).
+  # This is an ADVISORY check (continue-on-error): it surfaces a broken link on
+  # the PR itself for fast feedback, but external network flakiness must never
+  # block a merge — links are already 100% SHA permalinks (rarely rot), and the
+  # weekly verify-links.yml cron remains the authoritative full-sweep backstop.
+  # Deliberately NOT in the ci-pass gate so the gate stays deterministic.
+  verify-links-changed:
+    name: Verify Changed Source Links (advisory)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Collect changed markdown docs
+        id: changed
+        run: |
+          BASE="${{ github.event.pull_request.base.sha }}"
+          if [ -z "$BASE" ]; then BASE="HEAD~1"; fi
+          FILES=$(git diff --name-only --diff-filter=ACMR "$BASE" HEAD -- 'docs/**/*.md' 'README.md' 'README.zh-CN.md' | tr '\n' ' ')
+          echo "files=$FILES" >> "$GITHUB_OUTPUT"
+          echo "Changed docs: $FILES"
+      - name: Verify changed source links
+        if: steps.changed.outputs.files != ''
+        run: pnpm verify-links --ci --changed ${{ steps.changed.outputs.files }}
+        continue-on-error: true
+
   # ─── Gate Job ────────────────────────────────────────────────────────────
   # Branch Protection only needs to require this single check: "CI / CI Pass"
   # All individual jobs above run in parallel; this job waits for all of them.
