@@ -50,7 +50,7 @@ LRU 缓存将哈希表（O(1) 键查找）与双向链表（O(1) 访问顺序跟
 | 项目 | 源码 | 用途 |
 |------|------|------|
 | Go groupcache | [lru.go#L23-L104](https://github.com/golang/groupcache/blob/2c02b8208cf8c02a3e358cb1d9b60950647543fc/lru/lru.go#L23-L104) | `Cache` 结构体（L23-L34），含双向链表 + 哈希表。`Add`（L56-L71）插入/更新并移到前端；`Get`（L74-L83）命中时移到前端；`RemoveOldest`（L96-L104）从尾部淘汰。作者 Brad Fitzpatrick（memcached 创造者）。 |
-| Redis | [evict.c#L55-L83](https://github.com/redis/redis/blob/df63a65d4d4ee33ae67e9f101885074febe0bccb/src/evict.c#L55-L83) | 近似 LRU——缩减位宽的 LRU 时钟和带绕回处理的空闲时间估算。`evictionPoolPopulate`（L134-L225）采样 N 个键插入排序淘汰池。工程权衡：以 O(1) 内存开销换取规模化性能。 |
+| Redis | [evict.c#L55-L83](https://github.com/redis/redis/blob/df63a65d4d4ee33ae67e9f101885074febe0bccb/src/evict.c#L55-L83) | 近似 LRU——缩减位宽的 LRU 时钟和带绕回处理的空闲时间估算。`evictionPoolPopulate`（L134-L225）采样 N 个键插入排序淘汰池。工程权衡：以放弃精确 LRU 为代价，换取规模化下的 O(1) 内存开销。 |
 
 ## 实现
 
