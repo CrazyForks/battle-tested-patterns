@@ -62,8 +62,9 @@
 ```bash
 pnpm install                          # 安装依赖
 pnpm dev                              # 启动文档站开发服务器
-pnpm test                             # 运行所有测试（exercises + docs 组件）
-pnpm test:exercises                   # 仅运行 TypeScript 练习测试
+pnpm test                             # 运行全部测试：docs 组件 + 四种语言的练习
+pnpm test:exercises                   # 运行四种语言的练习测试（TS/Rust/Go/Python）
+pnpm test:ts                          # 仅运行 TypeScript 练习测试（Vitest）
 pnpm test:docs                        # 仅运行 Vue 组件测试
 pnpm check                            # 运行所有检查（lint + typecheck + test + verify + 内容质量）
 pnpm lint                             # Lint Markdown + JS/TS/Vue（ESLint）+ CSS（Stylelint）
@@ -73,10 +74,12 @@ pnpm verify-mermaid                   # 验证 Mermaid 图表语法
 pnpm verify-links                     # 验证源码链接（需要网络）
 pnpm verify-lines                     # 验证 Production Proof 行号范围（需要网络）
 pnpm check:content                    # 运行所有内容质量检查
-cd exercises/rust && cargo test       # 运行 Rust 练习
-cd exercises/go && go test ./...      # 运行 Go 练习
-cd exercises/python && pytest         # 运行 Python 练习
+pnpm test:rust                        # 运行 Rust 练习（cd exercises/rust && cargo test）
+pnpm test:go                          # 运行 Go 练习  （cd exercises/go && go test ./...）
+pnpm test:python                      # 运行 Python 练习（cd exercises/python && pytest）
 ```
+
+> `pnpm test` 与 `pnpm test:exercises` 会自动跳过本地缺失工具链的语言（CI 会安装全部四种，缺任意一种则直接失败）。
 
 ## PR 流程
 

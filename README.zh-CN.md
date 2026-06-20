@@ -235,12 +235,13 @@ git clone https://github.com/Totoro-jam/battle-tested-patterns.git
 cd battle-tested-patterns && pnpm install
 
 # 运行任意语言的练习
-pnpm test:exercises               # TypeScript（491 个测试，Vitest）
-cd exercises/rust && cargo test   # Rust（173 个测试）
-cd exercises/go && go test ./...  # Go（176 个测试）
-cd exercises/python && pytest     # Python（233 个测试）
+pnpm test:exercises               # 全部 4 种语言（TS/Rust/Go/Python）
+pnpm test:ts                      # 仅 TypeScript（491 个测试，Vitest）
+pnpm test:rust                    # 仅 Rust（173 个测试）
+pnpm test:go                      # 仅 Go（176 个测试）
+pnpm test:python                  # 仅 Python（233 个测试）
 
-pnpm test                         # 运行所有测试（exercises + docs 组件）
+pnpm test                         # 运行全部测试：docs 组件 + 4 种语言的练习
 
 pnpm dev                          # 本地文档站
 ```
@@ -255,7 +256,7 @@ pnpm dev                          # 本地文档站
 2. **TypeScript + ≥ 1 种其他语言** — 地道实现，不是翻译
 3. **4 种语言的练习文件**（TS/Rust/Go/Python）+ 答案文件
 4. **中文翻译**且代码块一致
-5. 所有测试通过（`pnpm test` · `cargo test` · `go test ./...` · `pytest`），无 lint 错误
+5. 所有测试通过（`pnpm test` 一次运行 4 种语言 + docs），无 lint 错误
 6. 源码链接每周由 CI 自动检查——失效链接自动开 Issue
 
 ## 贡献者

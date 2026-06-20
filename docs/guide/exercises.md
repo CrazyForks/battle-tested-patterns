@@ -36,13 +36,13 @@ nvm use   # reads .nvmrc → Node 22
 pnpm install
 
 # Run all TypeScript exercises
-pnpm test:exercises
+pnpm test:ts
 
 # Run a specific pattern
-pnpm test:exercises bitmask
+pnpm test:ts bitmask
 
 # Watch mode — re-runs on file save
-pnpm test:exercises -- --watch
+pnpm test:ts -- --watch
 ```
 
 **File location:** `exercises/typescript/<pattern-name>/01-basic.test.ts`
@@ -128,7 +128,7 @@ Every exercise follows the **TODO-stub format**:
 # 4. Delete the implementation, keep the function signature
 # 5. Write your own implementation
 # 6. Run the test to check your work:
-pnpm test:exercises ring-buffer     # TypeScript
+pnpm test:ts ring-buffer     # TypeScript
 cargo test ring_buffer     # Rust
 go test -run RingBuffer    # Go
 pytest ring_buffer/test_ring_buffer.py # Python
@@ -176,10 +176,13 @@ These contain pure implementation code (no tests). Use them to check your work o
 
 ```bash
 # From the project root:
-pnpm test:exercises                        # TypeScript (491 tests)
-(cd exercises/rust && cargo test)          # Rust (173 tests)
-(cd exercises/go && go test ./...)         # Go (176 tests)
-(cd exercises/python && pytest)            # Python (233 tests)
+pnpm test:exercises                        # All 4 languages at once (TS/Rust/Go/Python)
+
+# …or one language at a time:
+pnpm test:ts                               # TypeScript (491 tests)
+pnpm test:rust                             # Rust (173 tests)
+pnpm test:go                               # Go (176 tests)
+pnpm test:python                           # Python (233 tests)
 ```
 
 ## Troubleshooting

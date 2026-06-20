@@ -83,9 +83,9 @@ impact**, not by which files changed.
 ```bash
 pnpm dev          # Start VitePress dev server
 pnpm build        # Build docs site
-pnpm test         # Run JS-side tests (TS exercises via Vitest + docs components)
-pnpm test:exercises # Run TypeScript exercises only (Vitest)
-pnpm test:all     # Run exercise tests across ALL four languages (TS/Rust/Go/Python); missing toolchains skip locally, fail in CI
+pnpm test         # Run ALL tests: docs components + exercises in all 4 languages (missing toolchains skip locally, fail in CI)
+pnpm test:exercises # Run exercise tests across all 4 languages (TS/Rust/Go/Python)
+pnpm test:ts      # Run TypeScript exercises only (Vitest)
 pnpm test:docs    # Run Vue component tests only
 pnpm check        # Run all checks (lint + typecheck + test + verify + content quality)
 pnpm lint         # Lint markdown + JS/TS/Vue (ESLint) + CSS/Vue styles (Stylelint); see .sop/14

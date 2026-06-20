@@ -14,7 +14,7 @@ git clone https://github.com/Totoro-jam/battle-tested-patterns.git
 cd battle-tested-patterns
 pnpm install
 pnpm dev        # 启动文档站开发服务器
-pnpm test       # 运行所有测试（exercises + docs 组件）
+pnpm test       # 运行全部测试：docs 组件 + 四种语言的练习
 ```
 
 ## 贡献类型
@@ -48,7 +48,7 @@ pnpm test       # 运行所有测试（exercises + docs 组件）
 - TypeScript 实现 + ≥ 1 种其他语言（Rust/Go/Python）
 - 4 种语言的练习文件（TS、Rust、Go、Python）+ 答案文件
 - 中文翻译且代码块一致
-- 所有测试通过（`pnpm test` · `cargo test` · `go test ./...` · `pytest`），无 lint 错误
+- 所有测试通过（`pnpm test` 一次运行四种语言 + docs），无 lint 错误
 
 完整检查清单见 [PR 模板](https://github.com/Totoro-jam/battle-tested-patterns/blob/e758be266d38db94723be233863e6f3effbf46cc/.github/PULL_REQUEST_TEMPLATE.md)。
 

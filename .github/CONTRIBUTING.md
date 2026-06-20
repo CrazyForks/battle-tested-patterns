@@ -62,8 +62,9 @@ This is our core differentiator — every claim must be verifiable:
 ```bash
 pnpm install                          # Install dependencies
 pnpm dev                              # Start VitePress dev server
-pnpm test                             # Run all tests (exercises + docs components)
-pnpm test:exercises                   # Run TypeScript exercises only
+pnpm test                             # Run ALL tests: docs components + exercises in all 4 languages
+pnpm test:exercises                   # Run exercise tests across all 4 languages (TS/Rust/Go/Python)
+pnpm test:ts                          # Run TypeScript exercises only (Vitest)
 pnpm test:docs                        # Run Vue component tests only
 pnpm check                            # Run all checks (lint + typecheck + test + verify + content quality)
 pnpm lint                             # Lint markdown + JS/TS/Vue (ESLint) + CSS (Stylelint)
@@ -73,10 +74,13 @@ pnpm verify-mermaid                   # Validate Mermaid diagram syntax
 pnpm verify-links                     # Verify source URLs (requires network)
 pnpm verify-lines                     # Verify Production Proof line ranges (requires network)
 pnpm check:content                    # Run all content quality checks
-cd exercises/rust && cargo test       # Run Rust exercises
-cd exercises/go && go test ./...      # Run Go exercises
-cd exercises/python && pytest         # Run Python exercises
+pnpm test:rust                        # Run Rust exercises (cd exercises/rust && cargo test)
+pnpm test:go                          # Run Go exercises   (cd exercises/go && go test ./...)
+pnpm test:python                      # Run Python exercises (cd exercises/python && pytest)
 ```
+
+> `pnpm test` and `pnpm test:exercises` skip any language whose toolchain is
+> missing locally (CI installs all four and fails hard if one is absent).
 
 ## PR Process
 

@@ -3,11 +3,13 @@
  * (TypeScript / Rust / Go / Python) with one command, mirroring what CI does
  * across its separate test-ts / test-rust / test-go / test-python jobs.
  *
+ * This script backs `pnpm test:exercises` (and therefore `pnpm test`).
+ *
  * Why this exists:
- *   `pnpm test` / `pnpm test:exercises` only ever ran the TypeScript (Vitest)
- *   suite, while CI also runs cargo / go test / pytest. That left a gap where a
- *   broken Rust/Go/Python exercise would pass locally and only fail in CI. This
- *   script closes that gap for contributors who have the toolchains installed.
+ *   Historically `pnpm test` / `pnpm test:exercises` only ran the TypeScript
+ *   (Vitest) suite, while CI also runs cargo / go test / pytest. That left a gap
+ *   where a broken Rust/Go/Python exercise passed locally and only failed in CI.
+ *   This script closes that gap for contributors who have the toolchains.
  *
  * Policy (shared with verify-code-blocks via scripts/lib/toolchain.ts):
  *   • Locally  — a missing toolchain is SKIPPED (no need to install all four).
@@ -15,6 +17,9 @@
  *
  * Output is streamed live (inherited stdio) so the native test runners' own
  * progress/formatting is preserved. Exit code is non-zero if any suite fails.
+ *
+ * Scope note: this runs the *exercise* suites only (TS via the exercises
+ * package + Rust/Go/Python). Vue component tests live in `pnpm test:docs`.
  */
 import { spawn } from 'node:child_process';
 import { join } from 'node:path';

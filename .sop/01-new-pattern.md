@@ -116,7 +116,7 @@ Create files in `exercises/typescript/<pattern-name>/`:
 - [ ] Use the TODO-stub format: functions with `// TODO: implement` comments containing the working solution (so CI passes), with a `// ─── Tests (do not modify) ───` separator
 - [ ] Learners are expected to delete the implementations and rewrite them to pass the tests
 - [ ] Each exercise: 4-5 meaningful test cases covering edge cases
-- [ ] Verify all tests pass locally: `pnpm test:exercises`
+- [ ] Verify all tests pass locally: `pnpm test:exercises` (runs TS/Rust/Go/Python; `pnpm test:ts` for TypeScript only)
 - [ ] Verify TypeScript strict mode: `pnpm typecheck`
 
 ### 5b. Write Challenge Questions

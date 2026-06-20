@@ -36,13 +36,13 @@ nvm use   # 读取 .nvmrc → Node 22
 pnpm install
 
 # 运行所有 TypeScript 练习
-pnpm test:exercises
+pnpm test:ts
 
 # 运行特定模式
-pnpm test:exercises bitmask
+pnpm test:ts bitmask
 
 # 监听模式 — 文件保存后自动重新运行
-pnpm test:exercises -- --watch
+pnpm test:ts -- --watch
 ```
 
 **文件位置：** `exercises/typescript/<pattern-name>/01-basic.test.ts`
@@ -128,7 +128,7 @@ pytest -v
 # 4. 删除实现代码，保留函数签名
 # 5. 写你自己的实现
 # 6. 运行测试检查：
-pnpm test:exercises ring-buffer     # TypeScript
+pnpm test:ts ring-buffer     # TypeScript
 cargo test ring_buffer     # Rust
 go test -run RingBuffer    # Go
 pytest ring_buffer/test_ring_buffer.py # Python
@@ -176,10 +176,13 @@ exercises/answers/
 
 ```bash
 # 在项目根目录：
-pnpm test:exercises                        # TypeScript（491 个测试）
-(cd exercises/rust && cargo test)          # Rust（173 个测试）
-(cd exercises/go && go test ./...)         # Go（176 个测试）
-(cd exercises/python && pytest)            # Python（233 个测试）
+pnpm test:exercises                        # 一次运行全部 4 种语言（TS/Rust/Go/Python）
+
+# …或逐语言运行：
+pnpm test:ts                               # TypeScript（491 个测试）
+pnpm test:rust                             # Rust（173 个测试）
+pnpm test:go                               # Go（176 个测试）
+pnpm test:python                           # Python（233 个测试）
 ```
 
 ## 常见问题

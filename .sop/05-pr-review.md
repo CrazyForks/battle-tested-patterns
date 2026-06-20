@@ -32,7 +32,7 @@ When reviewing a pull request that adds or modifies patterns, exercises, or docu
 
 - [ ] Exercise files in all 4 languages (TS, Rust, Go, Python)
 - [ ] Answer files in `exercises/answers/` for all 4 languages
-- [ ] Tests pass: `pnpm test` · `cargo test` · `go test ./...` · `pytest`
+- [ ] Tests pass: `pnpm test` (runs docs + all 4 exercise languages)
 - [ ] TODO-stub format with separator line
 
 ### 5. Navigation & Sync

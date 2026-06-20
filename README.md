@@ -235,12 +235,13 @@ git clone https://github.com/Totoro-jam/battle-tested-patterns.git
 cd battle-tested-patterns && pnpm install
 
 # Run exercises in any language
-pnpm test:exercises               # TypeScript (491 tests, Vitest)
-cd exercises/rust && cargo test   # Rust (173 tests)
-cd exercises/go && go test ./...  # Go (176 tests)
-cd exercises/python && pytest     # Python (233 tests)
+pnpm test:exercises               # All 4 languages (TS/Rust/Go/Python)
+pnpm test:ts                      # TypeScript only (491 tests, Vitest)
+pnpm test:rust                    # Rust only   (173 tests)
+pnpm test:go                      # Go only     (176 tests)
+pnpm test:python                  # Python only (233 tests)
 
-pnpm test                         # Run ALL tests (exercises + docs components)
+pnpm test                         # Run ALL tests: docs components + all 4 exercise languages
 
 pnpm dev                          # Local docs site
 ```
@@ -255,7 +256,7 @@ See [CONTRIBUTING.md](.github/CONTRIBUTING.md). The bar is intentionally high:
 2. **TypeScript + ≥ 1 other language** — idiomatic, not translated
 3. **Exercise files in all 4 languages** (TS/Rust/Go/Python) + answer files
 4. **Chinese translation** with identical code blocks
-5. All tests pass (`pnpm test` · `cargo test` · `go test ./...` · `pytest`), no lint errors
+5. All tests pass (`pnpm test` runs all 4 languages + docs), no lint errors
 6. Source links checked weekly by CI — broken links auto-open an Issue
 
 ## Contributors

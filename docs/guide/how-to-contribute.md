@@ -14,7 +14,7 @@ git clone https://github.com/Totoro-jam/battle-tested-patterns.git
 cd battle-tested-patterns
 pnpm install
 pnpm dev        # Start docs dev server
-pnpm test       # Run all tests (exercises + docs components)
+pnpm test       # Run ALL tests: docs components + exercises in all 4 languages
 ```
 
 ## Types of Contributions
@@ -49,7 +49,7 @@ Every pattern must meet these minimums:
 - TypeScript implementation + ≥ 1 other language (Rust/Go/Python)
 - Exercise files in all 4 languages (TS, Rust, Go, Python) + answer files
 - Chinese translation with identical code blocks
-- All tests pass (`pnpm test` · `cargo test` · `go test ./...` · `pytest`), no lint errors
+- All tests pass (`pnpm test` runs all 4 languages + docs), no lint errors
 
 See the full checklist in the [PR template](https://github.com/Totoro-jam/battle-tested-patterns/blob/e758be266d38db94723be233863e6f3effbf46cc/.github/PULL_REQUEST_TEMPLATE.md).
 
