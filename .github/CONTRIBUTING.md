@@ -76,7 +76,7 @@ pnpm verify-lines                     # Verify Production Proof line ranges (req
 pnpm check:content                    # Run all content quality checks
 pnpm test:rust                        # Run Rust exercises (cd exercises/rust && cargo test)
 pnpm test:go                          # Run Go exercises   (cd exercises/go && go test ./...)
-pnpm test:python                      # Run Python exercises (cd exercises/python && pytest)
+pnpm test:python                      # Run Python exercises (auto-finds Python ≥ 3.10)
 ```
 
 > `pnpm test` and `pnpm test:exercises` skip any language whose toolchain is

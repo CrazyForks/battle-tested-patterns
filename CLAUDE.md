@@ -99,9 +99,9 @@ pnpm check:structure # Verify doc structure: frontmatter, sections, tab order, p
 pnpm check:zh-parity # Verify EN/ZH code blocks, links, and Mermaid parity
 pnpm check:exercises # Verify exercise + answer files exist for all patterns
 pnpm check:relations # Verify Related Patterns bidirectionality and sidebar consistency
-cd exercises/rust && cargo test    # Run Rust exercises (or: pnpm test:rust)
-cd exercises/go && go test ./...   # Run Go exercises (or: pnpm test:go)
-cd exercises/python && pytest      # Run Python exercises (or: pnpm test:python)
+pnpm test:rust    # Run Rust exercises (cd exercises/rust && cargo test)
+pnpm test:go      # Run Go exercises   (cd exercises/go && go test ./...)
+pnpm test:python  # Run Python exercises (smart interpreter discovery, needs Python ≥ 3.10)
 ```
 
 ## Skills
