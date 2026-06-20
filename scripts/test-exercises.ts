@@ -62,7 +62,7 @@ const SUITES: Suite[] = [
   },
   {
     label: 'Python (pytest)',
-    toolchain: { cmd: PYTHON, label: 'Python' },
+    toolchain: { cmd: PYTHON, label: 'Python', minVersion: [3, 10] },
     cmd: PYTHON,
     args: ['-m', 'pytest', '-q'],
     cwd: join(EXERCISES, 'python'),
