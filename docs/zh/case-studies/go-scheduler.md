@@ -118,7 +118,7 @@ go func()  ──► enqueue G on current P's local run queue
 
 ## 生产验证
 
-所有源码链接均固定到 Go commit `f5cdf4745455415c7a43cfc7d925214d4511489b`。针对单个模式的论断属于 `source-code`（L1）；组合关系则由官方文档（`official-doc`）支撑。
+所有源码链接均固定到 Go commit `f5cdf4745455415c7a43cfc7d925214d4511489b`。针对单个模式的论断属于 `source-code`（L1）；组合关系则由设计层级的证据支撑——运行时自己的源码内设计注释（`source-code`）与官方文档（`official-doc`）。
 
 | 模式 / 论断 | 来源 | 证据类型 | 在 GMP 调度中的角色 |
 |-----------------|--------|----------|------------------------|

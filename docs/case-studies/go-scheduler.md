@@ -180,8 +180,9 @@ design-level material.
 
 All source links are pinned to Go commit
 `f5cdf4745455415c7a43cfc7d925214d4511489b`. Per-pattern claims are
-`source-code` (L1); the composition relationship is backed by official
-documentation (`official-doc`).
+`source-code` (L1); the composition relationship is backed by design-level
+evidence — the runtime's own in-source design comment (`source-code`) and
+official documentation (`official-doc`).
 
 | Pattern / Claim | Source | Evidence | Role in GMP scheduling |
 |-----------------|--------|----------|------------------------|
