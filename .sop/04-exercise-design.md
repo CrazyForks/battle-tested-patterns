@@ -96,7 +96,7 @@ When a pattern has exercises in multiple languages, ensure API consistency:
 ## Checklist
 
 - [ ] ≥ 1 exercise file per pattern per language
-- [ ] All tests pass: `pnpm test` · `cargo test` · `go test ./...` · `pytest`
+- [ ] All tests pass: `pnpm test` (runs docs + all 4 exercise languages)
 - [ ] TODO-stub format with separator line
 - [ ] TODO markers on method signatures, not body lines
 - [ ] Test descriptions clearly state expected behavior

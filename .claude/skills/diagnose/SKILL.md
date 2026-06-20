@@ -13,9 +13,10 @@ You are debugging a test failure or build error in this project. Follow the stru
 
 Run the failing command and capture the exact error:
 ```bash
-pnpm test          # All tests (exercises + docs components)
-cargo test         # Rust (in exercises/rust/)
-go test ./...      # Go (in exercises/go/)
+pnpm test          # All tests (docs + exercises in TS/Rust/Go/Python)
+pnpm test:rust     # Rust only
+pnpm test:go       # Go only
+pnpm test:python   # Python only (auto-finds Python ≥ 3.10)
 pnpm build         # VitePress
 ```
 

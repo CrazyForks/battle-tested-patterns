@@ -107,10 +107,7 @@ runtime stability, accessibility.
 
 ### 2. Quality Gates
 
-- [ ] `pnpm test` — all TypeScript tests pass
-- [ ] `cargo test` — all Rust tests pass (in `exercises/rust/`)
-- [ ] `go test ./...` — all Go tests pass (in `exercises/go/`)
-- [ ] `pytest` — all Python tests pass (in `exercises/python/`)
+- [ ] `pnpm test` — all tests pass (docs components + exercises in TS/Rust/Go/Python)
 - [ ] `pnpm lint` — markdown + ESLint + Stylelint clean (see [SOP 14](14-lint-toolchain.md))
 - [ ] `pnpm verify-code` — all code blocks compile
 - [ ] `pnpm verify-mermaid` — all Mermaid diagrams valid

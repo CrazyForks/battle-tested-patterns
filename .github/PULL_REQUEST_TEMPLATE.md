@@ -34,7 +34,7 @@
 ### Exercises
 - [ ] Exercise files in all 4 languages (TS, Rust, Go, Python)
 - [ ] Answer files in `exercises/answers/` for all 4 languages
-- [ ] Tests pass (`pnpm test` · `cargo test` · `go test ./...` · `pytest`)
+- [ ] Tests pass (`pnpm test` — runs docs + all 4 exercise languages)
 
 ### Related Patterns & Challenge Questions
 - [ ] ≥ 2 related patterns with bidirectional links (EN + ZH)
