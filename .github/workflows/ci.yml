@@ -69,7 +69,7 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm test:exercises
+      - run: pnpm test:ts
 
   test-rust:
     name: Test (Rust)

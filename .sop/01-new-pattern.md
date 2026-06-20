@@ -138,7 +138,7 @@ Add `## Challenge Questions` section at the end of the pattern doc:
 - [ ] **Code-group tab order must match EN** — e.g. if EN is `[TypeScript] [Rust] [Go] [Python]`, ZH must be the same
 - [ ] Production Proof table must have **identical rows** in both languages (same links, same project count)
 - [ ] Info/warning callout blocks (`::: info`, `::: tip`) must exist in both languages
-- [ ] Include `运行练习：\`pnpm test:exercises\`` after the exercise table (matching EN's `Run exercises: \`pnpm test:exercises\``)
+- [ ] Include `运行练习：\`pnpm test:ts\`` after the exercise table (matching EN's `Run exercises: \`pnpm test:ts\``)
 - [ ] If you cannot translate, add `<!-- TODO: translate -->` markers
 
 ### 7. Update Navigation

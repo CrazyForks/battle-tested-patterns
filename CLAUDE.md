@@ -15,7 +15,7 @@ Each pattern has precise source links, multi-language implementations, and runna
 2. **Never claim "project X uses this pattern"** without a verifiable link
 3. **Code must be runnable** — no pseudocode
 4. **Multi-language implementations must be idiomatic** — not line-by-line translation
-5. **Exercise tests must pass** — verify with `pnpm test:exercises` / `cargo test` / `go test ./...` / `pytest`
+5. **Exercise tests must pass** — verify with `pnpm test:exercises` (runs all 4 languages; or `pnpm test:ts` / `test:rust` / `test:go` / `test:python` individually)
 
 ## Source Link Standard
 

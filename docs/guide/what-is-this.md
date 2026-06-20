@@ -80,6 +80,6 @@ Then see how they compose: [Patterns from Go Runtime](/by-project/go-runtime) ·
 
 - **Play with visualizations** — each pattern page has an interactive SVG visualization — click, drag, and build intuition
 - **Browse patterns** — read the concept, study the production proof, then try the exercises
-- **Run exercises locally** — `pnpm test:exercises` for TypeScript, `cargo test` for Rust, `go test` for Go
+- **Run exercises locally** — `pnpm test:ts` for TypeScript, `cargo test` for Rust, `go test` for Go, or `pnpm test:exercises` for all at once
 - **Try it online** — copy any code example into an official playground: [TypeScript](https://www.typescriptlang.org/play) · [Go](https://go.dev/play/) · [Rust](https://play.rust-lang.org/) · [Python](https://www.online-python.com/)
 - **Contribute** — see [How to Contribute](./how-to-contribute)

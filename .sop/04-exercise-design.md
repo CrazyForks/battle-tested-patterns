@@ -34,7 +34,7 @@ import { describe, it, expect } from 'vitest';
  * <Pattern> - <Level>: <Title>
  *
  * TODO: Implement the functions below.
- * Run `pnpm test:exercises` to check your work.
+ * Run `pnpm test:ts` to check your work.
  */
 
 /** Description of what this function should do */
