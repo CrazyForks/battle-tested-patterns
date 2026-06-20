@@ -4,7 +4,7 @@
  * Validates:
  * - R1: Related Patterns bidirectionality (A→B implies B→A)
  * - R2: Sidebar consistency (all patterns in docs/patterns/ appear in config.ts sidebar)
- * - R3: Homepage consistency (index.md pattern table matches docs/patterns/ directory)
+ * - R3: Catalog consistency (docs/patterns/index.md + ZH mirror list every pattern)
  *
  * Usage:
  *   tsx scripts/check-relations.ts
@@ -126,41 +126,67 @@ function checkSidebarConsistency(): void {
   }
 }
 
-// ─── R3: Homepage Consistency ────────────────────────────────────────────────
+// ─── R3: Catalog Page Consistency ────────────────────────────────────────────
 
-function checkHomepageConsistency(): void {
-  const indexPath = join(DOCS_DIR, 'index.md');
-  if (!statSync(indexPath, { throwIfNoEntry: false })?.isFile()) return;
+/**
+ * Verify a catalog page (docs/patterns/index.md or its ZH mirror) lists every
+ * pattern exactly once. The catalog tables use relative links like
+ * `[Name](./bitmask/)`, so the homepage hero page (docs/index.md) is NOT the
+ * source of truth — it renders patterns via a Vue component and has no per-
+ * pattern links. Checking index.md here would silently pass (0 links found).
+ */
+function checkCatalogPage(catalogPath: string): void {
+  if (!statSync(catalogPath, { throwIfNoEntry: false })?.isFile()) return;
 
-  const content = readFileSync(indexPath, 'utf-8');
+  const content = readFileSync(catalogPath, 'utf-8');
   const patterns = discoverPatterns();
 
-  // Extract pattern slugs from homepage links
-  const homeSlugs = new Set<string>();
-  const linkRe = /\/patterns\/([^/'"\s)]+)/g;
+  // Extract slugs from markdown links: [Name](./slug/) | [Name](slug/) |
+  // [Name](/patterns/slug/) | [Name](../slug/) — covers relative & absolute.
+  const catalogSlugs = new Set<string>();
+  const linkRe = /\]\((?:\.{0,2}\/)?(?:patterns\/)?([a-z][a-z0-9-]+)\/?\)/g;
   let m: RegExpExecArray | null;
   while ((m = linkRe.exec(content)) !== null) {
     const slug = m[1]!.replace(/\/index$/, '').replace(/\/$/, '');
-    if (slug) homeSlugs.add(slug);
+    if (slug) catalogSlugs.add(slug);
   }
 
-  // Only warn if homepage has pattern links but is missing some
-  if (homeSlugs.size > 0) {
-    for (const pf of patterns) {
-      if (!homeSlugs.has(pf.slug)) {
-        report({
-          file: indexPath,
-          severity: 'warning',
-          message: `Pattern "${pf.slug}" not listed on homepage`,
-          rule: 'R3',
-        });
-      }
+  const patternSlugs = new Set(patterns.map((p) => p.slug));
+
+  // Every pattern must appear in the catalog.
+  for (const pf of patterns) {
+    if (!catalogSlugs.has(pf.slug)) {
+      report({
+        file: catalogPath,
+        severity: 'error',
+        message: `Pattern "${pf.slug}" exists in docs/patterns/ but is not listed in this catalog page`,
+        rule: 'R3',
+      });
+    }
+  }
+
+  // Catalog must not list non-existent patterns.
+  for (const slug of catalogSlugs) {
+    if (!patternSlugs.has(slug)) {
+      report({
+        file: catalogPath,
+        severity: 'warning',
+        message: `Catalog page links pattern "${slug}" but docs/patterns/${slug}/index.md does not exist`,
+        rule: 'R3',
+      });
     }
   }
 
   if (verbose) {
-    console.log(`  ✓ R3: ${homeSlugs.size} patterns found on homepage, ${patterns.length} total`);
+    console.log(
+      `  ✓ R3: ${catalogSlugs.size} patterns listed in ${catalogPath.replace(DOCS_DIR, 'docs')}, ${patterns.length} total`,
+    );
   }
+}
+
+function checkCatalogConsistency(): void {
+  checkCatalogPage(join(DOCS_DIR, 'patterns/index.md'));
+  checkCatalogPage(join(DOCS_DIR, 'zh/patterns/index.md'));
 }
 
 // ─── Main ────────────────────────────────────────────────────────────────────
@@ -170,7 +196,7 @@ function main(): void {
 
   checkBidirectionalRelations();
   checkSidebarConsistency();
-  checkHomepageConsistency();
+  checkCatalogConsistency();
 
   process.exit(summarize('check-relations'));
 }
