@@ -1,4 +1,5 @@
-// Generates the pattern catalog block inside skills/adopt-pattern/SKILL.md.
+// Generates the pattern catalog block inside
+// plugins/pattern-skills/skills/adopt-pattern/SKILL.md.
 //
 // Source of truth: the "46 Patterns at a Glance" table in README.md (category
 // + symptom cue + slug) enriched with each pattern doc's frontmatter
@@ -16,7 +17,14 @@ import { dirname, join } from 'node:path';
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 const readmePath = join(repoRoot, 'README.md');
-const skillPath = join(repoRoot, 'skills', 'adopt-pattern', 'SKILL.md');
+const skillPath = join(
+  repoRoot,
+  'plugins',
+  'pattern-skills',
+  'skills',
+  'adopt-pattern',
+  'SKILL.md',
+);
 
 const START = '<!-- CATALOG:START -->';
 const END = '<!-- CATALOG:END -->';

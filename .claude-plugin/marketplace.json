@@ -1,0 +1,19 @@
+{
+  "name": "battle-tested-patterns",
+  "owner": { "name": "Totoro-jam" },
+  "description": "Agent skills built on the Battle-Tested Patterns catalog — adopt patterns into your code, or audit your code against the catalog.",
+  "plugins": [
+    {
+      "name": "pattern-skills",
+      "source": {
+        "source": "git-subdir",
+        "url": "Totoro-jam/battle-tested-patterns",
+        "path": "plugins/pattern-skills"
+      },
+      "description": "Adopt and audit production-proven implementation patterns.",
+      "version": "0.1.0",
+      "category": "productivity",
+      "keywords": ["patterns", "agent-skills", "code-review", "architecture"]
+    }
+  ]
+}

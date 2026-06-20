@@ -1,0 +1,10 @@
+{
+  "name": "pattern-skills",
+  "version": "0.1.0",
+  "description": "Adopt and audit production-proven implementation patterns: adopt-pattern routes a problem to the right pattern and adapts it with a regression test; audit-pattern grades an existing codebase and flags mislabels.",
+  "author": { "name": "Totoro-jam", "url": "https://github.com/Totoro-jam" },
+  "homepage": "https://github.com/Totoro-jam/battle-tested-patterns",
+  "repository": "https://github.com/Totoro-jam/battle-tested-patterns",
+  "license": "MIT",
+  "keywords": ["patterns", "agent-skills", "code-review", "architecture"]
+}
