@@ -1,5 +1,5 @@
 ---
-name: audit-patterns
+name: audit-pattern
 description: >-
   Use when reviewing or auditing an existing codebase against production-proven
   implementation patterns — checking whether the patterns it already implements
