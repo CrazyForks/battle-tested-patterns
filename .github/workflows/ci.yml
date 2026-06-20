@@ -188,11 +188,16 @@ jobs:
       - name: Collect changed markdown docs
         id: changed
         run: |
-          BASE="${{ github.event.pull_request.base.sha }}"
-          if [ -z "$BASE" ]; then BASE="HEAD~1"; fi
+          # PR: diff the whole branch against its base. Push: diff the whole
+          # push range (github.event.before). Fall back to HEAD~1 for a new
+          # branch's first push (before is the all-zero SHA) or any invalid ref.
+          BASE="${{ github.event.pull_request.base.sha || github.event.before }}"
+          if [ -z "$BASE" ] || [ "$BASE" = "0000000000000000000000000000000000000000" ] || ! git cat-file -e "$BASE^{commit}" 2>/dev/null; then
+            BASE="HEAD~1"
+          fi
           FILES=$(git diff --name-only --diff-filter=ACMR "$BASE" HEAD -- 'docs/**/*.md' 'README.md' 'README.zh-CN.md' | tr '\n' ' ')
           echo "files=$FILES" >> "$GITHUB_OUTPUT"
-          echo "Changed docs: $FILES"
+          echo "Base: $BASE | Changed docs: $FILES"
       - name: Verify changed source links
         if: steps.changed.outputs.files != ''
         run: pnpm verify-links --ci --changed ${{ steps.changed.outputs.files }}
