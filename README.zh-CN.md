@@ -248,6 +248,28 @@ pnpm dev                          # 本地文档站
 
 各语言详细设置请参考[练习指南](https://totoro-jam.github.io/battle-tested-patterns/zh/guide/exercises)。
 
+## Agent 技能
+
+两个 Agent 技能可让 AI 编码助手与模式目录协同工作：
+
+- **adopt-pattern** — 根据问题找到合适的模式，并将其适配到你的代码中（附回归测试）
+- **audit-pattern** — 对照目录审计现有代码库中的模式实现，标记误用
+
+通过 [Claude Code](https://docs.anthropic.com/en/docs/claude-code) 插件市场安装：
+
+```text
+/plugin marketplace add Totoro-jam/battle-tested-patterns
+/plugin install pattern-skills@battle-tested-patterns
+```
+
+或使用 [npx skills](https://github.com/vercel-labs/skills) 安装器（支持 Claude Code、Codex、Copilot 等）：
+
+```bash
+npx skills add Totoro-jam/battle-tested-patterns/plugins/pattern-skills
+```
+
+两个技能在运行时获取模式文档 URL，因此你也可以不安装直接调用——它们会从仓库读取目录。
+
 ## 参与贡献
 
 详见 [CONTRIBUTING.md](.github/CONTRIBUTING.md)。门槛不低：

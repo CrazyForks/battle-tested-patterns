@@ -248,6 +248,28 @@ pnpm dev                          # Local docs site
 
 See the [Exercise Guide](https://totoro-jam.github.io/battle-tested-patterns/guide/exercises) for detailed setup instructions per language.
 
+## Agent Skills
+
+Two agent skills let AI coding assistants work with the pattern catalog:
+
+- **adopt-pattern** — given a problem, find the right pattern and adapt it to your codebase with a regression test
+- **audit-pattern** — grade an existing codebase's patterns against the catalog and flag mislabels
+
+Install via [Claude Code](https://docs.anthropic.com/en/docs/claude-code) plugin marketplace:
+
+```text
+/plugin marketplace add Totoro-jam/battle-tested-patterns
+/plugin install pattern-skills@battle-tested-patterns
+```
+
+Or use the [npx skills](https://github.com/vercel-labs/skills) installer (works with Claude Code, Codex, Copilot, and more):
+
+```bash
+npx skills add Totoro-jam/battle-tested-patterns/plugins/pattern-skills
+```
+
+Both skills fetch pattern doc URLs at runtime, so you can also invoke them without installing — they'll read the catalog from the repo.
+
 ## Contributing
 
 See [CONTRIBUTING.md](.github/CONTRIBUTING.md). The bar is intentionally high:
