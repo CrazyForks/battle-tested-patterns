@@ -76,30 +76,48 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: pnpm
       - uses: dtolnay/rust-toolchain@stable
-      - run: cd exercises/rust && cargo test
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm test:rust
 
   test-go:
     name: Test (Go)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: pnpm
       - uses: actions/setup-go@v6
         with:
           go-version: '1.23'
           cache-dependency-path: exercises/go/go.mod
-      - run: cd exercises/go && go test ./...
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm test:go
 
   test-python:
     name: Test (Python)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: pnpm
       - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
+      - run: pnpm install --frozen-lockfile
       - run: pip install -r exercises/python/requirements.txt
-      - run: cd exercises/python && pytest -v
+      - run: pnpm test:python
 
   test-components:
     name: Test (Vue Components)
