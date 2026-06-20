@@ -258,7 +258,7 @@ assert patch(ops) == ["a", "c", "e", "d"]
 | 基础 | 实现产生 keep/insert/delete 操作的列表 diff | `exercises/typescript/diff-patch/01-basic.test.ts` |
 | 进阶 | 应用补丁从旧列表重建新列表 | `exercises/typescript/diff-patch/02-patch-apply.test.ts` |
 
-运行练习：`pnpm test:exercises`（TypeScript）· `cargo test`（Rust）· `go test ./...`（Go）· `pytest`（Python）
+运行练习：`pnpm test:ts`（TypeScript）· `cargo test`（Rust）· `go test ./...`（Go）· `pytest`（Python）
 
 练习文件： Rust `exercises/rust/src/diff_patch/mod.rs` · Go `exercises/go/diff_patch/diff_patch_test.go` · Python `exercises/python/diff_patch/test_diff_patch.py`
 

@@ -189,7 +189,7 @@ def try_add(a: TaggedValue, b: TaggedValue) -> TaggedValue | None:
 | 基础 | 实现带类型分发的标签值容器 | `exercises/typescript/tagged-union/01-basic.test.ts` |
 | 进阶 | 支持嵌套数组/对象的 JSON 值类型 | `exercises/typescript/tagged-union/02-intermediate.test.ts` |
 
-运行练习：`pnpm test:exercises`（TypeScript）· `cargo test`（Rust）· `go test ./...`（Go）· `pytest`（Python）
+运行练习：`pnpm test:ts`（TypeScript）· `cargo test`（Rust）· `go test ./...`（Go）· `pytest`（Python）
 
 练习文件： Rust `exercises/rust/src/tagged_union/mod.rs` · Go `exercises/go/tagged_union/tagged_union_test.go` · Python `exercises/python/tagged_union/test_tagged_union.py`
 

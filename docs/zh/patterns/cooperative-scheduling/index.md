@@ -231,7 +231,7 @@ remaining = work_loop(
 | 基础 | 实现带让出检查的时间片工作循环 | `exercises/typescript/cooperative-scheduling/01-basic.test.ts` |
 | 进阶 | 构建按优先级调度并让出的调度器 | `exercises/typescript/cooperative-scheduling/02-priority-scheduler.test.ts` |
 
-运行练习：`pnpm test:exercises`（TypeScript）· `cargo test`（Rust）· `go test ./...`（Go）· `pytest`（Python）
+运行练习：`pnpm test:ts`（TypeScript）· `cargo test`（Rust）· `go test ./...`（Go）· `pytest`（Python）
 
 练习文件： Rust `exercises/rust/src/cooperative_scheduling/mod.rs` · Go `exercises/go/cooperative_scheduling/cooperative_scheduling_test.go` · Python `exercises/python/cooperative_scheduling/test_cooperative_scheduling.py`
 

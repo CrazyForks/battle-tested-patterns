@@ -212,7 +212,7 @@ assert not has_flag(editor, DELETE)  # True
 | 进阶 | 构建基于角色的权限系统 | `exercises/typescript/bitmask/02-permission-system.test.ts` |
 | 高级 | React 风格的 Fiber 标志与子树冒泡 | `exercises/typescript/bitmask/03-react-flags.test.ts` |
 
-运行练习：`pnpm test:exercises`（TypeScript）· `cargo test`（Rust）· `go test ./...`（Go）· `pytest`（Python）
+运行练习：`pnpm test:ts`（TypeScript）· `cargo test`（Rust）· `go test ./...`（Go）· `pytest`（Python）
 
 练习文件： Rust `exercises/rust/src/bitmask/mod.rs` · Go `exercises/go/bitmask/bitmask_test.go` · Python `exercises/python/bitmask/test_bitmask.py`
 

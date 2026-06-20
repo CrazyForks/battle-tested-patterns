@@ -274,7 +274,7 @@ class DependencyGraph:
 | Basic | Implement topological sort with cycle detection | `exercises/typescript/dependency-graph/01-basic.test.ts` |
 | Intermediate | Parallel execution planner — compute execution waves | `exercises/typescript/dependency-graph/02-intermediate.test.ts` |
 
-Run exercises: `pnpm test:exercises` (TypeScript) · `cargo test` (Rust) · `go test ./...` (Go) · `pytest` (Python)
+Run exercises: `pnpm test:ts` (TypeScript) · `cargo test` (Rust) · `go test ./...` (Go) · `pytest` (Python)
 
 Exercise files: Rust `exercises/rust/src/dependency_graph/mod.rs` · Go `exercises/go/dependency_graph/dependency_graph_test.go` · Python `exercises/python/dependency_graph/test_dependency_graph.py`
 

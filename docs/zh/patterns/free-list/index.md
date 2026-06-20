@@ -200,7 +200,7 @@ class FreeList:
 | 基础 | 实现带 alloc/free 和计数跟踪的空闲链表分配器 | `exercises/typescript/free-list/01-basic.test.ts` |
 | 进阶 | 带过期句柄检测的代际池 | `exercises/typescript/free-list/02-intermediate.test.ts` |
 
-运行练习：`pnpm test:exercises`（TypeScript）· `cargo test`（Rust）· `go test ./...`（Go）· `pytest`（Python）
+运行练习：`pnpm test:ts`（TypeScript）· `cargo test`（Rust）· `go test ./...`（Go）· `pytest`（Python）
 
 练习文件： Rust `exercises/rust/src/free_list/mod.rs` · Go `exercises/go/free_list/free_list_test.go` · Python `exercises/python/free_list/test_free_list.py`
 

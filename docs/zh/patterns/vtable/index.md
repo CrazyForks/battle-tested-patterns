@@ -195,7 +195,7 @@ def create_rect(w: float, h: float) -> Shape:
 | 基础 | 实现形状的 vtable 分发（面积/周长） | `exercises/typescript/vtable/01-basic.test.ts` |
 | 进阶 | 基于 vtable 扩展点的插件系统 | `exercises/typescript/vtable/02-intermediate.test.ts` |
 
-运行练习：`pnpm test:exercises`（TypeScript）· `cargo test`（Rust）· `go test ./...`（Go）· `pytest`（Python）
+运行练习：`pnpm test:ts`（TypeScript）· `cargo test`（Rust）· `go test ./...`（Go）· `pytest`（Python）
 
 练习文件： Rust `exercises/rust/src/vtable/mod.rs` · Go `exercises/go/vtable/vtable_test.go` · Python `exercises/python/vtable/test_vtable.py`
 

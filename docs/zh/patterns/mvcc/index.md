@@ -207,7 +207,7 @@ class MVCCStore:
 | 基础 | 实现多版本键值存储 | `exercises/typescript/mvcc/01-basic.test.ts` |
 | 进阶 | 带一致性读取的快照事务 | `exercises/typescript/mvcc/02-intermediate.test.ts` |
 
-运行练习：`pnpm test:exercises`（TypeScript）· `cargo test`（Rust）· `go test ./...`（Go）· `pytest`（Python）
+运行练习：`pnpm test:ts`（TypeScript）· `cargo test`（Rust）· `go test ./...`（Go）· `pytest`（Python）
 
 练习文件： Rust `exercises/rust/src/mvcc/mod.rs` · Go `exercises/go/mvcc/mvcc_test.go` · Python `exercises/python/mvcc/test_mvcc.py`
 

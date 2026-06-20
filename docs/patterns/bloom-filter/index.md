@@ -203,7 +203,7 @@ class BloomFilter:
 | Basic | Implement a bloom filter with add/mightContain | `exercises/typescript/bloom-filter/01-basic.test.ts` |
 | Intermediate | Spell checker using a bloom filter dictionary | `exercises/typescript/bloom-filter/02-intermediate.test.ts` |
 
-Run exercises: `pnpm test:exercises` (TypeScript) · `cargo test` (Rust) · `go test ./...` (Go) · `pytest` (Python)
+Run exercises: `pnpm test:ts` (TypeScript) · `cargo test` (Rust) · `go test ./...` (Go) · `pytest` (Python)
 
 Exercise files: Rust `exercises/rust/src/bloom_filter/mod.rs` · Go `exercises/go/bloom_filter/bloom_filter_test.go` · Python `exercises/python/bloom_filter/test_bloom_filter.py`
 

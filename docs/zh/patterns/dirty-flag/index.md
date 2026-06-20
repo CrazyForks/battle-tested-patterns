@@ -232,7 +232,7 @@ class DirtyFlag(Generic[T]):
 | 基础 | 实现基于脏标记的惰性计算包装器 | `exercises/typescript/dirty-flag/01-basic.test.ts` |
 | 进阶 | 构建带脏标记世界坐标缓存的变换层级 | `exercises/typescript/dirty-flag/02-intermediate.test.ts` |
 
-运行练习：`pnpm test:exercises`（TypeScript）· `cargo test`（Rust）· `go test ./...`（Go）· `pytest`（Python）
+运行练习：`pnpm test:ts`（TypeScript）· `cargo test`（Rust）· `go test ./...`（Go）· `pytest`（Python）
 
 练习文件： Rust `exercises/rust/src/dirty_flag/mod.rs` · Go `exercises/go/dirty_flag/dirty_flag_test.go` · Python `exercises/python/dirty_flag/test_dirty_flag.py`
 

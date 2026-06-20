@@ -168,7 +168,7 @@ class Arena:
 | Basic | Implement a bump allocator with alloc/reset | `exercises/typescript/arena-allocator/01-basic.test.ts` |
 | Intermediate | String arena with handle-based allocation | `exercises/typescript/arena-allocator/02-intermediate.test.ts` |
 
-Run exercises: `pnpm test:exercises` (TypeScript) · `cargo test` (Rust) · `go test ./...` (Go) · `pytest` (Python)
+Run exercises: `pnpm test:ts` (TypeScript) · `cargo test` (Rust) · `go test ./...` (Go) · `pytest` (Python)
 
 Exercise files: Rust `exercises/rust/src/arena_allocator/mod.rs` · Go `exercises/go/arena_allocator/arena_allocator_test.go` · Python `exercises/python/arena_allocator/test_arena_allocator.py`
 

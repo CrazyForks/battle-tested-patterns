@@ -203,7 +203,7 @@ class BloomFilter:
 | 基础 | 实现带 add/mightContain 的布隆过滤器 | `exercises/typescript/bloom-filter/01-basic.test.ts` |
 | 进阶 | 使用布隆过滤器字典的拼写检查器 | `exercises/typescript/bloom-filter/02-intermediate.test.ts` |
 
-运行练习：`pnpm test:exercises`（TypeScript）· `cargo test`（Rust）· `go test ./...`（Go）· `pytest`（Python）
+运行练习：`pnpm test:ts`（TypeScript）· `cargo test`（Rust）· `go test ./...`（Go）· `pytest`（Python）
 
 练习文件： Rust `exercises/rust/src/bloom_filter/mod.rs` · Go `exercises/go/bloom_filter/bloom_filter_test.go` · Python `exercises/python/bloom_filter/test_bloom_filter.py`
 

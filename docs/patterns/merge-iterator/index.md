@@ -271,7 +271,7 @@ def merge_k_sorted(streams: list[list[int]]) -> list[int]:
 | Basic | Merge K sorted arrays into one sorted array | `exercises/typescript/merge-iterator/01-basic.test.ts` |
 | Intermediate | Merge with deduplication (latest-wins by key) | `exercises/typescript/merge-iterator/02-intermediate.test.ts` |
 
-Run exercises: `pnpm test:exercises` (TypeScript) · `cargo test` (Rust) · `go test ./...` (Go) · `pytest` (Python)
+Run exercises: `pnpm test:ts` (TypeScript) · `cargo test` (Rust) · `go test ./...` (Go) · `pytest` (Python)
 
 Exercise files: Rust `exercises/rust/src/merge_iterator/mod.rs` · Go `exercises/go/merge_iterator/merge_iterator_test.go` · Python `exercises/python/merge_iterator/test_merge_iterator.py`
 

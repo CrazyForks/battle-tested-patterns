@@ -172,7 +172,7 @@ class StringInterner:
 | Basic | Implement a string interner with intern/resolve | `exercises/typescript/interning/01-basic.test.ts` |
 | Intermediate | Type interner with structural equality | `exercises/typescript/interning/02-intermediate.test.ts` |
 
-Run exercises: `pnpm test:exercises` (TypeScript) · `cargo test` (Rust) · `go test ./...` (Go) · `pytest` (Python)
+Run exercises: `pnpm test:ts` (TypeScript) · `cargo test` (Rust) · `go test ./...` (Go) · `pytest` (Python)
 
 Exercise files: Rust `exercises/rust/src/interning/mod.rs` · Go `exercises/go/interning/interning_test.go` · Python `exercises/python/interning/test_interning.py`
 

@@ -247,7 +247,7 @@ class WriteAheadLog:
 | Basic | Implement an in-memory write-ahead log | `exercises/typescript/write-ahead-log/01-basic.test.ts` |
 | Intermediate | Checkpoint recovery — replay only after last checkpoint | `exercises/typescript/write-ahead-log/02-intermediate.test.ts` |
 
-Run exercises: `pnpm test:exercises` (TypeScript) · `cargo test` (Rust) · `go test ./...` (Go) · `pytest` (Python)
+Run exercises: `pnpm test:ts` (TypeScript) · `cargo test` (Rust) · `go test ./...` (Go) · `pytest` (Python)
 
 Exercise files: Rust `exercises/rust/src/write_ahead_log/mod.rs` · Go `exercises/go/write_ahead_log/write_ahead_log_test.go` · Python `exercises/python/write_ahead_log/test_write_ahead_log.py`
 

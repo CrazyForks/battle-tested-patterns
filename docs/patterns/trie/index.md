@@ -234,7 +234,7 @@ class Trie:
 | Basic | Implement a trie with insert/search/startsWith | `exercises/typescript/trie/01-basic.test.ts` |
 | Intermediate | Autocomplete with frequency-ranked results | `exercises/typescript/trie/02-intermediate.test.ts` |
 
-Run exercises: `pnpm test:exercises` (TypeScript) · `cargo test` (Rust) · `go test ./...` (Go) · `pytest` (Python)
+Run exercises: `pnpm test:ts` (TypeScript) · `cargo test` (Rust) · `go test ./...` (Go) · `pytest` (Python)
 
 Exercise files: Rust `exercises/rust/src/trie/mod.rs` · Go `exercises/go/trie/trie_test.go` · Python `exercises/python/trie/test_trie.py`
 

@@ -234,7 +234,7 @@ class Trie:
 | 基础 | 实现带 insert/search/startsWith 的 Trie | `exercises/typescript/trie/01-basic.test.ts` |
 | 进阶 | 基于频率排序的自动补全 | `exercises/typescript/trie/02-intermediate.test.ts` |
 
-运行练习：`pnpm test:exercises`（TypeScript）· `cargo test`（Rust）· `go test ./...`（Go）· `pytest`（Python）
+运行练习：`pnpm test:ts`（TypeScript）· `cargo test`（Rust）· `go test ./...`（Go）· `pytest`（Python）
 
 练习文件： Rust `exercises/rust/src/trie/mod.rs` · Go `exercises/go/trie/trie_test.go` · Python `exercises/python/trie/test_trie.py`
 

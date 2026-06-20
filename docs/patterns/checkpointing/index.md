@@ -396,7 +396,7 @@ class CheckpointableStore:
 | Basic | WAL with checkpoint and recovery | `exercises/typescript/checkpointing/01-basic.test.ts` |
 | Intermediate | Incremental checkpoint (only dirty pages) | `exercises/typescript/checkpointing/02-intermediate.test.ts` |
 
-Run exercises: `pnpm test:exercises` (TypeScript) · `cargo test` (Rust) · `go test ./...` (Go) · `pytest` (Python)
+Run exercises: `pnpm test:ts` (TypeScript) · `cargo test` (Rust) · `go test ./...` (Go) · `pytest` (Python)
 
 Exercise files: Rust `exercises/rust/src/checkpointing/mod.rs` · Go `exercises/go/checkpointing/checkpointing_test.go` · Python `exercises/python/checkpointing/test_checkpointing.py`
 

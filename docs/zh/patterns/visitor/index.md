@@ -197,7 +197,7 @@ eval_visitor = {
 | 基础 | 数学表达式的 AST 访问者（求值 + 打印） | `exercises/typescript/visitor/01-basic.test.ts` |
 | 进阶 | 重写树的转换访问者（常量折叠） | `exercises/typescript/visitor/02-intermediate.test.ts` |
 
-运行练习：`pnpm test:exercises`（TypeScript）· `cargo test`（Rust）· `go test ./...`（Go）· `pytest`（Python）
+运行练习：`pnpm test:ts`（TypeScript）· `cargo test`（Rust）· `go test ./...`（Go）· `pytest`（Python）
 
 练习文件： Rust `exercises/rust/src/visitor/mod.rs` · Go `exercises/go/visitor/visitor_test.go` · Python `exercises/python/visitor/test_visitor.py`
 

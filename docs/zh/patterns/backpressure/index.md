@@ -178,7 +178,7 @@ async def main():
 | 基础 | 实现带流控的有界异步队列 | `exercises/typescript/backpressure/01-basic.test.ts` |
 | 进阶 | 带阻塞 send/receive 的有界异步通道 | `exercises/typescript/backpressure/02-intermediate.test.ts` |
 
-运行练习：`pnpm test:exercises`（TypeScript）· `cargo test`（Rust）· `go test ./...`（Go）· `pytest`（Python）
+运行练习：`pnpm test:ts`（TypeScript）· `cargo test`（Rust）· `go test ./...`（Go）· `pytest`（Python）
 
 练习文件： Rust `exercises/rust/src/backpressure/mod.rs` · Go `exercises/go/backpressure/backpressure_test.go` · Python `exercises/python/backpressure/test_backpressure.py`
 

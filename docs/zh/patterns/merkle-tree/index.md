@@ -377,7 +377,7 @@ class MerkleTree:
 | 基础 | 构建 Merkle 树，获取根哈希，生成并验证证明 | `exercises/typescript/merkle-tree/01-basic.test.ts` |
 | 进阶 | 检测被篡改的叶子并生成最小证明路径 | `exercises/typescript/merkle-tree/02-intermediate.test.ts` |
 
-运行练习：`pnpm test:exercises`（TypeScript）· `cargo test`（Rust）· `go test ./...`（Go）· `pytest`（Python）
+运行练习：`pnpm test:ts`（TypeScript）· `cargo test`（Rust）· `go test ./...`（Go）· `pytest`（Python）
 
 练习文件： Rust `exercises/rust/src/merkle_tree/mod.rs` · Go `exercises/go/merkle_tree/merkle_tree_test.go` · Python `exercises/python/merkle_tree/test_merkle_tree.py`
 

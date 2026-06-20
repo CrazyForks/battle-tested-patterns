@@ -186,7 +186,7 @@ class Pipeline:
 | Basic | Build a synchronous middleware pipeline with use/execute and short-circuit | `exercises/typescript/middleware-chain/01-basic.test.ts` |
 | Intermediate | Extend with async middleware, error capture, and onion-model cleanup | `exercises/typescript/middleware-chain/02-intermediate.test.ts` |
 
-Run exercises: `pnpm test:exercises` (TypeScript) · `cargo test` (Rust) · `go test ./...` (Go) · `pytest` (Python)
+Run exercises: `pnpm test:ts` (TypeScript) · `cargo test` (Rust) · `go test ./...` (Go) · `pytest` (Python)
 
 Exercise files: Rust `exercises/rust/src/middleware_chain/mod.rs` · Go `exercises/go/middleware_chain/middleware_chain_test.go` · Python `exercises/python/middleware_chain/test_middleware_chain.py`
 

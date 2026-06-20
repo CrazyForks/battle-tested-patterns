@@ -187,7 +187,7 @@ class LRUCache:
 | 基础 | 实现带 get/put 和淘汰的 LRU 缓存 | `exercises/typescript/lru-cache/01-basic.test.ts` |
 | 进阶 | 带 TTL 过期的 LRU 缓存 | `exercises/typescript/lru-cache/02-intermediate.test.ts` |
 
-运行练习：`pnpm test:exercises`（TypeScript）· `cargo test`（Rust）· `go test ./...`（Go）· `pytest`（Python）
+运行练习：`pnpm test:ts`（TypeScript）· `cargo test`（Rust）· `go test ./...`（Go）· `pytest`（Python）
 
 练习文件： Rust `exercises/rust/src/lru_cache/mod.rs` · Go `exercises/go/lru_cache/lru_cache_test.go` · Python `exercises/python/lru_cache/test_lru_cache.py`
 

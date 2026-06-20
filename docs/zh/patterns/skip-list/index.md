@@ -307,7 +307,7 @@ class SkipList:
 | 基础 | 实现带 insert/search/delete 的跳表 | `exercises/typescript/skip-list/01-basic.test.ts` |
 | 进阶 | 带范围查询的跳表 | `exercises/typescript/skip-list/02-intermediate.test.ts` |
 
-运行练习：`pnpm test:exercises`（TypeScript）· `cargo test`（Rust）· `go test ./...`（Go）· `pytest`（Python）
+运行练习：`pnpm test:ts`（TypeScript）· `cargo test`（Rust）· `go test ./...`（Go）· `pytest`（Python）
 
 练习文件： Rust `exercises/rust/src/skip_list/mod.rs` · Go `exercises/go/skip_list/skip_list_test.go` · Python `exercises/python/skip_list/test_skip_list.py`
 

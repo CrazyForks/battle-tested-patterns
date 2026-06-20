@@ -247,7 +247,7 @@ class WriteAheadLog:
 | 基础 | 实现内存中的预写日志 | `exercises/typescript/write-ahead-log/01-basic.test.ts` |
 | 进阶 | 检查点恢复 — 仅重放最后检查点之后的条目 | `exercises/typescript/write-ahead-log/02-intermediate.test.ts` |
 
-运行练习：`pnpm test:exercises`（TypeScript）· `cargo test`（Rust）· `go test ./...`（Go）· `pytest`（Python）
+运行练习：`pnpm test:ts`（TypeScript）· `cargo test`（Rust）· `go test ./...`（Go）· `pytest`（Python）
 
 练习文件： Rust `exercises/rust/src/write_ahead_log/mod.rs` · Go `exercises/go/write_ahead_log/write_ahead_log_test.go` · Python `exercises/python/write_ahead_log/test_write_ahead_log.py`
 

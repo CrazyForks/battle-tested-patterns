@@ -212,7 +212,7 @@ assert not has_flag(editor, DELETE)  # True
 | Intermediate | Build a role-based permission system | `exercises/typescript/bitmask/02-permission-system.test.ts` |
 | Advanced | React-style fiber flags with subtree bubbling | `exercises/typescript/bitmask/03-react-flags.test.ts` |
 
-Run exercises: `pnpm test:exercises` (TypeScript) · `cargo test` (Rust) · `go test ./...` (Go) · `pytest` (Python)
+Run exercises: `pnpm test:ts` (TypeScript) · `cargo test` (Rust) · `go test ./...` (Go) · `pytest` (Python)
 
 Exercise files: Rust `exercises/rust/src/bitmask/mod.rs` · Go `exercises/go/bitmask/bitmask_test.go` · Python `exercises/python/bitmask/test_bitmask.py`
 

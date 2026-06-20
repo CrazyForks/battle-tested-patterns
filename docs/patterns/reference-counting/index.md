@@ -264,7 +264,7 @@ class RefCounted(Generic[T]):
 | Basic | Implement a ref-counted value with clone/drop and cleanup callback | `exercises/typescript/reference-counting/01-basic.test.ts` |
 | Intermediate | Extend with weak references that don't prevent cleanup | `exercises/typescript/reference-counting/02-intermediate.test.ts` |
 
-Run exercises: `pnpm test:exercises` (TypeScript) · `cargo test` (Rust) · `go test ./...` (Go) · `pytest` (Python)
+Run exercises: `pnpm test:ts` (TypeScript) · `cargo test` (Rust) · `go test ./...` (Go) · `pytest` (Python)
 
 Exercise files: Rust `exercises/rust/src/reference_counting/mod.rs` · Go `exercises/go/reference_counting/reference_counting_test.go` · Python `exercises/python/reference_counting/test_reference_counting.py`
 

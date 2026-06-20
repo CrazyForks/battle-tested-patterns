@@ -195,7 +195,7 @@ def create_rect(w: float, h: float) -> Shape:
 | Basic | Implement vtable dispatch for shapes (area/perimeter) | `exercises/typescript/vtable/01-basic.test.ts` |
 | Intermediate | Plugin system with vtable-based extension points | `exercises/typescript/vtable/02-intermediate.test.ts` |
 
-Run exercises: `pnpm test:exercises` (TypeScript) · `cargo test` (Rust) · `go test ./...` (Go) · `pytest` (Python)
+Run exercises: `pnpm test:ts` (TypeScript) · `cargo test` (Rust) · `go test ./...` (Go) · `pytest` (Python)
 
 Exercise files: Rust `exercises/rust/src/vtable/mod.rs` · Go `exercises/go/vtable/vtable_test.go` · Python `exercises/python/vtable/test_vtable.py`
 

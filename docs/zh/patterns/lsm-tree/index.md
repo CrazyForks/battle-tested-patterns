@@ -559,7 +559,7 @@ class LSMTree:
 | 基础 | 实现带刷写到有序段的内存 memtable | `exercises/typescript/lsm-tree/01-basic.test.ts` |
 | 进阶 | 多层 compaction 与大小触发的合并 | `exercises/typescript/lsm-tree/02-intermediate.test.ts` |
 
-运行练习：`pnpm test:exercises`（TypeScript）· `cargo test`（Rust）· `go test ./...`（Go）· `pytest`（Python）
+运行练习：`pnpm test:ts`（TypeScript）· `cargo test`（Rust）· `go test ./...`（Go）· `pytest`（Python）
 
 练习文件： Rust `exercises/rust/src/lsm_tree/mod.rs` · Go `exercises/go/lsm_tree/lsm_tree_test.go` · Python `exercises/python/lsm_tree/test_lsm_tree.py`
 

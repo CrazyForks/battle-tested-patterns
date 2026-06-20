@@ -168,7 +168,7 @@ class Arena:
 | 基础 | 实现带 alloc/reset 的 bump 分配器 | `exercises/typescript/arena-allocator/01-basic.test.ts` |
 | 进阶 | 基于句柄的字符串 Arena 分配器 | `exercises/typescript/arena-allocator/02-intermediate.test.ts` |
 
-运行练习：`pnpm test:exercises`（TypeScript）· `cargo test`（Rust）· `go test ./...`（Go）· `pytest`（Python）
+运行练习：`pnpm test:ts`（TypeScript）· `cargo test`（Rust）· `go test ./...`（Go）· `pytest`（Python）
 
 练习文件： Rust `exercises/rust/src/arena_allocator/mod.rs` · Go `exercises/go/arena_allocator/arena_allocator_test.go` · Python `exercises/python/arena_allocator/test_arena_allocator.py`
 

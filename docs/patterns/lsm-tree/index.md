@@ -559,7 +559,7 @@ class LSMTree:
 | Basic | In-memory memtable with flush to sorted runs | `exercises/typescript/lsm-tree/01-basic.test.ts` |
 | Intermediate | Multi-level compaction with size-triggered merge | `exercises/typescript/lsm-tree/02-intermediate.test.ts` |
 
-Run exercises: `pnpm test:exercises` (TypeScript) · `cargo test` (Rust) · `go test ./...` (Go) · `pytest` (Python)
+Run exercises: `pnpm test:ts` (TypeScript) · `cargo test` (Rust) · `go test ./...` (Go) · `pytest` (Python)
 
 Exercise files: Rust `exercises/rust/src/lsm_tree/mod.rs` · Go `exercises/go/lsm_tree/lsm_tree_test.go` · Python `exercises/python/lsm_tree/test_lsm_tree.py`
 

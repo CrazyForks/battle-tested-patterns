@@ -377,7 +377,7 @@ class MerkleTree:
 | Basic | Build a Merkle tree, get root hash, generate and verify proof | `exercises/typescript/merkle-tree/01-basic.test.ts` |
 | Intermediate | Detect tampered leaf and generate minimal proof path | `exercises/typescript/merkle-tree/02-intermediate.test.ts` |
 
-Run exercises: `pnpm test:exercises` (TypeScript) · `cargo test` (Rust) · `go test ./...` (Go) · `pytest` (Python)
+Run exercises: `pnpm test:ts` (TypeScript) · `cargo test` (Rust) · `go test ./...` (Go) · `pytest` (Python)
 
 Exercise files: Rust `exercises/rust/src/merkle_tree/mod.rs` · Go `exercises/go/merkle_tree/merkle_tree_test.go` · Python `exercises/python/merkle_tree/test_merkle_tree.py`
 

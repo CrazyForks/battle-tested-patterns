@@ -183,7 +183,7 @@ class Actor:
 | Basic | Implement an actor with mailbox and message processing | `exercises/typescript/actor-model/01-basic.test.ts` |
 | Intermediate | Actor supervision — parent restarts crashed children | `exercises/typescript/actor-model/02-intermediate.test.ts` |
 
-Run exercises: `pnpm test:exercises` (TypeScript) · `cargo test` (Rust) · `go test ./...` (Go) · `pytest` (Python)
+Run exercises: `pnpm test:ts` (TypeScript) · `cargo test` (Rust) · `go test ./...` (Go) · `pytest` (Python)
 
 Exercise files: Rust `exercises/rust/src/actor_model/mod.rs` · Go `exercises/go/actor_model/actor_model_test.go` · Python `exercises/python/actor_model/test_actor_model.py`
 

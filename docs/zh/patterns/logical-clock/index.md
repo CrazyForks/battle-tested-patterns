@@ -189,7 +189,7 @@ class LamportClock:
 | 基础 | 实现带 tick/send/receive 的 Lamport 时钟 | `exercises/typescript/logical-clock/01-basic.test.ts` |
 | 进阶 | 构建多节点因果关系追踪的版本向量 | `exercises/typescript/logical-clock/02-intermediate.test.ts` |
 
-运行练习：`pnpm test:exercises`（TypeScript）· `cargo test`（Rust）· `go test ./...`（Go）· `pytest`（Python）
+运行练习：`pnpm test:ts`（TypeScript）· `cargo test`（Rust）· `go test ./...`（Go）· `pytest`（Python）
 
 练习文件： Rust `exercises/rust/src/logical_clock/mod.rs` · Go `exercises/go/logical_clock/logical_clock_test.go` · Python `exercises/python/logical_clock/test_logical_clock.py`
 

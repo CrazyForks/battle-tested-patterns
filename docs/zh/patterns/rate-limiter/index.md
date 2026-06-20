@@ -192,7 +192,7 @@ class TokenBucket:
 | 基础 | 实现令牌桶限流器 | `exercises/typescript/rate-limiter/01-basic.test.ts` |
 | 进阶 | 滑动窗口计数限流器 | `exercises/typescript/rate-limiter/02-intermediate.test.ts` |
 
-运行练习：`pnpm test:exercises`（TypeScript）· `cargo test`（Rust）· `go test ./...`（Go）· `pytest`（Python）
+运行练习：`pnpm test:ts`（TypeScript）· `cargo test`（Rust）· `go test ./...`（Go）· `pytest`（Python）
 
 练习文件： Rust `exercises/rust/src/rate_limiter/mod.rs` · Go `exercises/go/rate_limiter/rate_limiter_test.go` · Python `exercises/python/rate_limiter/test_rate_limiter.py`
 

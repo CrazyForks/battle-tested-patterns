@@ -232,7 +232,7 @@ class DirtyFlag(Generic[T]):
 | Basic | Implement a dirty-flag-based lazy computation wrapper | `exercises/typescript/dirty-flag/01-basic.test.ts` |
 | Intermediate | Build a transform hierarchy with dirty-flag world position caching | `exercises/typescript/dirty-flag/02-intermediate.test.ts` |
 
-Run exercises: `pnpm test:exercises` (TypeScript) · `cargo test` (Rust) · `go test ./...` (Go) · `pytest` (Python)
+Run exercises: `pnpm test:ts` (TypeScript) · `cargo test` (Rust) · `go test ./...` (Go) · `pytest` (Python)
 
 Exercise files: Rust `exercises/rust/src/dirty_flag/mod.rs` · Go `exercises/go/dirty_flag/dirty_flag_test.go` · Python `exercises/python/dirty_flag/test_dirty_flag.py`
 

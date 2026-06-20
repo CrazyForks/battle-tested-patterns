@@ -228,7 +228,7 @@ class WorkStealingScheduler:
 | Basic | Implement a work-stealing scheduler with local deques | `exercises/typescript/work-stealing/01-basic.test.ts` |
 | Intermediate | Priority work stealing — high-priority tasks first | `exercises/typescript/work-stealing/02-intermediate.test.ts` |
 
-Run exercises: `pnpm test:exercises` (TypeScript) · `cargo test` (Rust) · `go test ./...` (Go) · `pytest` (Python)
+Run exercises: `pnpm test:ts` (TypeScript) · `cargo test` (Rust) · `go test ./...` (Go) · `pytest` (Python)
 
 Exercise files: Rust `exercises/rust/src/work_stealing/mod.rs` · Go `exercises/go/work_stealing/work_stealing_test.go` · Python `exercises/python/work_stealing/test_work_stealing.py`
 

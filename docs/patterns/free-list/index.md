@@ -200,7 +200,7 @@ class FreeList:
 | Basic | Implement a free list allocator with alloc/free and tracking | `exercises/typescript/free-list/01-basic.test.ts` |
 | Intermediate | Generational pool with stale-handle detection | `exercises/typescript/free-list/02-intermediate.test.ts` |
 
-Run exercises: `pnpm test:exercises` (TypeScript) · `cargo test` (Rust) · `go test ./...` (Go) · `pytest` (Python)
+Run exercises: `pnpm test:ts` (TypeScript) · `cargo test` (Rust) · `go test ./...` (Go) · `pytest` (Python)
 
 Exercise files: Rust `exercises/rust/src/free_list/mod.rs` · Go `exercises/go/free_list/free_list_test.go` · Python `exercises/python/free_list/test_free_list.py`
 

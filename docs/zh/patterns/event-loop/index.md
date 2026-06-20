@@ -229,7 +229,7 @@ class EventLoop:
 | 基础 | 实现带处理器注册和 tick/run 的迷你事件循环 | `exercises/typescript/event-loop/01-basic.test.ts` |
 | 进阶 | 扩展定时器支持（一次性定时器与 I/O 交错） | `exercises/typescript/event-loop/02-intermediate.test.ts` |
 
-运行练习：`pnpm test:exercises`（TypeScript）· `cargo test`（Rust）· `go test ./...`（Go）· `pytest`（Python）
+运行练习：`pnpm test:ts`（TypeScript）· `cargo test`（Rust）· `go test ./...`（Go）· `pytest`（Python）
 
 练习文件： Rust `exercises/rust/src/event_loop/mod.rs` · Go `exercises/go/event_loop/event_loop_test.go` · Python `exercises/python/event_loop/test_event_loop.py`
 

@@ -307,7 +307,7 @@ class SkipList:
 | Basic | Implement a skip list with insert/search/delete | `exercises/typescript/skip-list/01-basic.test.ts` |
 | Intermediate | Skip list with range query | `exercises/typescript/skip-list/02-intermediate.test.ts` |
 
-Run exercises: `pnpm test:exercises` (TypeScript) · `cargo test` (Rust) · `go test ./...` (Go) · `pytest` (Python)
+Run exercises: `pnpm test:ts` (TypeScript) · `cargo test` (Rust) · `go test ./...` (Go) · `pytest` (Python)
 
 Exercise files: Rust `exercises/rust/src/skip_list/mod.rs` · Go `exercises/go/skip_list/skip_list_test.go` · Python `exercises/python/skip_list/test_skip_list.py`
 

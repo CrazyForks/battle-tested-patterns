@@ -189,7 +189,7 @@ class LamportClock:
 | Basic | Implement a Lamport clock with tick/send/receive | `exercises/typescript/logical-clock/01-basic.test.ts` |
 | Intermediate | Build a version vector for multi-node causality tracking | `exercises/typescript/logical-clock/02-intermediate.test.ts` |
 
-Run exercises: `pnpm test:exercises` (TypeScript) · `cargo test` (Rust) · `go test ./...` (Go) · `pytest` (Python)
+Run exercises: `pnpm test:ts` (TypeScript) · `cargo test` (Rust) · `go test ./...` (Go) · `pytest` (Python)
 
 Exercise files: Rust `exercises/rust/src/logical_clock/mod.rs` · Go `exercises/go/logical_clock/logical_clock_test.go` · Python `exercises/python/logical_clock/test_logical_clock.py`
 

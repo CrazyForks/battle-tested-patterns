@@ -189,7 +189,7 @@ def try_add(a: TaggedValue, b: TaggedValue) -> TaggedValue | None:
 | Basic | Implement tagged values with type dispatch | `exercises/typescript/tagged-union/01-basic.test.ts` |
 | Intermediate | JSON-like value type with nested arrays/objects | `exercises/typescript/tagged-union/02-intermediate.test.ts` |
 
-Run exercises: `pnpm test:exercises` (TypeScript) · `cargo test` (Rust) · `go test ./...` (Go) · `pytest` (Python)
+Run exercises: `pnpm test:ts` (TypeScript) · `cargo test` (Rust) · `go test ./...` (Go) · `pytest` (Python)
 
 Exercise files: Rust `exercises/rust/src/tagged_union/mod.rs` · Go `exercises/go/tagged_union/tagged_union_test.go` · Python `exercises/python/tagged_union/test_tagged_union.py`
 

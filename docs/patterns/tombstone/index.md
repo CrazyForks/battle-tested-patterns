@@ -325,7 +325,7 @@ class TombstoneStore:
 | Basic | Implement a key-value store with tombstone deletion | `exercises/typescript/tombstone/01-basic.test.ts` |
 | Intermediate | Add time-based compaction and tombstone metrics | `exercises/typescript/tombstone/02-intermediate.test.ts` |
 
-Run exercises: `pnpm test:exercises` (TypeScript) · `cargo test` (Rust) · `go test ./...` (Go) · `pytest` (Python)
+Run exercises: `pnpm test:ts` (TypeScript) · `cargo test` (Rust) · `go test ./...` (Go) · `pytest` (Python)
 
 Exercise files: Rust `exercises/rust/src/tombstone/mod.rs` · Go `exercises/go/tombstone/tombstone_test.go` · Python `exercises/python/tombstone/test_tombstone.py`
 

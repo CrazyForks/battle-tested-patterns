@@ -228,7 +228,7 @@ class WorkStealingScheduler:
 | 基础 | 实现带本地双端队列的工作窃取调度器 | `exercises/typescript/work-stealing/01-basic.test.ts` |
 | 进阶 | 优先级工作窃取 — 高优先级任务优先执行 | `exercises/typescript/work-stealing/02-intermediate.test.ts` |
 
-运行练习：`pnpm test:exercises`（TypeScript）· `cargo test`（Rust）· `go test ./...`（Go）· `pytest`（Python）
+运行练习：`pnpm test:ts`（TypeScript）· `cargo test`（Rust）· `go test ./...`（Go）· `pytest`（Python）
 
 练习文件： Rust `exercises/rust/src/work_stealing/mod.rs` · Go `exercises/go/work_stealing/work_stealing_test.go` · Python `exercises/python/work_stealing/test_work_stealing.py`
 

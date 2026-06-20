@@ -197,7 +197,7 @@ eval_visitor = {
 | Basic | AST visitor for math expressions (eval + print) | `exercises/typescript/visitor/01-basic.test.ts` |
 | Intermediate | Transform visitor that rewrites the tree (constant folding) | `exercises/typescript/visitor/02-intermediate.test.ts` |
 
-Run exercises: `pnpm test:exercises` (TypeScript) · `cargo test` (Rust) · `go test ./...` (Go) · `pytest` (Python)
+Run exercises: `pnpm test:ts` (TypeScript) · `cargo test` (Rust) · `go test ./...` (Go) · `pytest` (Python)
 
 Exercise files: Rust `exercises/rust/src/visitor/mod.rs` · Go `exercises/go/visitor/visitor_test.go` · Python `exercises/python/visitor/test_visitor.py`
 

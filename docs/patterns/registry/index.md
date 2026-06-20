@@ -238,7 +238,7 @@ class Registry:
 | Basic | Implement a typed registry with register/get/list | `exercises/typescript/registry/01-basic.test.ts` |
 | Intermediate | Add decorator-based auto-registration and dependency validation | `exercises/typescript/registry/02-intermediate.test.ts` |
 
-Run exercises: `pnpm test:exercises` (TypeScript) · `cargo test` (Rust) · `go test ./...` (Go) · `pytest` (Python)
+Run exercises: `pnpm test:ts` (TypeScript) · `cargo test` (Rust) · `go test ./...` (Go) · `pytest` (Python)
 
 Exercise files: Rust `exercises/rust/src/registry/mod.rs` · Go `exercises/go/registry/registry_test.go` · Python `exercises/python/registry/test_registry.py`
 

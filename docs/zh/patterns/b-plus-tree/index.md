@@ -504,7 +504,7 @@ class BPlusTree:
 | 基础 | 实现带插入和搜索的 B+ 树 | `exercises/typescript/b-plus-tree/01-basic.test.ts` |
 | 进阶 | 添加基于叶节点链表的范围查询 | `exercises/typescript/b-plus-tree/02-intermediate.test.ts` |
 
-运行练习：`pnpm test:exercises`（TypeScript）· `cargo test`（Rust）· `go test ./...`（Go）· `pytest`（Python）
+运行练习：`pnpm test:ts`（TypeScript）· `cargo test`（Rust）· `go test ./...`（Go）· `pytest`（Python）
 
 练习文件： Rust `exercises/rust/src/b_plus_tree/mod.rs` · Go `exercises/go/b_plus_tree/b_plus_tree_test.go` · Python `exercises/python/b_plus_tree/test_b_plus_tree.py`
 

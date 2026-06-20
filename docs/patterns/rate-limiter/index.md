@@ -192,7 +192,7 @@ class TokenBucket:
 | Basic | Implement a token bucket rate limiter | `exercises/typescript/rate-limiter/01-basic.test.ts` |
 | Intermediate | Sliding window counter rate limiter | `exercises/typescript/rate-limiter/02-intermediate.test.ts` |
 
-Run exercises: `pnpm test:exercises` (TypeScript) · `cargo test` (Rust) · `go test ./...` (Go) · `pytest` (Python)
+Run exercises: `pnpm test:ts` (TypeScript) · `cargo test` (Rust) · `go test ./...` (Go) · `pytest` (Python)
 
 Exercise files: Rust `exercises/rust/src/rate_limiter/mod.rs` · Go `exercises/go/rate_limiter/rate_limiter_test.go` · Python `exercises/python/rate_limiter/test_rate_limiter.py`
 
