@@ -23,6 +23,7 @@ English | [简体中文](README.zh-CN.md)
 
 ## 46 Patterns at a Glance
 
+<!-- markdownlint-disable MD036 MD032 -->
 <table>
 <tr>
 <td width="33%">
@@ -113,6 +114,7 @@ English | [简体中文](README.zh-CN.md)
 </td>
 </tr>
 </table>
+<!-- markdownlint-enable MD036 MD032 -->
 
 ## The Gap This Fills
 

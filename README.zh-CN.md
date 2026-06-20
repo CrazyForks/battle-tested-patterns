@@ -23,6 +23,7 @@
 
 ## 46 个模式速览
 
+<!-- markdownlint-disable MD036 MD032 -->
 <table>
 <tr>
 <td width="33%">
@@ -113,6 +114,7 @@
 </td>
 </tr>
 </table>
+<!-- markdownlint-enable MD036 MD032 -->
 
 ## 填补什么空白
 
