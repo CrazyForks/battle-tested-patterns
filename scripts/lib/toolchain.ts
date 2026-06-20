@@ -117,3 +117,38 @@ export async function resolveToolchains(specs: ToolchainSpec[]): Promise<Toolcha
 
   return statuses;
 }
+
+// ─── Python interpreter discovery ────────────────────────────────────────────
+
+/**
+ * Find the best Python interpreter (≥ minVersion) by probing multiple
+ * candidates. On macOS, `python3` often resolves to the system 3.9 while
+ * conda/pyenv provide a newer `python`. This function tries them in priority
+ * order and returns the first that satisfies the version requirement.
+ *
+ * @returns the command string to use, or null if none found.
+ */
+export async function findPython(minVersion: [number, number] = [3, 10]): Promise<string | null> {
+  const candidates = [
+    ...(process.env.PYTHON ? [process.env.PYTHON] : []),
+    'python',
+    'python3',
+    'python3.13',
+    'python3.12',
+    'python3.11',
+    'python3.10',
+  ];
+
+  for (const cmd of candidates) {
+    try {
+      const { stdout } = await execFileAsync(cmd, ['--version'], { timeout: 5_000 });
+      const ver = parseVersion(stdout);
+      if (ver && versionSatisfies(ver, minVersion)) {
+        return cmd;
+      }
+    } catch {
+      // not found or not executable
+    }
+  }
+  return null;
+}

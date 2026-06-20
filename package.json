@@ -33,7 +33,7 @@
     "test:ts": "pnpm --filter exercises test",
     "test:rust": "cd exercises/rust && cargo test",
     "test:go": "cd exercises/go && go test ./...",
-    "test:python": "python3 -c \"import sys; v=sys.version_info; print(f'Using: {sys.executable} (Python {v.major}.{v.minor}.{v.micro})'); sys.exit(f'Error: Python {v.major}.{v.minor} < 3.10 required. See CONTRIBUTING.md for setup.') if v < (3,10) else None\" && cd exercises/python && python3 -m pytest -q",
+    "test:python": "tsx scripts/run-python.ts",
     "test:docs": "pnpm --filter docs test",
     "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm verify-code && pnpm verify-mermaid && pnpm check:content",
     "check:structure": "tsx scripts/check-structure.ts",

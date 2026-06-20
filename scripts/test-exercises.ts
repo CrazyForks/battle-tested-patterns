@@ -23,7 +23,7 @@
  */
 import { spawn } from 'node:child_process';
 import { join } from 'node:path';
-import { resolveToolchains, type ToolchainSpec } from './lib/toolchain.ts';
+import { resolveToolchains, findPython, type ToolchainSpec } from './lib/toolchain.ts';
 
 const ROOT = join(import.meta.dirname, '..');
 const EXERCISES = join(ROOT, 'exercises');
@@ -37,37 +37,42 @@ interface Suite {
   cwd: string;
 }
 
-const PYTHON = process.env.PYTHON ?? 'python3';
+function buildSuites(pythonCmd: string | null): Suite[] {
+  const suites: Suite[] = [
+    {
+      label: 'TypeScript (Vitest)',
+      cmd: 'pnpm',
+      args: ['--filter', 'exercises', 'test'],
+      cwd: ROOT,
+    },
+    {
+      label: 'Rust (cargo test)',
+      toolchain: { cmd: 'cargo', label: 'Rust' },
+      cmd: 'cargo',
+      args: ['test'],
+      cwd: join(EXERCISES, 'rust'),
+    },
+    {
+      label: 'Go (go test ./...)',
+      toolchain: { cmd: 'go', args: ['version'], label: 'Go' },
+      cmd: 'go',
+      args: ['test', './...'],
+      cwd: join(EXERCISES, 'go'),
+    },
+  ];
 
-const SUITES: Suite[] = [
-  {
-    label: 'TypeScript (Vitest)',
-    cmd: 'pnpm',
-    args: ['--filter', 'exercises', 'test'],
-    cwd: ROOT,
-  },
-  {
-    label: 'Rust (cargo test)',
-    toolchain: { cmd: 'cargo', label: 'Rust' },
-    cmd: 'cargo',
-    args: ['test'],
-    cwd: join(EXERCISES, 'rust'),
-  },
-  {
-    label: 'Go (go test ./...)',
-    toolchain: { cmd: 'go', args: ['version'], label: 'Go' },
-    cmd: 'go',
-    args: ['test', './...'],
-    cwd: join(EXERCISES, 'go'),
-  },
-  {
-    label: 'Python (pytest)',
-    toolchain: { cmd: PYTHON, label: 'Python', minVersion: [3, 10] },
-    cmd: PYTHON,
-    args: ['-m', 'pytest', '-q'],
-    cwd: join(EXERCISES, 'python'),
-  },
-];
+  if (pythonCmd) {
+    suites.push({
+      label: 'Python (pytest)',
+      toolchain: { cmd: pythonCmd, label: 'Python', minVersion: [3, 10] },
+      cmd: pythonCmd,
+      args: ['-m', 'pytest', '-q'],
+      cwd: join(EXERCISES, 'python'),
+    });
+  }
+
+  return suites;
+}
 
 function run(suite: Suite): Promise<number> {
   return new Promise((resolve) => {
@@ -86,12 +91,24 @@ function run(suite: Suite): Promise<number> {
 }
 
 async function main() {
+  // Find the best Python interpreter (may be `python` instead of `python3`).
+  const pythonCmd = await findPython([3, 10]);
+  if (!pythonCmd) {
+    console.log('⚠️  No Python ≥ 3.10 found — Python exercises skipped locally');
+  }
+
+  const SUITES = buildSuites(pythonCmd);
+
   // Probe the non-TS toolchains up front; this also enforces CI fail-hard.
   const probed = SUITES.map((s) => s.toolchain).filter((t): t is ToolchainSpec => Boolean(t));
   const statuses = await resolveToolchains(probed);
   const available = new Map(statuses.map((s) => [s.spec.cmd, s.available]));
 
   const results: { label: string; status: 'pass' | 'fail' | 'skip' }[] = [];
+
+  if (!pythonCmd) {
+    results.push({ label: 'Python (pytest)', status: 'skip' });
+  }
 
   // Run sequentially so the streamed output stays readable per language.
   for (const suite of SUITES) {
