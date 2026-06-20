@@ -35,12 +35,18 @@ exercises/answers/python/bloom_filter/bloom_filter.py       # Python answer file
 
 ```text
 docs/.vitepress/config.ts    # Add to BOTH English and Chinese sidebar
-docs/index.md                # Add to English homepage pattern table
-docs/zh/index.md             # Add to Chinese homepage pattern table
+docs/patterns/index.md       # Add to English catalog table (+ update the "N patterns" count in the heading)
+docs/zh/patterns/index.md    # Add to Chinese catalog table (+ update the count)
+docs/.vitepress/theme/components/PatternTimelineViz.vue  # Add a TimelineEntry (drives the homepage "All N Patterns" timeline + total count)
 README.md                    # Add to pattern table
 README.zh-CN.md              # Add to pattern table
 exercises/rust/src/main.rs   # Add `mod bloom_filter;`
 ```
+
+> Note: `docs/index.md` / `docs/zh/index.md` are hero pages — they render
+> patterns via `<PatternTimelineViz />`, NOT a hand-written table. The catalog
+> tables live in `docs/patterns/index.md` (+ ZH mirror). `pnpm check:relations`
+> (rule R3) verifies both catalog pages list every pattern.
 
 ## Steps
 
