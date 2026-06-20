@@ -94,11 +94,13 @@ pnpm verify-code  # Verify all code blocks in patterns compile (TS/Rust/Go/Pytho
 pnpm verify-mermaid # Validate Mermaid diagram syntax
 pnpm verify-links # Verify all source URLs are alive (requires network)
 pnpm verify-lines # Verify Production Proof line ranges match content (requires network)
-pnpm check:content   # Run all content quality checks (structure + parity + exercises + relations)
+pnpm check:content   # Run all content quality checks (structure + parity + exercises + relations + skill-catalog freshness)
 pnpm check:structure # Verify doc structure: frontmatter, sections, tab order, property table
 pnpm check:zh-parity # Verify EN/ZH code blocks, links, and Mermaid parity
 pnpm check:exercises # Verify exercise + answer files exist for all patterns
 pnpm check:relations # Verify Related Patterns bidirectionality and sidebar consistency
+pnpm check:skill-catalog # Fail if adopt-pattern SKILL.md catalog is stale (run by check:content)
+pnpm gen:skill-catalog # Regenerate adopt-pattern SKILL.md catalog from README.md + frontmatter
 pnpm test:rust    # Run Rust exercises (cd exercises/rust && cargo test)
 pnpm test:go      # Run Go exercises   (cd exercises/go && go test ./...)
 pnpm test:python  # Run Python exercises (smart interpreter discovery, needs Python ≥ 3.10)
@@ -106,11 +108,29 @@ pnpm test:python  # Run Python exercises (smart interpreter discovery, needs Pyt
 
 ## Skills
 
-AI agent skills live in `.claude/skills/`. Invoke with `/<name>`:
+Two kinds of agent skills, in different directories:
+
+**Distribution skills** (`plugins/pattern-skills/skills/`) — shipped to users via the Claude Code plugin marketplace:
+
+- `adopt-pattern` — route a problem to the right pattern and adapt it with a regression test
+- `audit-pattern` — grade an existing codebase against the catalog and flag mislabels
+
+**Internal build skills** (`.claude/skills/`) — used by maintainers only, not distributed:
 
 - `/new-pattern` — guided workflow to create a pattern (validates topic → verifies sources → writes doc → implements → tests)
 - `/verify-source` — check all production proof links for HTTP status, format, and content accuracy
 - `/diagnose` — structured debugging loop: reproduce → isolate → hypothesize → fix → verify
+
+### Skill catalog generation
+
+The `adopt-pattern` skill embeds a pattern catalog table generated from `README.md`. After adding or editing a pattern:
+
+```bash
+pnpm gen:skill-catalog     # Regenerate the catalog block in adopt-pattern/SKILL.md
+pnpm check:skill-catalog   # CI gate: fail if catalog is stale
+```
+
+`check:skill-catalog` is also run by `pnpm check:content`.
 
 ## Git Guardrails
 

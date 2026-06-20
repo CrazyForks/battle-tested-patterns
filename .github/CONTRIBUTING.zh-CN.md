@@ -88,6 +88,14 @@ pnpm test:python                      # 运行 Python 练习（自动探测 Pyth
 3. 确保 CI 全绿
 4. 等待 review（参见 [SOP 05](../.sop/05-pr-review.md)）
 
+## 添加或编辑 Agent 技能
+
+Agent 技能位于 `plugins/pattern-skills/skills/`，每个技能是一个 `SKILL.md` 文件，可被 AI 助手调用。
+
+- **分发**：技能通过 `plugins/pattern-skills/.claude-plugin/plugin.json` 和 `.claude-plugin/marketplace.json` 打包为 [Claude Code 插件](https://docs.anthropic.com/en/docs/claude-code)
+- **目录**：`adopt-pattern` 技能嵌入了从 `README.md` 生成的模式表。添加或编辑模式后，运行 `pnpm gen:skill-catalog` 刷新，再用 `pnpm check:skill-catalog` 验证（`pnpm check:content` 也会运行此检查）
+- **内部技能**（`.claude/skills/`）仅供维护者使用，不对外分发
+
 ## 容易上手的贡献
 
 还没准备好完成一个完整模式？以下是很好的入门方式：

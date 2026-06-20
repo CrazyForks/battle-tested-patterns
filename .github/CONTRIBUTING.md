@@ -89,6 +89,14 @@ pnpm test:python                      # Run Python exercises (auto-finds Python 
 3. Ensure CI is green
 4. Wait for review (see [SOP 05](./../.sop/05-pr-review.md))
 
+## Adding or Editing Agent Skills
+
+Agent skills live in `plugins/pattern-skills/skills/`. Each skill is a `SKILL.md` file that AI assistants can invoke.
+
+- **Distribution**: skills are packaged as a [Claude Code plugin](https://docs.anthropic.com/en/docs/claude-code) via `plugins/pattern-skills/.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json`
+- **Catalog**: the `adopt-pattern` skill embeds a pattern table generated from `README.md`. After adding or editing a pattern, run `pnpm gen:skill-catalog` to refresh it, then `pnpm check:skill-catalog` to verify (also run by `pnpm check:content`)
+- **Internal skills** (`.claude/skills/`) are for maintainers only and not distributed
+
 ## Good First Contributions
 
 Not ready for a full pattern? These are great ways to start:
