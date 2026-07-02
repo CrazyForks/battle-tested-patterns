@@ -54,6 +54,7 @@ stateDiagram-v2
 |------|------|------|
 | Netflix Hystrix | [HystrixCircuitBreaker.java#L138-L289](https://github.com/Netflix/Hystrix/blob/5ce3bc58c38e7ca60ef2fe0e516e390e294ad941/hystrix-core/src/main/java/com/netflix/hystrix/HystrixCircuitBreaker.java#L138-L289) | `HystrixCircuitBreakerImpl` — 经典熔断器实现。三态枚举（L142），`markSuccess`/`markNonSuccess` 驱动 HALF_OPEN 转换（L204-L224），`attemptExecution` 通过 `compareAndSet` 在睡眠窗口后实现 OPEN→HALF_OPEN（L264-L289）。Netflix 全部微服务架构使用。 |
 | Sony gobreaker | [gobreaker.go#L117-L131](https://github.com/sony/gobreaker/blob/fed8e9eb35f9cd3e5c2a67842c924346c3e1fbdd/gobreaker.go#L117-L131) | `CircuitBreaker` 结构体，含状态、代计数器、计数和互斥锁。`onSuccess`/`onFailure`（L310-L332）驱动状态转换；基于代的过期检测（L334-L380）防止对过期状态读取进行操作。Sony 生产环境使用。 |
+| Resilience4j | [CircuitBreakerStateMachine.java#L1062-L1107](https://github.com/resilience4j/resilience4j/blob/94982b82577d06e7e76ef5fe0e4a7329b8fb2ddd/resilience4j-circuitbreaker/src/main/java/io/github/resilience4j/circuitbreaker/internal/CircuitBreakerStateMachine.java#L1062-L1107) | `HalfOpenState` 内部类——`AtomicInteger permittedNumberOfCalls` 由 `permittedNumberOfCallsInHalfOpenState`（默认 10）初始化。`tryAcquirePermission()` 通过 `getAndUpdate` 原子性地递减计数器，在 HALF_OPEN 期间充当显式的许可门控。OPEN→HALF_OPEN 转换在 `ReentrantLock` 下使用 `isOpen.compareAndSet(true, false)`（L803-L808）。Spring Boot/Micronaut 服务的默认熔断库。 |
 
 ## 实现
 
@@ -283,9 +284,17 @@ class CircuitBreaker:
 :::
 
 ::: details Q3: 你的熔断器进入 HALF_OPEN 状态并允许一个探测请求。但在高流量系统中，200 个并发请求在同一毫秒内到达。所有 200 个都看到状态为 HALF_OPEN 并同时发送探测请求。你如何防止这种惊群效应？
-**答案：** 使用原子性的比较并交换（CAS）操作从 OPEN 转换到 HALF_OPEN，确保只有一个请求成为探测者，其余所有请求快速失败。
+**答案：** 使用原子性的比较并交换（CAS）操作来对入口进行门控——然后在 HALF_OPEN 期间显式阻止后续请求进入。
 
-Netflix Hystrix 通过对状态标志使用 `compareAndSet` 来解决这个问题——恰好一个线程赢得 CAS 并发送探测。Sony 的 gobreaker 使用带代计数器的互斥锁实现类似的单探测保证。关键洞察是 HALF_OPEN 不是一个你被动"读取"的状态——转换到该状态应该是一个原子操作，仅授予一个调用者探测权。
+CAS 处理了转换瞬间的竞态：恰好一个线程赢得 `compareAndSet(OPEN, HALF_OPEN)` 并成为探测者。但保护并不会在转换完成后停止。在转换**之后**到达的请求看到状态已经是 HALF_OPEN——此时 CAS 会失败，因为期望值（OPEN）与当前状态（HALF_OPEN）不匹配。这些调用者也必须被拒绝，并且实现必须确保 CAS 失败路径返回 `false`（快速失败），而不是继续往下执行。
+
+Netflix Hystrix 在 `attemptExecution()` 中展示了这一点：`compareAndSet(Status.OPEN, Status.HALF_OPEN)` 位于 [HystrixCircuitBreaker.java#L281](https://github.com/Netflix/Hystrix/blob/5ce3bc58c38e7ca60ef2fe0e516e390e294ad941/hystrix-core/src/main/java/com/netflix/hystrix/HystrixCircuitBreaker.java#L281) 被包裹在一个 `if/else` 语句中——只有获胜者返回 `true`，其他所有线程返回 `false`。`allowRequest()` 在 HALF_OPEN 期间通过返回 `false` ([L262-L263](https://github.com/Netflix/Hystrix/blob/5ce3bc58c38e7ca60ef2fe0e516e390e294ad941/hystrix-core/src/main/java/com/netflix/hystrix/HystrixCircuitBreaker.java#L262-L263)) 来单独进行拦截，而探测失败后 `markNonSuccess` 再次使用 CAS 将 HALF_OPEN 转换为 OPEN ([L219-L224](https://github.com/Netflix/Hystrix/blob/5ce3bc58c38e7ca60ef2fe0e516e390e294ad941/hystrix-core/src/main/java/com/netflix/hystrix/HystrixCircuitBreaker.java#L219-L224))，这会重启睡眠窗口。
+
+成熟的库增加了**第二层**保护——在 HALF_OPEN 期间使用显式的许可计数器。Sony 的 gobreaker 使用 `counts.Requests >= maxRequests` ([gobreaker.go#L334-L340](https://github.com/sony/gobreaker/blob/fed8e9eb35f9cd3e5c2a67842c924346c3e1fbdd/gobreaker.go#L334-L340)) 作为互斥锁和代计数器之外的额外门控。Resilience4j 的 `CircuitBreakerStateMachine` 在其 `HalfOpenState` 内部类中通过 `AtomicInteger` 跟踪 `permittedNumberOfCalls`——`tryAcquirePermission()` 原子性地递减计数器，并在计数器归零时返回 `false` ([CircuitBreakerStateMachine.java#L1064-L1107](https://github.com/resilience4j/resilience4j/blob/94982b82577d06e7e76ef5fe0e4a7329b8fb2ddd/resilience4j-circuitbreaker/src/main/java/io/github/resilience4j/circuitbreaker/internal/CircuitBreakerStateMachine.java#L1064-L1107))。
+
+弄错这一点会造成真实后果。Resilience4j v1.7.0 存在一个已确认的 bug ([#1432](https://github.com/resilience4j/resilience4j/issues/1432))，其中多个线程绕过了 CAS 门控，因为丢失 CAS 的线程仍然返回了 `true`——`permittedNumberOfCallsInHalfOpenState` 实际上被忽略了。Polly v5.0.4 存在同一类 bug ([#216](https://github.com/App-vNext/Polly/issues/216))：多个 `Execute()` 调用在半开期间被放行。两者都通过将 CAS 结果与许可决策耦合、并添加显式的并发限流来修复。
+
+关键洞察是 HALF_OPEN 需要**两重**并发控制：(1) CAS 用于 OPEN → HALF_OPEN 转换，以及 (2) 一个显式的门控（许可计数器、互斥锁或 CAS 语义检查），在探测完成之前拒绝所有后续请求。
 :::
 
 ::: details Q4: 你的团队对数据库调用使用熔断器。一个开发者注意到在例行数据库迁移期间（导致 5 秒的延迟升高但零实际错误），熔断器被触发断开。熔断器是否应该追踪延迟而不仅仅是错误？
