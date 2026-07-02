@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 See [commit history](https://github.com/Totoro-jam/battle-tested-patterns/commits/main) for detailed changes.
 
+## [1.16.1](https://github.com/Totoro-jam/battle-tested-patterns/compare/v1.16.0...v1.16.1) (2026-07-02)
+
+
+### Bug Fixes
+
+* **circuit-breaker:** correct Q3 HALF_OPEN thundering herd answer ([0307be9](https://github.com/Totoro-jam/battle-tested-patterns/commit/0307be9d2702567840f10bddfebf91c8868711a1)), closes [#63](https://github.com/Totoro-jam/battle-tested-patterns/issues/63)
+
 ## [1.16.0](https://github.com/Totoro-jam/battle-tested-patterns/compare/v1.15.0...v1.16.0) (2026-06-20)
 
 
