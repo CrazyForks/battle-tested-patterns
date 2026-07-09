@@ -4,6 +4,21 @@ All notable changes to this project will be documented in this file.
 
 See [commit history](https://github.com/Totoro-jam/battle-tested-patterns/commits/main) for detailed changes.
 
+## [1.16.2](https://github.com/Totoro-jam/battle-tested-patterns/compare/v1.16.1...v1.16.2) (2026-07-09)
+
+
+### Bug Fixes
+
+* **readme:** use sealed_token for star-history chart auth ([c6bdfa9](https://github.com/Totoro-jam/battle-tested-patterns/commit/c6bdfa9309f4672e89654dc15fa9bb71877d72ee))
+
+
+### Documentation
+
+* add a1576471428 as a contributor for bug ([acd78d2](https://github.com/Totoro-jam/battle-tested-patterns/commit/acd78d2d7fc44620d948db1d20d9685c84de68db))
+* update .all-contributorsrc [skip ci] ([2cabc1a](https://github.com/Totoro-jam/battle-tested-patterns/commit/2cabc1af678c218644960391aa8c5dc226680d73))
+* update README.md [skip ci] ([3496411](https://github.com/Totoro-jam/battle-tested-patterns/commit/3496411acc1528edb55973482839bcfe9ef36b79))
+* update README.zh-CN.md [skip ci] ([2fdddef](https://github.com/Totoro-jam/battle-tested-patterns/commit/2fdddef5102bd241db71cc8e17f331fb03ee47f2))
+
 ## [1.16.1](https://github.com/Totoro-jam/battle-tested-patterns/compare/v1.16.0...v1.16.1) (2026-07-02)
 
 
