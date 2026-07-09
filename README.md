@@ -307,7 +307,7 @@ This project follows the [all-contributors](https://github.com/all-contributors/
 
 ## Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=Totoro-jam/battle-tested-patterns&type=Date)](https://star-history.com/#Totoro-jam/battle-tested-patterns&Date)
+[![Star History Chart](https://api.star-history.com/chart?repos=Totoro-jam/battle-tested-patterns&type=date&legend=top-left&sealed_token=D50Y3hfn7nAyUwI5zJyuizM67i1LOvSCTvggaHZasjhASmNlZi2B0nN7-edcCVKTemQZbo42oubUNZesBsNljgraP044xlWDSoZnT9Kl-h0jNEc1h1J84Q)](https://www.star-history.com/?repos=Totoro-jam%2Fbattle-tested-patterns&type=date&legend=top-left)
 
 ## License
 
