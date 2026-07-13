@@ -229,8 +229,8 @@ After pushing, verify all pages are reachable:
 - [ ] Verify EN page exists: `ls docs/.vitepress/dist/patterns/<name>/index.html`
 - [ ] Verify ZH page exists: `ls docs/.vitepress/dist/zh/patterns/<name>/index.html`
 - [ ] After deploy completes, spot-check live URLs:
-  - `https://totoro-jam.github.io/battle-tested-patterns/patterns/<name>/`
-  - `https://totoro-jam.github.io/battle-tested-patterns/zh/patterns/<name>/`
+  - `https://patterns.totorojam.com/patterns/<name>/`
+  - `https://patterns.totorojam.com/zh/patterns/<name>/`
 - [ ] Check sidebar links navigate correctly in both languages
 
 ### 11. Pre-Tag Full Audit

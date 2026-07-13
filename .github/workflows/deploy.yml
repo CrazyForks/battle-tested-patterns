@@ -52,10 +52,10 @@ jobs:
     needs: deploy
     runs-on: ubuntu-latest
     env:
-      SITEMAP_URL: https://totoro-jam.github.io/battle-tested-patterns/sitemap.xml
+      SITEMAP_URL: https://patterns.totorojam.com/sitemap.xml
       INDEXNOW_KEY: bfcd2abc8abd4e40a52162ce5d705972
-      KEY_LOCATION: https://totoro-jam.github.io/battle-tested-patterns/bfcd2abc8abd4e40a52162ce5d705972.txt
-      HOST: totoro-jam.github.io
+      KEY_LOCATION: https://patterns.totorojam.com/bfcd2abc8abd4e40a52162ce5d705972.txt
+      HOST: patterns.totorojam.com
     steps:
       - name: Submit URLs to IndexNow
         continue-on-error: true

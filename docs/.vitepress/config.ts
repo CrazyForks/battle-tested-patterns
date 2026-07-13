@@ -1,7 +1,7 @@
 import { defineConfig, type HeadConfig } from 'vitepress';
 import { mermaidMarkdownPlugin } from './plugins/mermaid-markdown-it';
 
-const SITE_URL = 'https://totoro-jam.github.io/battle-tested-patterns';
+const SITE_URL = 'https://patterns.totorojam.com';
 const DEFAULT_TITLE = 'Battle-Tested Patterns — Code from React, Linux, Go & More';
 const DEFAULT_DESC =
   '46 production-proven patterns with interactive visualizations, precise source links, multi-language implementations, and exercises.';
@@ -12,19 +12,10 @@ export default defineConfig({
   description:
     'Battle-tested programming patterns from production codebases. Interactive visualizations, precise source links, multi-language implementations.',
 
-  base: '/battle-tested-patterns/',
+  base: '/',
 
   sitemap: {
-    hostname: 'https://totoro-jam.github.io',
-    transformItems: (items) =>
-      items.map((item) => ({
-        ...item,
-        url: `battle-tested-patterns/${item.url}`,
-        links: item.links?.map((link) => ({
-          ...link,
-          url: `battle-tested-patterns/${link.url}`,
-        })),
-      })),
+    hostname: 'https://patterns.totorojam.com',
   },
 
   transformHead({ pageData }) {
@@ -129,7 +120,7 @@ export default defineConfig({
   },
 
   head: [
-    ['link', { rel: 'icon', type: 'image/svg+xml', href: '/battle-tested-patterns/favicon.svg' }],
+    ['link', { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' }],
     ['meta', { name: 'theme-color', content: '#3b82f6' }],
     ['meta', { property: 'og:type', content: 'website' }],
     ['meta', { property: 'og:site_name', content: 'Battle-Tested Patterns' }],
